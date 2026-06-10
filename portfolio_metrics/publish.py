@@ -60,22 +60,20 @@ def build_metrics_export(
 
     result_list = list(results)
     parsed_artifacts = sorted({path.name for path in parsed_paths})
-    metrics = sorted(
-        (
-            metric.model_copy(deep=True)
-            for result in result_list
-            for metric in result.metrics
-        ),
-        key=_metric_sort_key,
-    )
-    issues = sorted(
-        (
-            issue.model_copy(deep=True)
-            for result in result_list
-            for issue in result.issues
-        ),
-        key=_issue_sort_key,
-    )
+    metrics = [
+        metric.model_copy(deep=True)
+        for result in result_list
+        for metric in result.metrics
+    ]
+    issues = [
+        issue.model_copy(deep=True)
+        for result in result_list
+        for issue in result.issues
+    ]
+
+    deduped_metrics, dedupe_issues = _dedupe_cross_document_metrics(metrics)
+    metrics = sorted(deduped_metrics, key=_metric_sort_key)
+    issues = sorted([*issues, *dedupe_issues], key=_issue_sort_key)
 
     valid_metric_count = sum(1 for metric in metrics if metric.is_valid)
     export_metadata = ExportMetadata(
@@ -97,6 +95,50 @@ def build_metrics_export(
         metrics=metrics,
         issues=issues,
     )
+
+
+def _dedupe_cross_document_metrics(
+    metrics: Iterable[NormalizedMetric],
+) -> tuple[list[NormalizedMetric], list[NormalizationIssue]]:
+    selected: dict[tuple[str, str | None, str], NormalizedMetric] = {}
+    issues: list[NormalizationIssue] = []
+
+    for metric in metrics:
+        key = (metric.company_name, metric.period, metric.canonical_metric)
+        chosen = selected.get(key)
+        if chosen is None:
+            selected[key] = metric
+            continue
+
+        keep_new = _cross_document_metric_rank(
+            metric) > _cross_document_metric_rank(chosen)
+        retained = metric if keep_new else chosen
+        suppressed = chosen if keep_new else metric
+        selected[key] = retained
+
+        identical_value = retained.value == suppressed.value and retained.raw_value_text == suppressed.raw_value_text
+        issue_code = "cross_document_duplicate" if identical_value else "cross_document_conflicting_candidates"
+        severity = "info" if identical_value else "warning"
+        message = (
+            f"Retained `{retained.raw_label}` = {retained.raw_value_text} from `{retained.source_file}` "
+            f"over `{suppressed.raw_label}` = {suppressed.raw_value_text} from `{suppressed.source_file}`."
+        )
+        retained.notes.append(message)
+        issues.append(
+            NormalizationIssue(
+                severity=severity,
+                code=issue_code,
+                message=message,
+                source_file=retained.source_file,
+                source_page=retained.source_page,
+                company_name=retained.company_name,
+                canonical_metric=retained.canonical_metric,
+                raw_label=suppressed.raw_label,
+                raw_value_text=suppressed.raw_value_text,
+            )
+        )
+
+    return list(selected.values()), issues
 
 
 def write_publish_artifacts(
@@ -196,6 +238,17 @@ def _issue_sort_key(issue: NormalizationIssue) -> tuple[str, str, str, str, str]
         issue.canonical_metric or "",
         issue.code,
         issue.message,
+    )
+
+
+def _cross_document_metric_rank(metric: NormalizedMetric) -> tuple[int, int, int, float, int, str]:
+    return (
+        1 if metric.document_type == "company_report" else 0,
+        1 if metric.is_valid else 0,
+        1 if metric.detection_method == "table_row" else 0,
+        metric.confidence,
+        1 if metric.source_page is not None else 0,
+        metric.source_file,
     )
 
 

@@ -66,6 +66,14 @@ class DetectionResult:
     candidates: list[MetricCandidate]
 
 
+@dataclass(slots=True)
+class TableContext:
+    """Tracks markdown table headers so comparative tables use the right value column."""
+
+    headers: tuple[str, ...]
+    value_column_index: int | None = None
+
+
 def detect_metric_candidates(parser_output: ParserOutput) -> DetectionResult:
     """Detect candidate metric/value pairs from Phase 2 parser output."""
 
@@ -79,8 +87,25 @@ def detect_metric_candidates(parser_output: ParserOutput) -> DetectionResult:
 
     for page in parser_output.pages:
         raw_lines = page.text.splitlines()
+        table_context: TableContext | None = None
         for index, raw_line in enumerate(raw_lines):
             line_for_table = _preserve_line(raw_line)
+            markdown_cells = _parse_markdown_cells(line_for_table)
+            if markdown_cells is None:
+                table_context = None
+            elif _is_markdown_separator_row(markdown_cells):
+                continue
+            else:
+                next_markdown_cells = (
+                    _parse_markdown_cells(_preserve_line(raw_lines[index + 1]))
+                    if index + 1 < len(raw_lines)
+                    else None
+                )
+                if next_markdown_cells is not None and _is_markdown_separator_row(next_markdown_cells):
+                    table_context = _build_table_context(
+                        markdown_cells, period=period)
+                    continue
+
             line = _clean_line(raw_line)
             if not line:
                 continue
@@ -99,7 +124,8 @@ def detect_metric_candidates(parser_output: ParserOutput) -> DetectionResult:
             if current_company is None and document_type == "portfolio_summary":
                 continue
 
-            split_row = _split_label_and_value(line_for_table)
+            split_row = _split_label_and_value(
+                line_for_table, table_context=table_context)
             if split_row is not None:
                 raw_label, raw_value = split_row
                 alias = find_alias_for_label(raw_label)
@@ -267,16 +293,67 @@ def _extract_company_header(line: str, *, document_type: DocumentKind) -> str | 
     return canonicalize_company_name(left_side)
 
 
-def _split_label_and_value(raw_line: str) -> tuple[str, str] | None:
+def _parse_markdown_cells(raw_line: str) -> list[str] | None:
+    stripped = raw_line.strip()
+    if not stripped.startswith("|") or stripped.count("|") < 3:
+        return None
+    return [_clean_line(cell) for cell in stripped.strip("|").split("|")]
+
+
+def _is_markdown_separator_row(cells: list[str]) -> bool:
+    normalized = [cell.replace(" ", "") for cell in cells if cell]
+    return bool(normalized) and all(re.fullmatch(r":?-{3,}:?", cell) for cell in normalized)
+
+
+def _build_table_context(header_cells: list[str], *, period: str | None) -> TableContext:
+    return TableContext(
+        headers=tuple(header_cells),
+        value_column_index=_select_table_value_column(
+            header_cells, period=period),
+    )
+
+
+def _select_table_value_column(header_cells: list[str], *, period: str | None) -> int | None:
+    if not period:
+        return None
+
+    target_period = period.upper()
+    for index, header in enumerate(header_cells[1:], start=1):
+        header_period = infer_period(header)
+        if header_period == target_period or target_period in header.upper():
+            return index
+    return None
+
+
+def _split_label_and_value(
+    raw_line: str,
+    *,
+    table_context: TableContext | None = None,
+) -> tuple[str, str] | None:
     stripped = raw_line.strip()
     if not stripped:
         return None
 
-    if stripped.startswith("|") and stripped.count("|") >= 3:
-        cells = [_clean_line(cell) for cell in stripped.strip("|").split("|")]
-        cells = [cell for cell in cells if cell]
-        if len(cells) >= 2 and _is_terminal_value(cells[-1]):
-            return cells[0], cells[-1]
+    markdown_cells = _parse_markdown_cells(raw_line)
+    if markdown_cells is not None:
+        label = markdown_cells[0] if markdown_cells else ""
+        if not label:
+            return None
+
+        if table_context is not None and table_context.value_column_index is not None:
+            target_index = table_context.value_column_index
+            if target_index >= len(markdown_cells):
+                return None
+
+            value = markdown_cells[target_index]
+            if not _is_terminal_value(value):
+                return None
+            return label, value
+
+        for value in reversed(markdown_cells[1:]):
+            if _is_terminal_value(value):
+                return label, value
+        return None
 
     columns = [_clean_line(column) for column in re.split(
         r"\s{2,}", stripped) if _clean_line(column)]

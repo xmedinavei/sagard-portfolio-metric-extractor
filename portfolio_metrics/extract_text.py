@@ -9,6 +9,7 @@ from .parser import PdfParserError
 from .parser_firecrawl import FirecrawlPdfParser
 from .parser_local import LocalPdfParser
 from .schema import ParserOutput
+from .terminal_ui import failure_line, note_line, phase_status_line, section_heading
 
 REPRESENTATIVE_PDFS = (
     "NovaCloud_Q2_2025.pdf",
@@ -178,37 +179,80 @@ def build_extract_report(
 
 
 def format_extract_report(report: dict[str, object]) -> str:
-    status = "ready" if report["ready"] else "needs attention"
     lines = [
-        f"Phase 2 extraction: {status}",
+        phase_status_line("Phase 2 extraction", ready=bool(report["ready"])),
         f"Requested parser: {report['requested_parser']}",
-        f"Artifact directory: {report['output_dir']}",
+        f"Artifact directory: {_display_path(report['output_dir'])}",
         f"PDFs processed: {report['processed_count']}",
         f"Failures: {report['failure_count']}",
     ]
 
     files = report["files"]
     if isinstance(files, list) and files:
-        lines.append("Artifacts:")
+        common_notes = _shared_notes(files)
+        if common_notes:
+            lines.append(note_line(f"Parser notes: {'; '.join(common_notes)}"))
+        lines.append("")
+        lines.append(section_heading("Artifacts"))
         for item in files:
+            if not isinstance(item, dict):
+                continue
             notes = item.get("notes") or []
-            notes_suffix = ""
-            if isinstance(notes, list) and notes:
-                notes_suffix = f" | notes: {'; '.join(str(note) for note in notes)}"
-            lines.append(
-                "- "
-                f"{item['file_name']} -> parser={item['parser_used']}, pages={item['page_count']}, "
-                f"json={item['json_output']}, markdown={item['markdown_output']}"
-                f"{notes_suffix}"
+            parser_label = str(item.get("parser_used", "unknown"))
+            if str(report["requested_parser"]) != parser_label:
+                parser_label = f"{report['requested_parser']} -> {parser_label}"
+            lines.extend(
+                [
+                    f"  • {item['file_name']}",
+                    f"    parser:   {parser_label}",
+                    f"    pages:    {item['page_count']}",
+                    f"    json:     {_display_path(item['json_output'])}",
+                    f"    markdown: {_display_path(item['markdown_output'])}",
+                ]
             )
+            if not common_notes and isinstance(notes, list) and notes:
+                lines.append(
+                    f"    notes:    {'; '.join(str(note) for note in notes)}")
+            lines.append("")
 
     failures = report["failures"]
     if isinstance(failures, list) and failures:
-        lines.append("Failures:")
+        if lines and lines[-1] != "":
+            lines.append("")
+        lines.append(section_heading("Failures", tone="red"))
         for item in failures:
-            lines.append(f"- {item['input_path']}: {item['error']}")
+            if not isinstance(item, dict):
+                continue
+            lines.append(failure_line(
+                f"{_display_path(item['input_path'])}: {item['error']}"))
 
-    return "\n".join(lines)
+    return "\n".join(lines).rstrip()
+
+
+def _display_path(raw_path: object) -> str:
+    text = str(raw_path)
+    path = Path(text)
+    if len(path.parts) >= 2 and path.name:
+        return "/".join(path.parts[-2:])
+    return path.name or text
+
+
+def _shared_notes(files: list[object]) -> list[str]:
+    note_sets: list[tuple[str, ...]] = []
+    for item in files:
+        if not isinstance(item, dict):
+            return []
+        notes = item.get("notes")
+        if not isinstance(notes, list) or not notes:
+            return []
+        note_sets.append(tuple(str(note) for note in notes))
+
+    if not note_sets:
+        return []
+    first = note_sets[0]
+    if all(notes == first for notes in note_sets[1:]):
+        return list(first)
+    return []
 
 
 def _apply_fallback_notes(parsed: ParserOutput, requested_parser: str, notes: list[str]) -> ParserOutput:

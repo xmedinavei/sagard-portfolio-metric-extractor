@@ -5,7 +5,8 @@ import json
 from pathlib import Path
 
 from portfolio_metrics.cli import main
-from portfolio_metrics.schema import MetricsLongExport
+from portfolio_metrics.publish import build_metrics_export
+from portfolio_metrics.schema import MetricsLongExport, NormalizationResult, NormalizedMetric
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_DIR = PROJECT_ROOT / "tests" / "fixtures" / "parsed"
@@ -61,9 +62,9 @@ def test_publish_command_can_write_csv_and_summary(tmp_path: Path, capsys) -> No
     summary_path = tmp_path / "summary.md"
 
     assert exit_code == 0
-    assert "json_output=" in captured.out
-    assert "csv_output=" in captured.out
-    assert "summary_output=" in captured.out
+    assert "json:" in captured.out
+    assert "csv:" in captured.out
+    assert "summary:" in captured.out
     assert json_path.exists()
     assert csv_path.exists()
     assert summary_path.exists()
@@ -80,6 +81,99 @@ def test_publish_command_can_write_csv_and_summary(tmp_path: Path, capsys) -> No
     summary = summary_path.read_text(encoding="utf-8")
     assert "# Portfolio metrics export summary" in summary
     assert "NovaCloud_Q2_2025.pdf" in summary
+
+
+def test_build_metrics_export_prefers_company_report_over_portfolio_summary_duplicates() -> None:
+    company_metric = NormalizedMetric(
+        company_name="NovaCloud",
+        period="Q2 2025",
+        canonical_metric="revenue_qtr",
+        value=8_400_000.0,
+        unit="usd",
+        display_value="$8.4M",
+        raw_label="Recognized Revenue",
+        raw_value_text="$8.4M",
+        source_file="NovaCloud_Q2_2025.pdf",
+        source_snippet="| Recognized Revenue | $8.4M |",
+        document_type="company_report",
+        confidence=0.995,
+        detection_method="table_row",
+    )
+    snapshot_metric = NormalizedMetric(
+        company_name="NovaCloud",
+        period="Q2 2025",
+        canonical_metric="revenue_qtr",
+        value=8_100_000.0,
+        unit="usd",
+        display_value="$8.1M",
+        raw_label="Recognized Revenue",
+        raw_value_text="$8.1M",
+        source_file="Portfolio_Snapshot_Q2_2025.pdf",
+        source_snippet="| Recognized Revenue | $8.1M |",
+        document_type="portfolio_summary",
+        confidence=0.88,
+        detection_method="table_row",
+    )
+    results = [
+        NormalizationResult(
+            source_file="NovaCloud_Q2_2025.pdf",
+            document_type="company_report",
+            period="Q2 2025",
+            companies=["NovaCloud"],
+            metrics=[company_metric],
+            issues=[],
+        ),
+        NormalizationResult(
+            source_file="Portfolio_Snapshot_Q2_2025.pdf",
+            document_type="portfolio_summary",
+            period="Q2 2025",
+            companies=["NovaCloud"],
+            metrics=[snapshot_metric],
+            issues=[],
+        ),
+    ]
+
+    export = build_metrics_export(
+        results=results,
+        parsed_paths=[
+            FIXTURE_DIR / "NovaCloud_Q2_2025.parsed.json",
+            FIXTURE_DIR / "Portfolio_Snapshot_Q2_2025.parsed.json",
+        ],
+    )
+
+    assert len(export.metrics) == 1
+    assert export.metrics[0].source_file == "NovaCloud_Q2_2025.pdf"
+    assert any(
+        issue.code == "cross_document_conflicting_candidates" for issue in export.issues)
+
+
+def test_publish_command_dedupes_snapshot_metrics_against_company_reports(tmp_path: Path, capsys) -> None:
+    exit_code = main(
+        [
+            "publish",
+            str(FIXTURE_DIR / "NovaCloud_Q2_2025.parsed.json"),
+            str(FIXTURE_DIR / "Portfolio_Snapshot_Q2_2025.parsed.json"),
+            "--output-dir",
+            str(tmp_path),
+            "--format",
+            "json",
+        ]
+    )
+    capsys.readouterr()
+
+    payload = json.loads(
+        (tmp_path / "metrics_long.json").read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    metric_rows = [
+        metric
+        for metric in payload["metrics"]
+        if metric["company_name"] == "NovaCloud"
+        and metric["period"] == "Q2 2025"
+        and metric["canonical_metric"] == "revenue_qtr"
+    ]
+    assert len(metric_rows) == 1
+    assert metric_rows[0]["source_file"] == "NovaCloud_Q2_2025.pdf"
 
 
 def test_publish_command_can_emit_json_report(tmp_path: Path, capsys) -> None:

@@ -17,6 +17,7 @@ from .extract_text import (
 from .pipeline import normalize_parser_output
 from .publish import WrittenPublishArtifacts, build_metrics_export, write_publish_artifacts
 from .schema import MetricsLongExport, NormalizationResult, ParserOutput
+from .terminal_ui import failure_line, note_line, phase_status_line, section_heading, warning_line
 from . import __version__
 
 
@@ -231,13 +232,12 @@ def build_preflight_report(settings: Settings, input_dir: Path, output_dir: Path
 
 
 def format_preflight_report(report: dict[str, Any]) -> str:
-    status = "ready" if report["ready"] else "needs attention"
     lines = [
-        f"Phase 1 preflight: {status}",
-        f"Project root: {report['project_root']}",
-        f"Input directory: {report['input_dir']}",
+        phase_status_line("Phase 1 preflight", ready=bool(report["ready"])),
+        f"Project root: {_display_path(report['project_root'], keep_parts=3)}",
+        f"Input directory: {_display_path(report['input_dir'])}",
         f"PDF files discovered: {report['pdf_count']}",
-        f"Output directory: {report['output_dir']}",
+        f"Output directory: {_display_path(report['output_dir'])}",
         f"Parser strategy: {report['pdf_parser']}",
         f"OpenAI model: {report['openai_model']}",
         f"OpenAI configured: {'yes' if report['openai_configured'] else 'no'}",
@@ -248,12 +248,15 @@ def format_preflight_report(report: dict[str, Any]) -> str:
 
     sample_pdfs = report["sample_pdfs"]
     if sample_pdfs:
-        lines.append("Sample PDFs: " + ", ".join(sample_pdfs))
+        lines.append("")
+        lines.append(note_line("Sample PDFs: " +
+                     _summarize_items(sample_pdfs, limit=3), tone="cyan"))
 
     warnings = report["warnings"]
     if warnings:
-        lines.append("Warnings:")
-        lines.extend(f"- {warning}" for warning in warnings)
+        lines.append("")
+        lines.append(section_heading("Warnings", tone="yellow"))
+        lines.extend(warning_line(warning) for warning in warnings)
 
     return "\n".join(lines)
 
@@ -321,9 +324,9 @@ def build_normalize_report(
 
 
 def format_normalize_report(report: dict[str, object]) -> str:
-    status = "ready" if report["ready"] else "needs attention"
     lines = [
-        f"Phase 3 normalization: {status}",
+        phase_status_line("Phase 3 normalization",
+                          ready=bool(report["ready"])),
         f"Parsed input directory: {report['input_dir']}",
         f"Documents processed: {report['processed_count']}",
         f"Failures: {report['failure_count']}",
@@ -331,7 +334,8 @@ def format_normalize_report(report: dict[str, object]) -> str:
 
     results = report.get("results")
     if isinstance(results, list) and results:
-        lines.append("Results:")
+        lines.append("")
+        lines.append(section_heading("Results"))
         for item in results:
             if not isinstance(item, dict):
                 continue
@@ -355,15 +359,18 @@ def format_normalize_report(report: dict[str, object]) -> str:
 
             missing_core = _summarize_missing_core_metrics(issues)
             if missing_core:
-                lines.append(f"  missing core metrics: {missing_core}")
+                lines.append(
+                    note_line(f"missing core metrics: {missing_core}", tone="magenta"))
 
     failures = report.get("failures")
     if isinstance(failures, list) and failures:
-        lines.append("Failures:")
+        lines.append("")
+        lines.append(section_heading("Failures", tone="red"))
         for item in failures:
             if not isinstance(item, dict):
                 continue
-            lines.append(f"- {item.get('input_path')}: {item.get('error')}")
+            lines.append(failure_line(
+                f"{item.get('input_path')}: {item.get('error')}"))
 
     return "\n".join(lines)
 
@@ -412,11 +419,10 @@ def build_publish_report(
 
 
 def format_publish_report(report: dict[str, object]) -> str:
-    status = "ready" if report["ready"] else "needs attention"
     lines = [
-        f"Phase 4 publish: {status}",
-        f"Parsed input directory: {report['input_dir']}",
-        f"Artifact directory: {report['output_dir']}",
+        phase_status_line("Phase 4 publish", ready=bool(report["ready"])),
+        f"Parsed input directory: {_display_path(report['input_dir'])}",
+        f"Artifact directory: {_display_path(report['output_dir'])}",
         f"Documents processed: {report['processed_count']}",
         f"Failures: {report['failure_count']}",
         (
@@ -431,27 +437,52 @@ def format_publish_report(report: dict[str, object]) -> str:
 
     source_parsed_artifacts = report.get("source_parsed_artifacts")
     if isinstance(source_parsed_artifacts, list) and source_parsed_artifacts:
-        lines.append(
-            "Source parsed artifacts: "
-            + ", ".join(str(artifact) for artifact in source_parsed_artifacts)
-        )
+        sample = _summarize_items(source_parsed_artifacts, limit=3)
+        lines.append(note_line(
+            f"Source parsed artifacts: {len(source_parsed_artifacts)} total"
+            + (f" — {sample}" if sample else ""),
+            tone="cyan",
+        ))
 
     artifacts = report.get("artifacts")
     if isinstance(artifacts, dict) and artifacts:
-        lines.append("Artifacts:")
+        lines.append("")
+        lines.append(section_heading("Artifacts"))
         for key in ("json_output", "csv_output", "summary_output"):
             if key in artifacts:
-                lines.append(f"- {key}={artifacts[key]}")
+                label = key.replace("_", " ").replace(" output", "")
+                lines.append(f"  • {label}: {_display_path(artifacts[key])}")
 
     failures = report.get("failures")
     if isinstance(failures, list) and failures:
-        lines.append("Failures:")
+        if lines and lines[-1] != "":
+            lines.append("")
+        lines.append(section_heading("Failures", tone="red"))
         for item in failures:
             if not isinstance(item, dict):
                 continue
-            lines.append(f"- {item.get('input_path')}: {item.get('error')}")
+            lines.append(failure_line(
+                f"{_display_path(item.get('input_path'))}: {item.get('error')}"))
 
     return "\n".join(lines)
+
+
+def _display_path(raw_path: object, *, keep_parts: int = 2) -> str:
+    text = str(raw_path)
+    path = Path(text)
+    if path.name and len(path.parts) >= keep_parts:
+        return "/".join(path.parts[-keep_parts:])
+    return path.name or text
+
+
+def _summarize_items(items: Iterable[object], *, limit: int) -> str:
+    values = [str(item) for item in items]
+    if not values:
+        return ""
+    head = values[:limit]
+    remaining = len(values) - len(head)
+    suffix = f" (+{remaining} more)" if remaining > 0 else ""
+    return ", ".join(head) + suffix
 
 
 def _summarize_missing_core_metrics(issues: list[object]) -> str:
