@@ -3,11 +3,16 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
+from portfolio_metrics.config import Settings
+from portfolio_metrics.extract_text import parse_pdf
 from portfolio_metrics.pipeline import normalize_parser_output
 from portfolio_metrics.schema import NormalizationResult, ParserOutput
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_DIR = PROJECT_ROOT / "tests" / "fixtures" / "parsed"
+INPUT_DIR = PROJECT_ROOT / "intake-pdf"
 
 
 def _load_parser_output(file_name: str) -> ParserOutput:
@@ -83,3 +88,45 @@ def test_normalize_parser_output_surfaces_missing_core_metrics_for_lendbridge() 
     assert ("LendBridge", "arr_eop") in missing
     assert ("LendBridge", "cash_balance") in missing
     assert ("LendBridge", "monthly_burn") in missing
+
+
+@pytest.mark.parametrize(
+    ("pdf_name", "expected_company"),
+    [
+        ("ClearPay_Q2_2025.pdf", "ClearPay"),
+        ("MediSight_Q2_2025.pdf", "MediSight"),
+        ("MediSight_Q4_2024.pdf", "MediSight"),
+        ("PeopleFlow_Q1_2025.pdf", "PeopleFlow"),
+        ("PeopleFlow_Q2_2025.pdf", "PeopleFlow"),
+        ("PeopleFlow_Q4_2024.pdf", "PeopleFlow"),
+    ],
+)
+def test_normalize_parser_output_keeps_individual_snapshot_reports_as_company_reports(
+    pdf_name: str,
+    expected_company: str,
+) -> None:
+    settings = Settings(_env_file=None, pdf_parser="local")
+    parser_output = parse_pdf(
+        settings=settings, pdf_path=INPUT_DIR / pdf_name, parser_name="local")
+
+    result = normalize_parser_output(parser_output)
+
+    assert result.document_type == "company_report"
+    assert result.companies == [expected_company]
+    assert all(metric.company_name ==
+               expected_company for metric in result.metrics)
+
+
+def test_normalize_parser_output_keeps_portfolio_snapshot_as_portfolio_summary() -> None:
+    settings = Settings(_env_file=None, pdf_parser="local")
+    parser_output = parse_pdf(
+        settings=settings,
+        pdf_path=INPUT_DIR / "Portfolio_Snapshot_Q2_2025.pdf",
+        parser_name="local",
+    )
+
+    result = normalize_parser_output(parser_output)
+
+    assert result.document_type == "portfolio_summary"
+    assert set(result.companies) == {
+        "NovaCloud", "MediSight", "TalentVault", "CarbonTrack"}

@@ -20,6 +20,14 @@ def test_resolve_pdf_inputs_prefers_representative_set() -> None:
     assert [path.name for path in resolved] == list(REPRESENTATIVE_PDFS)
 
 
+def test_resolve_pdf_inputs_with_explicit_directory_reads_all_pdfs() -> None:
+    resolved = resolve_pdf_inputs(PROJECT_ROOT, INPUT_DIR, [str(INPUT_DIR)])
+
+    assert {path.name for path in resolved} == {
+        path.name for path in INPUT_DIR.glob("*.pdf")
+    }
+
+
 def test_parse_pdf_falls_back_to_local_when_firecrawl_is_unconfigured() -> None:
     settings = Settings(
         _env_file=None, pdf_parser="firecrawl", firecrawl_api_key=None)

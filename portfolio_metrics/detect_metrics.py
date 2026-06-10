@@ -27,8 +27,15 @@ _MONTH_TO_QUARTER = {
     "november": 4,
     "december": 4,
 }
-_SNAPSHOT_MARKERS = ("selected companies",
-                     "internal monitoring document", "snapshot")
+_PORTFOLIO_SUMMARY_MARKERS = (
+    "selected companies",
+    "internal monitoring document",
+    "portfolio snapshot",
+)
+_PORTFOLIO_SUMMARY_RE = re.compile(
+    rf"\b(?:{'|'.join(re.escape(marker) for marker in _PORTFOLIO_SUMMARY_MARKERS)})\b",
+    re.IGNORECASE,
+)
 _COMPANY_HEADER_EXCLUSIONS = (
     "internal monitoring document",
     "selected companies",
@@ -179,8 +186,8 @@ def classify_document(parser_output: ParserOutput) -> DocumentKind:
     """Classify whether a parsed document is a single-company report or a portfolio summary."""
 
     file_name = parser_output.file_name.lower()
-    combined = parser_output.combined_text().lower()
-    if "portfolio_snapshot" in file_name or any(marker in combined for marker in _SNAPSHOT_MARKERS):
+    combined = parser_output.combined_text()
+    if "portfolio_snapshot" in file_name or _PORTFOLIO_SUMMARY_RE.search(combined):
         return "portfolio_summary"
     return "company_report"
 
