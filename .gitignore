@@ -10,11 +10,13 @@ __pycache__/
 .ruff_cache/
 .coverage
 htmlcov/
+build/
+dist/
+*.egg-info/
 
 # Generated outputs
-outputs/
-*.csv
-*.json
+outputs/*
+!outputs/.gitkeep
 *.md.tmp
 
 # OS/editor noise

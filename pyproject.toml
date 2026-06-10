@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sagard-portfolio-metric-extractor"
+version = "0.1.0"
+description = "CLI-first bootstrap for extracting portfolio metrics from quarterly PDF updates."
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+  { name = "Xavier Medina" }
+]
+dependencies = [
+  "pydantic>=2.9,<3.0",
+  "pydantic-settings>=2.5,<3.0",
+  "python-dotenv>=1.0,<2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3,<9.0",
+  "ruff>=0.6,<1.0",
+]
+
+[project.scripts]
+portfolio-metrics = "portfolio_metrics.cli:run"
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.setuptools.packages.find]
+include = ["portfolio_metrics*"]
