@@ -1,395 +1,187 @@
 # Sagard Portfolio Metric Extractor
 
-CLI-first proof of concept for extracting a small, defensible set of portfolio company metrics from quarterly PDF updates.
+A CLI pipeline that extracts a canonical set of financial metrics from quarterly portfolio company PDFs, normalizes them across inconsistent reporting formats, and publishes auditable artifacts.
 
-This demo is intentionally scoped like a take-home or interview exercise: it favors **trust, clear tradeoffs, and reproducibility** over UI polish or broad feature coverage.
+---
 
-## What this demo is about
+## Prerequisites
 
-The problem is simple to describe and annoyingly manual in real life:
+- **Python 3.12+** — check with `python3 --version`
+- bash or zsh
+- No Node.js, Docker, or database required
 
-- portfolio companies send quarterly updates as PDFs
-- the metrics are useful, but the labels and formatting vary by company and quarter
-- someone still has to read them, normalize them, and assemble a reviewable output
+---
 
-Concrete example: Sagard receives a batch of quarterly PDF updates, one company calls the metric `ARR`, another calls it `Annual Recurring Revenue`, and another buries it inside a table with different formatting. This demo shows how to turn those inconsistent source documents into one auditable export with stable canonical fields.
+## Quick start
 
-This repository demonstrates a pragmatic pipeline that:
+### Path A — No API keys needed (start here)
 
-1. **extracts** text from local PDFs
-2. **detects and normalizes** a small set of metrics conservatively
-3. **publishes** portable output artifacts for downstream review
-
-The design point is:
-
-- **pragmatism over parser purity**
-- **correctness over coverage**
-- **portability over presentation polish**
-
-In other words: better an honest, auditable JSON export than a flashy demo that quietly invents finance numbers. That way lies chaos, and awkward follow-up questions.
-
-## What the demo currently does
-
-Implemented today:
-
-- reproducible Python packaging with a CLI entrypoint
-- environment-driven parser configuration via `.env`
-- preflight checks for local readiness
-- a parser abstraction with **Firecrawl-first** posture and **local fallback**
-- deterministic detection and numeric parsing for the metric normalization layer
-- a publish step that writes canonical Phase 4 artifacts
-- test and lint coverage with `pytest` and `ruff`
-
-Intentionally not implemented yet:
-
-- Phase 5 validation and hardening work
-- richer human review workflows
-- a web app, API, or persistent database
-
-## Metrics in scope
-
-Core metrics:
-
-- `revenue_qtr`
-- `arr_eop`
-- `gross_margin_pct`
-- `cash_balance`
-- `monthly_burn`
-- `headcount`
-
-Optional metrics already supported by the normalization layer:
-
-- `net_revenue_retention_pct`
-- `logo_churn_pct`
-
-## End-to-end flow
-
-```mermaid
-flowchart LR
-    A[PDFs in intake-pdf/] --> B[extract]
-    B --> C[*.parsed.json + *.parsed.md]
-    C --> D[normalize]
-    D --> E[reviewable stdout summary or JSON]
-    C --> F[publish]
-    F --> G[metrics_long.json]
-    F --> H[metrics_long.csv]
-    F --> I[summary.md]
-```
-
-## Local machine prerequisites
-
-You only need a few things to run this locally:
-
-- Python **3.12+**
-- a shell environment such as bash or zsh
-- optional provider keys if you want Firecrawl instead of the local parser
-
-You do **not** need:
-
-- Node.js
-- Docker
-- a database
-- cloud infrastructure
-
-The repository already includes sample PDFs in `intake-pdf/`, including files such as:
-
-- `NovaCloud_Q2_2025.pdf`
-- `LendBridge_Q2_2025.pdf`
-- `Portfolio_Snapshot_Q2_2025.pdf`
-
-Those are enough to run the demo locally.
-
-## Local setup
-
-The easiest setup path is now:
+Uses checked-in parsed fixtures. Runs in under 30 seconds.
 
 ```bash
 cd personal/sagard-portfolio-metric-extractor
 make setup
-```
-
-That command will:
-
-- create `.venv/` if it does not exist
-- upgrade `pip` inside the virtual environment
-- install the project and dev dependencies
-- create `.env` from `.env.example` if `.env` is missing
-
-If you want to do the setup manually, from the project root:
-
-```bash
-cd personal/sagard-portfolio-metric-extractor
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -e ".[dev]"
-cp .env.example .env
-```
-
-If you are on PowerShell, activate the environment with:
-
-```powershell
-.venv\Scripts\Activate.ps1
-```
-
-### Optional configuration
-
-The project reads settings from `.env`.
-
-Relevant variables:
-
-- `PDF_PARSER=firecrawl|local`
-- `FIRECRAWL_API_KEY=...`
-- `FIRECRAWL_PDF_MODE=fast|auto|ocr`
-- `OPENAI_API_KEY=...` (currently optional)
-- Azure Document Intelligence settings are present but not required for the local demo
-
-Good first-run options:
-
-- leave `PDF_PARSER=firecrawl` and rely on automatic fallback to the local parser if no Firecrawl key is set
-- or set `PDF_PARSER=local` if you want a fully local first pass
-
-Quick install verification:
-
-```bash
-python -m portfolio_metrics preflight --input-dir intake-pdf --output-dir outputs
-```
-
-## API keys you actually need
-
-Short version: **none are required for the local demo**.
-
-If you want the quickest local path, use either:
-
-- `make demo` for the fixture-based path, or
-- `make full-demo` for the raw-PDF path using the local parser
-
-Both work without any external API keys.
-
-### Required for the local demo
-
-- **No API keys required**
-
-### Optional keys
-
-- `FIRECRAWL_API_KEY` — needed only if you want Firecrawl instead of the local parser; otherwise the code can fall back to local parsing
-- `OPENAI_API_KEY` — currently **not required** for the implemented demo flow; reserved for future or optional AI-assisted steps
-- `AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT` + `AZURE_DOCUMENT_INTELLIGENCE_KEY` — currently **not required** for the implemented local demo; included as a future production-forward option
-
-For a zero-key local setup, a good `.env` choice is simply:
-
-```dotenv
-PDF_PARSER=local
-```
-
-## Fastest way to try the demo locally
-
-If you want to verify the pipeline quickly, use the checked-in parsed fixtures instead of re-parsing PDFs.
-
-Those fixtures are cached Phase 2 outputs, which makes them useful for quickly testing Phases 3 and 4 without waiting on raw PDF parsing again.
-
-### Simplest path
-
-```bash
 make demo
 ```
 
-That one command will set up the virtual environment if needed, run preflight, and generate:
+### Path B — Full pipeline from raw PDFs (needs a Firecrawl key)
 
-- `outputs/metrics_long.json`
-- `outputs/metrics_long.csv`
-- `outputs/summary.md`
+Parses all 24 PDFs from scratch, then publishes.
 
-### Manual equivalent
+1. Get a free key at [firecrawl.dev](https://www.firecrawl.dev)
+2. Open `.env` (created by `make setup`) and set:
+   ```
+   FIRECRAWL_API_KEY=fc-your-key-here
+   ```
+3. Run:
+   ```bash
+   make full-demo
+   ```
 
-Run:
+> `FORCE_COLOR=1 make full-demo` gives nicer terminal output.
 
-```bash
-python -m portfolio_metrics preflight --input-dir intake-pdf --output-dir outputs
-python -m portfolio_metrics publish --input-dir tests/fixtures/parsed --output-dir outputs --include-csv --include-summary
+---
+
+## Expected output
+
+Both paths write three files to `outputs/`:
+
+| File                        | Contents                                                               |
+| --------------------------- | ---------------------------------------------------------------------- |
+| `outputs/metrics_long.json` | Canonical export — all metrics with provenance, confidence, and dedupe |
+| `outputs/metrics_long.csv`  | Spreadsheet-friendly projection of the JSON                            |
+| `outputs/summary.md`        | Human-readable summary                                                 |
+
+**Expected numbers (last validated run):**
+
+```
+24 documents processed
+99 valid metrics exported
+ 0 invalid metrics
+ 0 duplicate (company_name, period, canonical_metric) groups
 ```
 
-This path is ideal when you want to confirm that:
+---
 
-- the environment is working
-- the normalization layer is working
-- the Phase 4 export artifacts are being generated correctly
-
-Generated artifacts will appear in `outputs/`:
-
-- `metrics_long.json`
-- `metrics_long.csv`
-- `summary.md`
-
-## Run the full demo from raw PDFs
-
-If you want the full pipeline from source PDFs to final export, the simplest path is:
-
-```bash
-make full-demo
-```
-
-### Manual equivalent from raw PDFs
-
-If you want the full pipeline from source PDFs to final export without Make, run:
-
-```bash
-python -m portfolio_metrics preflight --input-dir intake-pdf --output-dir outputs
-python -m portfolio_metrics extract intake-pdf --output-dir outputs/parsed --parser local
-python -m portfolio_metrics publish --input-dir outputs/parsed --output-dir outputs --include-csv --include-summary
-```
-
-Notes:
-
-- `extract` reads raw PDFs and writes Phase 2 artifacts to `outputs/parsed/`
-- `normalize` remains available when you want a review summary on stdout, but it is not required before `publish`
-- `publish` reads parsed inputs, runs normalization internally, and writes persisted Phase 4 outputs
-- if you configure Firecrawl, you can omit `--parser local` and use the default parser strategy
-- the bare CLI command `portfolio_metrics extract` without explicit file or directory arguments uses a representative 3-document sample by design; passing `intake-pdf` explicitly processes the whole folder
-
-## How to test it on a local machine
-
-The shortest check is:
+## Verify the repo
 
 ```bash
 make check
 ```
 
-That runs both tests and linting.
+Runs pytest (46 tests) and ruff lint. Both should pass with zero failures.
 
-Recommended smoke test after that:
+Recommended full evaluator flow:
 
 ```bash
+make check
 make demo
 ```
 
-### Manual equivalent for checks
+---
 
-Run the automated checks:
+## How it works
 
-```bash
-python -m pytest
-python -m ruff check portfolio_metrics tests
+```
+intake-pdf/*.pdf
+       │
+       ▼
+  [extract]  ── parser abstraction (Firecrawl or local pypdf)
+       │
+       ▼
+  outputs/parsed/*.parsed.json
+       │
+       ▼
+  [publish]  ── detect → normalize → dedupe → write artifacts
+       │
+       ▼
+  outputs/metrics_long.json  +  .csv  +  summary.md
 ```
 
-Recommended smoke test after that:
+**Four decisions worth noting:**
 
-```bash
-python -m portfolio_metrics publish --input-dir tests/fixtures/parsed --output-dir outputs --include-csv --include-summary
-```
+1. **Deterministic extraction** — metric detection and numeric parsing are rule-based, not LLM-driven. The alias dictionary handles `ARR`, `Annual Recurring Revenue`, `annualized recurring revenue`, etc. LLMs are reserved for ambiguous label classification only (not yet needed).
+2. **Parser abstraction** — Firecrawl handles complex layouts well. The local `pypdf` parser is the zero-key fallback. Switching is one env var change (`PDF_PARSER=local`).
+3. **Explicit provenance** — `source_file`, `source_page` (where available), `raw_label`, and `source_snippet` travel with every output row.
+4. **Cross-document dedupe** — when the same `(company, period, metric)` appears in both a company report and a portfolio summary, the company report row wins.
 
-That combination verifies:
+---
 
-- unit and integration-style tests
-- linting for the Python package and tests
-- the end-to-end Phase 4 export path on representative fixture data
+## Metrics extracted
+
+| Canonical key               | Sample raw labels matched              |
+| --------------------------- | -------------------------------------- |
+| `revenue_qtr`               | Revenue, Q2 Revenue, Quarterly Revenue |
+| `arr_eop`                   | ARR, Annual Recurring Revenue, ARR EOP |
+| `gross_margin_pct`          | Gross Margin, GM%, Gross Profit Margin |
+| `cash_balance`              | Cash, Cash Balance, Cash & Equivalents |
+| `monthly_burn`              | Net Burn, Monthly Burn, Cash Burn      |
+| `headcount`                 | Headcount, FTEs, Total Employees       |
+| `net_revenue_retention_pct` | NRR, Net Revenue Retention             |
+| `logo_churn_pct`            | Logo Churn, Customer Churn Rate        |
+
+---
 
 ## Make targets
 
-The `Makefile` now manages `.venv` for you, so you do **not** need to activate the virtual environment first.
+`make` manages `.venv` automatically — no manual activation needed.
 
-Recommended shortcuts:
+| Target           | What it does                                                       |
+| ---------------- | ------------------------------------------------------------------ |
+| `make setup`     | Create `.venv`, install deps, seed `.env` from `.env.example`      |
+| `make demo`      | Preflight + publish from checked-in fixtures (no API key)          |
+| `make full-demo` | Preflight + extract raw PDFs + publish (needs `FIRECRAWL_API_KEY`) |
+| `make check`     | Run pytest + ruff                                                  |
+| `make test`      | Run pytest only                                                    |
+| `make lint`      | Run ruff only                                                      |
+| `make preflight` | Print local readiness report                                       |
+| `make extract`   | Parse PDFs from `intake-pdf/` into `outputs/parsed/`               |
+| `make publish`   | Publish artifacts from `outputs/parsed/` into `outputs/`           |
+| `make clean`     | Delete generated outputs (keeps `.gitkeep`)                        |
 
-- `make setup` — create `.venv`, install dependencies, and seed `.env` if needed
-- `make demo` — fastest end-to-end local demo using checked-in parsed fixtures
-- `make full-demo` — full raw-PDF flow using the local parser
-- `make check` — run `pytest` and `ruff`
+---
 
-Other shortcuts:
+## Project layout
 
-- `make install` — alias for setup
-- `make run` — alias for `make demo`
-- `make preflight` — validate local readiness
-- `make extract` — parse **all PDFs** from `intake-pdf/` into `outputs/parsed/`
-- `make extract-fixtures` — regenerate the checked-in parsed fixtures using the local parser
-- `make normalize` — print the normalization summary for parsed artifacts in `outputs/parsed/`
-- `make publish` — publish `metrics_long.json`, `metrics_long.csv`, and `summary.md`
-- `make test` — run `pytest`
-- `make lint` — run `ruff`
-
-## Output artifacts
-
-### `outputs/parsed/<name>.parsed.json`
-
-Stable parser output consumed by later phases.
-
-### `outputs/parsed/<name>.parsed.md`
-
-Human-readable parsed view with provenance notes.
-
-### `outputs/metrics_long.json`
-
-Canonical long-form export with:
-
-- export metadata
-- normalized metric rows
-- carried-forward issues and warnings
-- provenance and confidence on each metric row
-
-### `outputs/metrics_long.csv`
-
-Spreadsheet-friendly projection of the canonical JSON export.
-
-### `outputs/summary.md`
-
-Lightweight human-readable summary derived from the canonical export.
-
-## Provenance strategy
-
-The project keeps provenance explicit without pretending to know more than the parser really knows.
-
-- **Local parser**: file-level and page-level provenance
-- **Firecrawl parser**: file-level provenance plus page count metadata when available
-- **Phase 3 normalization**: captures nearby snippets for metric-level provenance
-
-This keeps the extraction contract honest and makes downstream review easier.
-
-## Repository layout
-
-```text
+```
 sagard-portfolio-metric-extractor/
-├── intake-pdf/
+├── intake-pdf/              ← 24 sample PDFs (already included)
 ├── outputs/
-│   ├── metrics_long.json
+│   ├── metrics_long.json    ← canonical export
 │   ├── metrics_long.csv
 │   ├── summary.md
-│   └── parsed/
-├── plan/
-├── spec/
-├── options/
-├── portfolio_metrics/
+│   └── parsed/              ← per-document parser output
+├── portfolio_metrics/       ← source package
 │   ├── cli.py
-│   ├── detect_metrics.py
+│   ├── pipeline.py
 │   ├── extract_text.py
+│   ├── parser_firecrawl.py
+│   ├── parser_local.py
+│   ├── detect_metrics.py
 │   ├── metric_aliases.py
 │   ├── normalize.py
 │   ├── parse_values.py
-│   ├── parser.py
-│   ├── parser_firecrawl.py
-│   ├── parser_local.py
-│   ├── pipeline.py
 │   ├── publish.py
-│   └── schema.py
+│   ├── schema.py
+│   └── terminal_ui.py
 ├── tests/
-│   └── fixtures/
-│       └── parsed/
+│   └── fixtures/parsed/     ← checked-in parsed fixtures (used by make demo)
 ├── .env.example
-├── .gitignore
 ├── Makefile
-├── pyproject.toml
-└── README.md
+└── pyproject.toml
 ```
 
-## Current status
+---
 
-Phase 4 artifact publishing is implemented and working locally.
+## Environment variables
 
-Recently validated on a local machine with:
+`make setup` creates `.env` from `.env.example` automatically.
 
-- `python -m pytest`
-- `python -m ruff check portfolio_metrics tests`
-- `python -m portfolio_metrics publish --input-dir tests/fixtures/parsed --output-dir outputs --include-csv --include-summary`
+| Variable             | Default     | Required for                         |
+| -------------------- | ----------- | ------------------------------------ |
+| `PDF_PARSER`         | `firecrawl` | Controls which parser is used        |
+| `FIRECRAWL_API_KEY`  | —           | `make full-demo` only                |
+| `FIRECRAWL_PDF_MODE` | `auto`      | `fast` / `auto` / `ocr`              |
+| `OPENAI_API_KEY`     | —           | Not required by the current pipeline |
 
-## Next step
-
-The next logical phase is to harden validation quality, tighten review workflows, and improve confidence around edge cases and corpus drift.
+> `OPENAI_API_KEY` appears in preflight output but the current extraction pipeline does **not** call OpenAI. It is wired for optional future label disambiguation only.
