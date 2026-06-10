@@ -1,0 +1,22 @@
+{
+  "file_name": "NovaCloud_Q2_2025.pdf",
+  "source_path": "/home/xavierand_/Desktop/SWE/personal/sagard-portfolio-metric-extractor/intake-pdf/NovaCloud_Q2_2025.pdf",
+  "requested_parser": "local",
+  "parser_used": "local",
+  "raw_format": "text",
+  "page_count": 1,
+  "pages": [
+    {
+      "page_number": 1,
+      "text": "NovaCloud Analytics Inc.\nPortfolio Company Update | B2B SaaS – Analytics & Observability\n\n\nPeriod: Q2 2025\n\nNovaCloud Analytics Inc. (\"NovaCloud\") is a B2B SaaS platform providing cloud-based analytics and observability tools to\nmid-market e-commerce and digital businesses across North America and Western Europe.\n\n\nKey Financial & Operating Metrics\n\nMetric                                                                                                                                             Q2 2025\n\nRecognized Revenue (USD)                                                                                                                              $8.4M\n\nARR (End of Period)                                                                                                                                  $34.2M\n\nGross Margin                                                                                                                                            78%\n\nNet Dollar Retention                                                                                                                                   123%\n\nLogo Churn (LTM)                                                                                                                                       5.8%\n\nARR per Full-Time Employee                                                                                                                            $241k\n\nCash Balance                                                                                                                                         $19.6M\n\nMonthly Net Burn                                                                                                                                   ($0.75M)\n\nTotal Headcount                                                                                                                                          142\n\nRecognized Revenue in Q2 2025 was $8.4M, up 6% quarter-over-quarter and 32% year-over-year. End-of-period ARR reached\n$34.2M. Gross margin improved to 78% as NovaCloud continued optimising its cloud infrastructure. New logo additions totalled 14\nin the quarter. Expansion revenue of $2.0M represented 24% of recognized revenue, the highest expansion mix to date.\n\n\nGo-to-Market & Pipeline Overview\n\n\n      Stage                                                         Opportunities                     Total Pipeline                        Weighted\n\n      Qualified                                                                   36                            $9.8M                           $4.2M\n\n      Proposal / Negotiation                                                      18                            $7.1M                           $3.6M\n\n      Verbal Commit                                                                6                            $2.9M                           $2.0M\n\nKey Risks\n\n Dependence on a limited number of large customers for a meaningful portion of ARR.\n\n Competition from larger observability vendors moving down-market.\n\n Execution risk associated with larger enterprise deals and extended procurement cycles.\n\n\n\n(1) Net Dollar Retention is presented on a last-twelve-months basis; equivalent to NRR in Q1 2025 reporting.\n(2) ARR per Full-Time Employee introduced as a recurring board metric in Q1 2025.\n(3) Monthly Net Burn reflects operating cash outflows; excludes non-cash stock-based compensation of $0.38M.",
+      "char_count": 3483
+    }
+  ],
+  "provenance": {
+    "file_level": true,
+    "page_level": true,
+    "snippet_level": false,
+    "description": "File-level provenance plus explicit page numbers from local PDF text extraction."
+  },
+  "notes": []
+}

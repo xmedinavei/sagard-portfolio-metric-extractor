@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     openai_api_key: str | None = None
     firecrawl_api_key: str | None = None
     pdf_parser: Literal["firecrawl", "local"] = "firecrawl"
+    firecrawl_pdf_mode: Literal["fast", "auto", "ocr"] = "auto"
+    firecrawl_timeout_seconds: int = 60
     openai_model: str = "gpt-5.4-mini"
     azure_document_intelligence_endpoint: str | None = None
     azure_document_intelligence_key: str | None = None

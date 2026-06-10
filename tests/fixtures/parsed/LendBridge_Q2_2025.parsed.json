@@ -1,0 +1,27 @@
+{
+  "file_name": "LendBridge_Q2_2025.pdf",
+  "source_path": "/home/xavierand_/Desktop/SWE/personal/sagard-portfolio-metric-extractor/intake-pdf/LendBridge_Q2_2025.pdf",
+  "requested_parser": "local",
+  "parser_used": "local",
+  "raw_format": "text",
+  "page_count": 2,
+  "pages": [
+    {
+      "page_number": 1,
+      "text": "LendBridge Capital Corp.\nQ2 2025 Performance Review\n\n\nPeriod Ended: Q2 2025\n\nLendBridge Capital Corp. (\"LendBridge\") is a specialty finance platform providing working capital lines to SMEs across North\nAmerica. Revenue is generated through interest income, fees, and ancillary treasury services.\n\n\nCondensed Income Summary\n\nItem                                                                                                                                        Q2 2025\n\nRecognized Revenue                                                                                                                           $12.7M\n\nInterest Expense                                                                                                                            ($3.4M)\n\nNet Interest Margin                                                                                                                            9.4%\n\nFee & Other Income                                                                                                                            $1.1M\n\nGross Margin                                                                                                                                    62%\n\nPre-Provision Operating Margin                                                                                                                  34%\n\nProvision Coverage Ratio                                                                                                                        2.4x\n\nCredit Portfolio Indicators\n\n\nMetric                                                                                                                                      Q2 2025\n\nTotal Loan Book (gross)                                                                                                                      $316M\n\nActive Borrowers                                                                                                                               1,420\n\nAverage Loan Size                                                                                                                               $84k\n\nNet Charge-off Rate (LTM)                                                                                                                      3.1%\n\nBalance Sheet Leverage                                                                                                                          2.7x\n\nSenior Covenant Headroom                                                                                                                   +148bps\n\nTotal Headcount                                                                                                                                  188\n\nPortfolio Sector Mix – Q2 2025\n\n\nSector                                                                    Outstanding Balance                                       Share of Book\n\nServices                                                                                   $120M                                                38%\n\nManufacturing                                                                               $82M                                                26%\n\nRetail                                                                                      $54M                                                17%\n\nHospitality                                                                                 $38M                                                12%\n\nOther                                                                                       $22M                                                 7%\n\nProvision Coverage Ratio of 2.4x represents total loan loss reserves as a multiple of LTM net charge-offs. Management introduced\nthis metric in Q2 2025 to provide additional visibility into reserve adequacy. The ratio is above the board-approved minimum of",
+      "char_count": 3922
+    },
+    {
+      "page_number": 2,
+      "text": "2.0x.\n\n\nNon-Core & One-Time Items\n\n Non-cash fair value adjustment on warrant portfolio: +$0.6M\n\n One-time legal settlement expense accrual: ($0.3M)\n\n Reported basic EPS for the period: $0.11 (unaudited)\n\n\n\n(1) Net Charge-off Rate is on a last-twelve-months (LTM) basis; equivalent to 'Credit Loss Rate' used in Q3–Q4 2024.\n(2) Pre-Provision Operating Margin reinstated per updated board reporting policy; equivalent to 'Adjusted Operating Margin' in Q3 2024.\n(3) Provision Coverage Ratio = total loan loss reserves / LTM net charge-offs; introduced Q2 2025.\n(4) Gross Margin reflects interest income net of cost of funds; excludes provisions and operating expenses.",
+      "char_count": 669
+    }
+  ],
+  "provenance": {
+    "file_level": true,
+    "page_level": true,
+    "snippet_level": false,
+    "description": "File-level provenance plus explicit page numbers from local PDF text extraction."
+  },
+  "notes": []
+}
