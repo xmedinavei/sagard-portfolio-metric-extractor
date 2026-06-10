@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -179,5 +180,30 @@ class NormalizationResult(BaseModel):
     document_type: DocumentKind
     period: str | None = None
     companies: list[str] = Field(default_factory=list)
+    metrics: list[NormalizedMetric] = Field(default_factory=list)
+    issues: list[NormalizationIssue] = Field(default_factory=list)
+
+
+class ExportMetadata(BaseModel):
+    """Metadata for the canonical Phase 4 metrics export."""
+
+    schema_version: str
+    generated_at: datetime
+    generator_name: str
+    generator_version: str
+    source_parsed_artifacts: list[str] = Field(default_factory=list)
+    document_count: int = 0
+    metric_count: int = 0
+    valid_metric_count: int = 0
+    invalid_metric_count: int = 0
+    issue_count: int = 0
+    core_metrics: list[CanonicalMetric] = Field(default_factory=list)
+    optional_metrics: list[CanonicalMetric] = Field(default_factory=list)
+
+
+class MetricsLongExport(BaseModel):
+    """Stable Phase 4 export contract for downstream review and reuse."""
+
+    export_metadata: ExportMetadata
     metrics: list[NormalizedMetric] = Field(default_factory=list)
     issues: list[NormalizationIssue] = Field(default_factory=list)

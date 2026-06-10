@@ -15,7 +15,8 @@ from .extract_text import (
     resolve_pdf_inputs,
 )
 from .pipeline import normalize_parser_output
-from .schema import NormalizationResult, ParserOutput
+from .publish import WrittenPublishArtifacts, build_metrics_export, write_publish_artifacts
+from .schema import MetricsLongExport, NormalizationResult, ParserOutput
 from . import __version__
 
 
@@ -107,6 +108,45 @@ def build_parser() -> argparse.ArgumentParser:
         help="Directory containing Phase 2 `*.parsed.json` artifacts when explicit inputs are omitted.",
     )
     normalize_parser.add_argument(
+        "--format",
+        choices=("text", "json"),
+        default="text",
+        help="Choose text for humans or json for automation.",
+    )
+
+    publish_parser = subparsers.add_parser(
+        "publish",
+        help="Run the Phase 4 export layer and write canonical metric artifacts.",
+    )
+    publish_parser.add_argument(
+        "inputs",
+        nargs="*",
+        help=(
+            "Optional parsed JSON files or directories. If omitted, the command reads all "
+            "`*.parsed.json` files from --input-dir."
+        ),
+    )
+    publish_parser.add_argument(
+        "--input-dir",
+        default="outputs/parsed",
+        help="Directory containing Phase 2 `*.parsed.json` artifacts when explicit inputs are omitted.",
+    )
+    publish_parser.add_argument(
+        "--output-dir",
+        default="outputs",
+        help="Directory where Phase 4 artifacts such as `metrics_long.json` will be written.",
+    )
+    publish_parser.add_argument(
+        "--include-csv",
+        action="store_true",
+        help="Also write `metrics_long.csv` as a spreadsheet-friendly review artifact.",
+    )
+    publish_parser.add_argument(
+        "--include-summary",
+        action="store_true",
+        help="Also write `summary.md` as a lightweight human-readable review artifact.",
+    )
+    publish_parser.add_argument(
         "--format",
         choices=("text", "json"),
         default="text",
@@ -328,6 +368,92 @@ def format_normalize_report(report: dict[str, object]) -> str:
     return "\n".join(lines)
 
 
+def build_publish_report(
+    *,
+    input_dir: Path,
+    output_dir: Path,
+    export: MetricsLongExport | None,
+    written: WrittenPublishArtifacts | None,
+    failures: Iterable[NormalizationFailure],
+) -> dict[str, object]:
+    failure_list = list(failures)
+    metadata = export.export_metadata if export is not None else None
+    artifacts: dict[str, str] = {}
+    if written is not None:
+        artifacts["json_output"] = str(written.json_path)
+        if written.csv_path is not None:
+            artifacts["csv_output"] = str(written.csv_path)
+        if written.summary_path is not None:
+            artifacts["summary_output"] = str(written.summary_path)
+
+    return {
+        "input_dir": str(input_dir),
+        "output_dir": str(output_dir),
+        "processed_count": metadata.document_count if metadata is not None else 0,
+        "failure_count": len(failure_list),
+        "metric_count": metadata.metric_count if metadata is not None else 0,
+        "valid_metric_count": metadata.valid_metric_count if metadata is not None else 0,
+        "invalid_metric_count": metadata.invalid_metric_count if metadata is not None else 0,
+        "issue_count": metadata.issue_count if metadata is not None else 0,
+        "schema_version": metadata.schema_version if metadata is not None else None,
+        "generated_at": (
+            metadata.generated_at.isoformat() if metadata is not None else None
+        ),
+        "source_parsed_artifacts": (
+            metadata.source_parsed_artifacts if metadata is not None else []
+        ),
+        "artifacts": artifacts,
+        "failures": [
+            {"input_path": str(item.input_path), "error": item.error}
+            for item in failure_list
+        ],
+        "ready": metadata is not None and metadata.document_count > 0 and not failure_list,
+    }
+
+
+def format_publish_report(report: dict[str, object]) -> str:
+    status = "ready" if report["ready"] else "needs attention"
+    lines = [
+        f"Phase 4 publish: {status}",
+        f"Parsed input directory: {report['input_dir']}",
+        f"Artifact directory: {report['output_dir']}",
+        f"Documents processed: {report['processed_count']}",
+        f"Failures: {report['failure_count']}",
+        (
+            "Metrics exported: "
+            f"{report['metric_count']} ({report['valid_metric_count']} valid, {report['invalid_metric_count']} invalid)"
+        ),
+        f"Issues carried forward: {report['issue_count']}",
+    ]
+
+    if report.get("schema_version"):
+        lines.append(f"Schema version: {report['schema_version']}")
+
+    source_parsed_artifacts = report.get("source_parsed_artifacts")
+    if isinstance(source_parsed_artifacts, list) and source_parsed_artifacts:
+        lines.append(
+            "Source parsed artifacts: "
+            + ", ".join(str(artifact) for artifact in source_parsed_artifacts)
+        )
+
+    artifacts = report.get("artifacts")
+    if isinstance(artifacts, dict) and artifacts:
+        lines.append("Artifacts:")
+        for key in ("json_output", "csv_output", "summary_output"):
+            if key in artifacts:
+                lines.append(f"- {key}={artifacts[key]}")
+
+    failures = report.get("failures")
+    if isinstance(failures, list) and failures:
+        lines.append("Failures:")
+        for item in failures:
+            if not isinstance(item, dict):
+                continue
+            lines.append(f"- {item.get('input_path')}: {item.get('error')}")
+
+    return "\n".join(lines)
+
+
 def _summarize_missing_core_metrics(issues: list[object]) -> str:
     missing_by_company: dict[str, list[str]] = {}
     for issue in issues:
@@ -437,6 +563,60 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(json.dumps(report, indent=2, sort_keys=True))
         else:
             print(format_normalize_report(report))
+
+        return 0 if report["ready"] else 1
+
+    if args.command == "publish":
+        input_dir = resolve_path(settings.project_root, args.input_dir)
+        output_dir = resolve_path(settings.project_root, args.output_dir)
+        parsed_paths = resolve_parsed_inputs(
+            settings.project_root, input_dir, args.inputs)
+
+        results: list[NormalizationResult] = []
+        failures: list[NormalizationFailure] = []
+        export: MetricsLongExport | None = None
+        written: WrittenPublishArtifacts | None = None
+
+        if not parsed_paths:
+            failures.append(
+                NormalizationFailure(
+                    input_path=input_dir,
+                    error="No parsed JSON inputs were resolved from the provided arguments.",
+                )
+            )
+        else:
+            results, failures = normalize_documents(parsed_paths)
+
+        if results:
+            export = build_metrics_export(
+                results=results, parsed_paths=parsed_paths)
+            try:
+                written = write_publish_artifacts(
+                    export,
+                    output_dir,
+                    include_csv=args.include_csv,
+                    include_summary=args.include_summary,
+                )
+            except OSError as exc:
+                failures.append(
+                    NormalizationFailure(
+                        input_path=output_dir,
+                        error=f"Could not write Phase 4 artifacts: {exc}",
+                    )
+                )
+
+        report = build_publish_report(
+            input_dir=input_dir,
+            output_dir=output_dir,
+            export=export,
+            written=written,
+            failures=failures,
+        )
+
+        if args.format == "json":
+            print(json.dumps(report, indent=2, sort_keys=True))
+        else:
+            print(format_publish_report(report))
 
         return 0 if report["ready"] else 1
 

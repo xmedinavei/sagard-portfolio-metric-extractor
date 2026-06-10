@@ -4,7 +4,7 @@ OUTPUT_DIR ?= outputs
 PARSED_OUTPUT_DIR ?= outputs/parsed
 FIXTURE_DIR ?= tests/fixtures/parsed
 
-.PHONY: install run preflight extract extract-fixtures test lint clean
+.PHONY: install run preflight extract extract-fixtures publish test lint clean
 
 install:
 	$(PYTHON) -m pip install -e ".[dev]"
@@ -19,6 +19,9 @@ extract:
 
 extract-fixtures:
 	$(PYTHON) -m portfolio_metrics extract --input-dir $(INPUT_DIR) --output-dir $(FIXTURE_DIR) --parser local
+
+publish:
+	$(PYTHON) -m portfolio_metrics publish --input-dir $(PARSED_OUTPUT_DIR) --output-dir $(OUTPUT_DIR) --include-csv --include-summary
 
 test:
 	$(PYTHON) -m pytest

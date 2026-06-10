@@ -4,7 +4,7 @@ CLI-first proof of concept for extracting key portfolio metrics from quarterly P
 
 ## Status
 
-Phase 3 normalization is complete in this repository.
+Phase 4 artifact publishing is complete in this repository.
 
 What exists today:
 
@@ -14,13 +14,14 @@ What exists today:
 - a parser abstraction with Firecrawl + local implementations
 - a Phase 2 extraction command that writes parsed JSON + markdown artifacts
 - a Phase 3 normalization command that reads parsed JSON and prints a reviewable summary or JSON to stdout
+- a Phase 4 publish command that writes canonical `metrics_long.json` artifacts plus optional CSV / markdown review outputs
 - an `outputs/` directory contract for generated artifacts
 - a pytest/ruff test and lint foundation
 
 What is intentionally not implemented yet:
 
-- persisted Phase 4 metric artifact writing
-- CSV / markdown review artifact generation from normalized metrics
+- Phase 5 validation and hardening work
+- Phase 6 review packaging beyond the generated artifacts and README
 
 Those land in later phases so the extraction and normalization seams stay honest and easy to defend.
 
@@ -39,6 +40,7 @@ Common commands:
 - `make run`
 - `make extract`
 - `make extract-fixtures`
+- `make publish`
 - `make test`
 - `make lint`
 
@@ -107,6 +109,33 @@ Request machine-readable output:
 
 - `portfolio-metrics normalize --format json`
 
+Use the next command when you want persisted outputs.
+
+## Phase 4 publish command
+
+The Phase 4 export layer reuses the Phase 3 normalizer and writes stable artifacts to `outputs/`.
+
+Canonical artifact:
+
+- `metrics_long.json` — the long-form metric export with metadata, provenance, confidence, and carried-forward issues
+
+Optional derived artifacts:
+
+- `metrics_long.csv` — spreadsheet-friendly projection of the canonical JSON
+- `summary.md` — lightweight human-readable summary derived from the same export
+
+Write the canonical JSON only:
+
+- `portfolio-metrics publish`
+
+Write JSON plus review artifacts:
+
+- `portfolio-metrics publish --include-csv --include-summary`
+
+Use the checked-in representative fixtures as the input set:
+
+- `portfolio-metrics publish --input-dir tests/fixtures/parsed --include-csv --include-summary`
+
 ## Provenance strategy
 
 Phase 2 preserves the source information that later normalization needs without pretending we have more
@@ -124,6 +153,9 @@ This keeps the extraction contract stable while remaining honest about what each
 sagard-portfolio-metric-extractor/
 ├── intake-pdf/
 ├── outputs/
+│   ├── metrics_long.json
+│   ├── metrics_long.csv
+│   ├── summary.md
 │   └── parsed/
 ├── plan/
 ├── spec/
@@ -151,4 +183,4 @@ sagard-portfolio-metric-extractor/
 
 ## Next phase
 
-Phase 4 can now focus on generating stable normalized artifacts from the CLI-ready Phase 3 pipeline.
+Phase 5 can now focus on validation, hardening, and review confidence over the exported artifacts.
