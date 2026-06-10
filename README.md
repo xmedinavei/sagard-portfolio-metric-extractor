@@ -4,7 +4,7 @@ CLI-first proof of concept for extracting key portfolio metrics from quarterly P
 
 ## Status
 
-Phase 2 extraction is complete in this repository.
+Phase 3 normalization is complete in this repository.
 
 What exists today:
 
@@ -13,16 +13,16 @@ What exists today:
 - a small CLI preflight command for local readiness checks
 - a parser abstraction with Firecrawl + local implementations
 - a Phase 2 extraction command that writes parsed JSON + markdown artifacts
+- a Phase 3 normalization command that reads parsed JSON and prints a reviewable summary or JSON to stdout
 - an `outputs/` directory contract for generated artifacts
 - a pytest/ruff test and lint foundation
 
 What is intentionally not implemented yet:
 
-- metric detection
-- normalization
-- JSON output generation
+- persisted Phase 4 metric artifact writing
+- CSV / markdown review artifact generation from normalized metrics
 
-Those land in later phases so the extraction seam stays honest and easy to defend.
+Those land in later phases so the extraction and normalization seams stay honest and easy to defend.
 
 ## Quickstart
 
@@ -31,6 +31,7 @@ Those land in later phases so the extraction seam stays honest and easy to defen
 3. Copy `.env.example` to `.env` if you need a fresh local config.
 4. Run the preflight check.
 5. Run the Phase 2 extractor on representative PDFs.
+6. Run the Phase 3 normalizer on the resulting parsed JSON artifacts.
 
 Common commands:
 
@@ -83,6 +84,29 @@ Write checked-in fixtures for the three representative PDFs:
 
 The default output directory is `outputs/parsed/`.
 
+## Phase 3 normalization command
+
+The normalization layer consumes the stable Phase 2 parser contract:
+
+- `<name>.parsed.json` — Phase 2 parser output in the shared document schema
+
+It intentionally does **not** write Phase 4 artifacts yet. Instead, it prints either:
+
+- a concise human-readable summary, or
+- full JSON to stdout for automation or inspection
+
+Normalize all parsed artifacts in the default directory:
+
+- `portfolio-metrics normalize`
+
+Normalize the checked-in representative fixtures:
+
+- `portfolio-metrics normalize --input-dir tests/fixtures/parsed`
+
+Request machine-readable output:
+
+- `portfolio-metrics normalize --format json`
+
 ## Provenance strategy
 
 Phase 2 preserves the source information that later normalization needs without pretending we have more
@@ -105,10 +129,15 @@ sagard-portfolio-metric-extractor/
 ├── spec/
 ├── options/
 ├── portfolio_metrics/
+│   ├── detect_metrics.py
 │   ├── extract_text.py
+│   ├── metric_aliases.py
+│   ├── normalize.py
 │   ├── parser.py
 │   ├── parser_firecrawl.py
 │   ├── parser_local.py
+│   ├── parse_values.py
+│   ├── pipeline.py
 │   └── schema.py
 ├── tests/
 │   └── fixtures/
@@ -122,4 +151,4 @@ sagard-portfolio-metric-extractor/
 
 ## Next phase
 
-Phase 3 will build metric detection and normalization on top of the checked-in parser contract and representative fixtures.
+Phase 4 can now focus on generating stable normalized artifacts from the CLI-ready Phase 3 pipeline.
