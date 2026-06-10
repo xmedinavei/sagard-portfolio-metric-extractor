@@ -1,0 +1,22 @@
+# Environment and virtualenv
+.env
+.venv/
+
+# Python cache / tooling
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Generated outputs
+outputs/
+*.csv
+*.json
+*.md.tmp
+
+# OS/editor noise
+.DS_Store
+.vscode/
