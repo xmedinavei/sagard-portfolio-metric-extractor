@@ -1,65 +1,119 @@
 # Pushback Cheatsheet — Portfolio Metrics Extraction
 
-> Short answers for likely director-level pushback.
+> Short, simple answers for likely interview pushback.
 
 ---
 
-## Why not OCR first?
+## 1. Pushback on the three main decisions
 
-Because the provided PDFs already appear text-extractable. OCR would add setup, latency, and failure modes before solving the real problem, which is normalization and trust.
+### Extraction
 
-## Why use Firecrawl at all if the PDFs already have text?
+#### Why not OCR first?
 
-Because in a 4-hour time box, Firecrawl can buy parsing reliability quickly and lets the implementation time go into metric mapping, provenance, and validation. If cost or dependency risk mattered more than speed, I would switch to a local parser first.
+Because the sample PDFs already have readable text. OCR would add more moving parts before solving the real problem, which is mapping the metrics correctly and keeping them easy to trust.
 
-## Why not Azure Document Intelligence from day one?
+#### Why use Firecrawl if local parsing is possible?
 
-Azure DI is the stronger layout-aware option, especially for scanned or table-heavy documents. I kept it as the production-grade upgrade path because this sample corpus did not justify the extra service complexity on night one.
+Because I had a short time box. Firecrawl lets me get clean text fast, so I can spend my time on the hard part: normalization, provenance, and review. If cost or vendor risk mattered more than speed, I would switch to a local parser first.
 
-## Why not just use an LLM to extract all the metrics?
+#### Why not Azure Document Intelligence from day one?
 
-Because hallucinated numbers are unacceptable in portfolio reporting. I want deterministic parsing for numeric values and, at most, AI assistance for ambiguous label normalization.
+Azure DI is stronger for scanned files, tables, and harder layouts. I kept it as the production upgrade path because this sample corpus did not need that extra setup on day one.
 
-## Why only six metrics?
+#### Why not start with a local parser first?
 
-Because six trustworthy metrics are more valuable than fifteen partially normalized ones. The prompt rewards scoping discipline and communication, not breadth for its own sake.
+That would be a good choice if page-level control was the top goal. For this take-home, I thought speed mattered more, so I used Firecrawl first and kept the parser boundary small so I can swap later.
 
-## Why treat the portfolio summary PDF as a normal input?
+### Normalization, parsing, and errors
 
-Because ambiguity is part of the challenge. Including it lets me show how I think about duplication, conflicting sources, and document-type differences instead of pretending the corpus is perfectly clean.
+#### Why not use an LLM for everything?
 
-## Why no notebook?
+Because in finance, a wrong number is worse than a missing one. I want the number parsing to stay deterministic, and I only want AI helping on fuzzy label meaning if I really need it.
 
-Because the user experience for the submission is a script or CLI, and that is closer to how I would evolve the workflow operationally. A notebook is useful for prep or exploration, but I did not want the solution to depend on it.
+#### How do you handle different labels for the same metric?
 
-## Why no web server?
+I use an alias list and map only when the meaning is clearly safe. If I am not sure, I keep the raw label, add a confidence flag, and let the row stay reviewable instead of pretending it is clean.
 
-Because a synchronous server is the wrong shape for bursty PDF parsing and OCR-like workloads. The right production model is async jobs, not request/response blocking.
+#### Why only six metrics?
 
-## How would this scale to hundreds of PDFs?
+Because six trustworthy metrics are better than fifteen shaky ones. I wanted to show good judgment and a clean review path, not just chase breadth.
 
-The CLI becomes an async batch worker. One PDF or batch per job, raw parser output stored first, retries isolated per document, and low-confidence rows routed to human review.
+#### What if the label is unclear or confidence is low?
 
-## What would break first in production?
+Then I do not hide that. I keep the raw label, the source snippet, and the confidence so someone can review it quickly.
 
-Not compute — trust. The first real problem is drift in document formats and normalization assumptions. That is why provenance, validation, and confidence are part of the v1 design.
+#### Why treat the portfolio summary PDF as a normal input?
 
-## How would you monitor quality over time?
+Because real data is messy. Including it shows how I think about duplicate numbers, mixed document types, and conflicting sources instead of assuming a perfect corpus.
 
-I would keep a hand-labeled gold set, track confidence and missingness by run, and compare parser outputs over time. Low-confidence or previously unseen labels should be explicitly logged for review.
+### Output and presentation
 
-## How would you integrate this into Sagard later?
+#### Why JSON first?
 
-The cleanest path is: scheduled extraction job, normalized outputs pushed into a warehouse or internal app, and a review surface for low-confidence rows. I would integrate only after the metric taxonomy stabilizes.
+Because JSON is the cleanest contract for what comes next. It can feed a future API, dashboard, warehouse job, or Slack workflow without changing the core extraction logic.
 
-## Why not just hire analysts to read the PDFs?
+#### Why not just output a spreadsheet?
 
-This is not about replacing analysts. It is about removing repetitive transcription work so analysts spend their time on interpretation and decision support instead of copy-pasting numbers.
+I can still generate a CSV for review, but I do not want the spreadsheet to be the system contract. JSON keeps the data more portable and easier to reuse later.
 
-## What is the production architecture you would aim for?
+#### Why no notebook?
 
-Event-driven or scheduled ingestion, async parsing workers, confidence-aware normalization, immutable raw and normalized artifacts, and downstream BI integration. Serverless is appealing here because the workload is bursty and document-driven.
+Because I wanted the main deliverable to be a script, not a manual workflow. A notebook is helpful for prep or demo polish, but I did not want the solution to depend on it.
 
-## If you had one extra day, what would you add?
+#### Why no web server or UI?
 
-A validation harness, parser comparison on a few representative PDFs, and stronger provenance reconstruction if Firecrawl is the primary parser. That would improve trust more than adding more metrics.
+Because that would solve the wrong problem first. The hardest part here is extraction trust, not screen design, and in production this should be async anyway.
+
+---
+
+## 2. Pushback on production and scale
+
+### How would this scale to hundreds of PDFs?
+
+I would move from a CLI run to async jobs. One PDF or small batch per job, raw parser output stored first, retries handled per document, and low-confidence rows sent to review.
+
+### What would break first in production?
+
+Trust, not compute. The first real risk is changing document formats and shaky normalization assumptions, which is why provenance, validation, and confidence are already in the design.
+
+### What if Firecrawl fails or gets expensive?
+
+That is exactly why I kept the parser layer small. If cost, latency, or reliability changes, I can swap to a local parser or Azure DI without rewriting the whole pipeline.
+
+### How would you monitor quality over time?
+
+I would keep a small hand-checked gold set, track missingness and confidence by run, and log any new labels or low-confidence rows for review.
+
+### What production architecture would you aim for?
+
+Azure Blob Storage for uploads, Event Grid for triggers, Azure Functions or queued workers for processing, durable storage for results, and Slack for notifications. The key idea is async processing, not making users wait in a request.
+
+### What about audit, compliance, and traceability?
+
+That is why every row keeps provenance. I want file name, page when possible, raw label, snippet, run time, and parser version so the result is easy to trace back.
+
+### How would this fit into Sagard later?
+
+The clean path is: ingest PDFs, normalize the outputs, store them durably, and feed them into an internal app, a dashboard, or a warehouse job. I would integrate only after the metric rules are stable.
+
+### Why not just have analysts read the PDFs?
+
+Because this is not about replacing analysts. It is about taking away the repetitive copy-paste work so they can spend more time on judgment and less time on transcription.
+
+### If you had one extra day, what would you add?
+
+I would add a stronger validation harness, compare parser output on a few sample PDFs, and improve provenance where needed. That would improve trust more than adding more features.
+
+---
+
+## 3. Calm wording patterns
+
+Use these simple sentence starters if you need a steady answer:
+
+- **That is a fair question. I chose X over Y because...**
+- **For the POC, I optimized for...**
+- **In production, I would change that by...**
+- **The real tradeoff here is...**
+- **I would rather ship something boring and trustworthy than flashy and risky.**
+
+Those lines help you sound calm, clear, and non-defensive.
