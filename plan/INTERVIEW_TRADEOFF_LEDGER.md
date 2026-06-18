@@ -9,6 +9,7 @@ It is written for interview prep, so the focus is not "what the code does" in is
 - what you knowingly gave up,
 - and where that decision shows up in the repo.
 
+For the assumptions-focused companion, see `plan/INTERVIEW_ASSUMPTIONS_LEDGER.md`.
 For a simpler speaking version focused on scaling, input surfaces, output surfaces, and security questions, see `plan/INTERVIEW_SCALING_PLAYBOOK.md`.
 
 ## 1. What You Optimized For Overall
