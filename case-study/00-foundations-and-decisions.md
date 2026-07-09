@@ -153,6 +153,31 @@ Investment→Watchlist, Portfolio Ops→Monitoring, Valuations→NAV, IR→LP-re
 Anchoring on **Portfolio Ops (persona #2)** is the choice that covers the widest surface without
 over-claiming — which is exactly why it is the recommended D1 anchor.
 
+**Who this tool helps most — the scope ranking (`this is the tailoring decision`).** The personas do
+**not** benefit equally. **The ranking axis is how *objective* their use of the numbers is:** a
+deterministic tool helps most where the work is repetitive and rule-based (collect → normalise →
+compare → check-against-threshold) and least where the core output is a *judgment* (a valuation mark).
+We rank all five and build for the top of the list:
+
+| Rank | Persona | How the tool serves them | How objective is their job? | Fit |
+|---|---|---|---|---|
+| **1 — Primary** | Portfolio Operations / Value-Creation | *Is* the quarterly monitoring loop — collect, normalise, compare every metric × company × quarter; the manual grind we remove | Highly objective + repetitive → **most automatable** | ★★★ |
+| **2 — Strong secondary** | Investment / deal partner | *Through the same monitoring output* — board prep + follow-on on companies **already owned** (NOT the bespoke diligence that closes a *new* deal) | Wants a fast objective read; *consumes* the loop's output, doesn't run it | ★★ post-close |
+| **3 — Good fit, scope-limited** | Private-credit / risk analyst | Covenant checks = "is ratio X inside threshold Y?" — a deterministic rule the tool can evaluate and flag | Very objective (rule-based) **but only 1 lender in the corpus → no benchmarking; proof-of-range, not a demo anchor** | ★★ (thin data) |
+| **4 — Downstream (assembly)** | Investor Relations / LP-reporting | Supplies locked, source-traceable numbers to drop into the standard (ILPA) template | Assembly is objective, but the output is *external + consequential* → needs human sign-off | ★ inputs + assembly |
+| **5 — Downstream (judgment)** | Fund finance / Valuations | Feeds **audit-defensible, basis-tagged inputs** the mark is built from | **The mark is *subjective* — a person must weigh multiples, comparables, and judgment; the tool supplies the inputs, never the mark** | ★ inputs only |
+
+**Assumption:** v1 targets the *internal, deterministic, high-frequency* monitoring job — the **objective**
+work that can be automated *without judgment*. So the persona whose whole job **is** that loop (Ops) is
+helped most; personas whose core output is a **subjective judgment call** (a signed NAV mark) or an
+*external, consequential* document (an LP table) keep the human in the loop and gain only *cleaner,
+traceable inputs*, not automation. **We automate the objective; we assist the subjective.**
+
+**Trade-off (why this, not the flashier pick):** anchoring on Ops trades a *sexier* claim ("we support
+your NAV marks" / "we help you win deals") for a *provable* one. The flashier angles either lack corpus
+evidence (no EBITDA/multiples for a valuation demo — see §6A.2) or would over-claim (deal-closing runs
+on bespoke diligence, not standardized packs). **We lead with the claim the data can back.**
+
 ### 3.2 The workflows (where the metrics get used)
 
 The research mapped 10 real workflows. The ones that matter for us:
@@ -269,6 +294,37 @@ three of the tool's differentiators at once.
 > **Operational reality:** the current `outputs/` were generated on only **3 of 24** PDFs (26 metric
 > rows). We must **re-run the full 24-PDF export** before any demo. The code already supports it; it just
 > needs running.
+
+### 4.4 The two monitoring paths — equity (PE) vs private credit
+
+The 10 companies are **not one uniform book.** Reading each report's own words, they split into **two
+monitoring paths** that speak different metric languages. This is the split the interviewer will ask
+you about, so here it is, grounded in the documents:
+
+| Company | Business model (from its own report) | Metric language | Path |
+|---|---|---|---|
+| NovaCloud, CarbonTrack, MediSight, PeopleFlow, TalentVault, ConstructIQ | SaaS (subscription software) | ARR, retention, burn | **Equity / growth** |
+| FleetLink → ApexFreight | Marketplace (freight) | GMV, take-rate, contribution/shipment | **Equity / growth** |
+| ClearPay | Payments / fintech | TPV, take-rate (bps), restricted cash | **Equity / growth** |
+| LendBridge | Specialty lender (SME working capital) | interest income, loan book, charge-offs, covenants | **Private credit** |
+| Portfolio_Snapshot | *not a company* — a roll-up of the others | — | — |
+
+So the mix is **8 equity / growth operating companies + 1 private-credit lender + 1 roll-up.**
+
+**Two honest limits — state these; they are credibility, not weakness:**
+1. **We can read what each company DOES, but not how the fund HOLDS it.** The packs describe the
+   business model, but they do **not** disclose the ownership stake — so we cannot say "this one is
+   venture, that one is buyout." We monitor what the company *reports*, not the fund's position.
+2. **"PE" here = the equity-held operating book, and it reads as GROWTH / venture equity** (young,
+   ARR-driven, unprofitable — ConstructIQ is even "evaluating a Series B"), **not classic buyout PE.**
+   The packs contain **no EBITDA, no leverage, no buyout debt** — which is *why* classic-buyout metrics
+   are deliberately out of scope (see §6A.2 discards).
+
+**Why the split is the whole point:** Sagard is **multi-strategy** — it runs equity *and* private
+credit under one roof. So an equity company's "gross margin" (cost of delivering software) and
+LendBridge's "gross margin" (interest income minus cost of funds) land in the **same portfolio view,
+under the same word, meaning completely different things.** The two-path metric design in §6A is what
+stops the tool from ever placing them on the same axis.
 
 ---
 
@@ -396,6 +452,243 @@ core — better as an export). C folds in as a *view*, D as the *universal tier*
 > profiles, not-found vs not-applicable"). B is you following your own roadmap.
 
 `☐ YOUR DECISION (D2): __________________________________`
+
+---
+
+## 6A. Metric sets by path (operationalizing DECISION 2)  `[reference — feeds D2]`
+
+DECISION 2 chose the *philosophy* (tiered). This section is the *concrete instantiation*: the actual
+metric set for **each path**. It was built by a multi-agent pass that (1) researched the standard
+metric vocabulary for each path, (2) **read every corpus PDF** to keep only metrics that are genuinely
+extractable, and (3) ran an **adversarial critique** that caught and corrected real errors — a false
+arithmetic reconciliation, two non-reproducible formulas, an over-claimed "anchor," and stale evidence.
+Those corrections are already baked into what follows.
+
+### 6A.1 How to read these sets — and the answer to "why this many metrics?"
+
+The interviewer will ask **"why did you pick this number of metrics?"** The answer is a principle, not
+a count:
+
+> **The set is bounded by EXTRACTABILITY, not by ambition.** A grep audit confirms these are
+> **KPI / board packs** — a revenue line, a margin percent, ARR, retention, cash, burn, headcount —
+> with **no income statement, balance sheet, or cash-flow statement.** So the set is exactly: a **small
+> universal core** every company reports + **sector packs that fire only when that model has them** + a
+> **derived tier that refuses to compute** when the inputs aren't there. Nothing enters unless it
+> **traces to a source file.** That discipline — not a target number — sets the count.
+
+Conventions:
+- **`core` vs `optional`** — core = reported by (almost) all companies on the path and safe to lead
+  with; optional = partial coverage or derived, kept but flagged.
+- **basis-tag** — the specific comparability landmine the tool must neutralise *before* two numbers can
+  sit side by side (currency, periodicity, definition, restricted cash…). **This tag is the product.**
+
+> **Provenance honesty:** the current parser gives **file-level** provenance ("this number came from
+> *this document*"), **not** page/snippet level (the parsed files record `Page level: no`). So say
+> "traceable to source **file**," not "source page," until snippet-level provenance is built. It's a
+> roadmap item, not a shipped claim.
+
+### 6A.2 The PE / equity metric set
+
+**Philosophy (one line):** monitor operating **quality** (growth, retention, cash durability,
+efficiency) from what equity-held companies actually report — never buyout value-creation levers,
+because the packs don't carry them.
+
+**Tier 1 — Universal core (reported by every equity company)**
+
+| Metric | Plain meaning | Why chosen / evidence | Basis-tag (the landmine) | |
+|---|---|---|---|---|
+| Recognized (Net) Revenue | Money actually *earned* this quarter — not cash collected, not total volume | Backbone of the whole set; all 8 report a revenue line | revenue-basis (billings-vs-recognized; net-vs-GMV/TPV; bundled-vs-single-line) **+ currency (PeopleFlow GBP)** | core |
+| Total Headcount (FTE) | Number of full-time staff; denominator for efficiency | Only near-universal operating figure; base for per-employee metrics | sourcing (some quarters put it in prose, not the table) | core |
+
+**Tier 1b — Reported but NOT comparable (display only — DO NOT RANK)**
+
+| Metric | Plain meaning | Why it's here (and walled off) | Basis-tag |
+|---|---|---|---|
+| Gross Margin % | Cents left from each revenue dollar after direct delivery cost | The **flagship thesis proof** — everyone reports it, nobody defines it the same way | gross-margin-composition: CarbonTrack excludes customer-success + data-science; MediSight excludes implementation + CS; NovaCloud/TalentVault/ConstructIQ give no definition (silent basis); marketplace & payments use different bases. **Component costs are disclosed nowhere → it can NEVER be normalised. Show it; never rank it.** |
+
+**Tier 2 — Liquidity & cash durability (common, not universal — 5/8 cash, 4/8 burn)**
+
+| Metric | Plain meaning | Why chosen / evidence | Basis-tag | |
+|---|---|---|---|---|
+| Spendable Cash | Money the company can actually spend now — the survival number | Base for runway; the restricted-cash carve-out is a direct thesis demo | restricted-cash (ClearPay's $38.4M includes $6.2M client float → operating cash $32.2M) | core |
+| Net Burn (normalised to monthly) | How much cash it loses per month — the speed runway shrinks | Input to runway; the periodicity conversion is a headline trap | burn-periodicity (ConstructIQ reports **quarterly** $0.91M ≈ $0.30M/mo — looks *bigger* than NovaCloud's $0.75M/mo but is ~3× smaller); burn-exclusions (SBC/one-off differ) | core |
+
+**Tier 3 — SaaS recurring-revenue pack (fires only for the 6 subscription names)**
+
+| Metric | Plain meaning | Why chosen / evidence | Basis-tag | |
+|---|---|---|---|---|
+| ARR | Yearly value of active subscriptions at a point in time | The number SaaS leads with; base for growth & per-employee | arr-definition (contracted vs run-rate vs MRR×12); currency (PeopleFlow GBP); label-drift | core |
+| Net Revenue Retention (NRR/NDR) | Of last year's recurring revenue from existing customers, how much remains after upgrades − downgrades − churn | Best "is the product sticky & expanding?" signal | nrr-definition; **currency (PeopleFlow's "Net *Dollar* Retention" is computed in GBP)**; cross-quarter conflicts | core |
+| New-logo additions | New customers won this quarter (counted, usually in commentary) | Separates *new-logo* growth from *expansion* growth — NovaCloud's own top risk is "new-logo momentum below target"; also gives MediSight a signal | sourcing (commentary vs table) | core |
+| Expansion revenue / mix | Extra recurring revenue from *existing* customers ($ or % of revenue) | The flip side of NRR and the only stickiness read MediSight gives (expansion %) | expansion-definition (Trap E: MediSight rename asserts equivalence across different numerators) | core |
+| Gross Revenue Retention (GRR) | Like NRR but ignores upgrades (caps at 100%) — pure customer loss | Isolates leakage expansion can hide | coverage (only TalentVault reports it) | optional |
+| Logo Churn | Share of *customers* (not dollars) lost | Catches a failure mode dollar-NRR hides | (window: all effectively LTM — a *non*-landmine, don't over-flag) | optional |
+| Customer / Unit Count | How many paying customers | Denominator for avg revenue/account; ARR sanity-check | counting-unit (6 incompatible units: entities vs logos vs seats vs accounts) | optional |
+
+**Tier 4 — Sector packs: marketplace (FleetLink/Apex) & payments (ClearPay)**
+
+| Metric | Plain meaning | Why chosen / evidence | Basis-tag | |
+|---|---|---|---|---|
+| Completed Shipments [MP] | Transaction volume on the marketplace | Read directly; the marketplace's real scale metric | volume-not-revenue | core |
+| Take Rate — % of GMV [MP] | Slice of transacted value the marketplace keeps | **Read directly (10.8→11.2%)** — do *not* derive it | take-rate-base (% of GMV — **NOT** comparable to payments bps-of-TPV; ~25× apart) | core |
+| Contribution Margin / Shipment [MP] | Profit kept per transaction after direct fulfilment cost | Marketplace unit-economics | sourcing (table vs commentary) | optional |
+| TPV (Total Payment Volume) [PAY] | Total money processed — payments' version of GMV | Payments scale metric; never = revenue | scale-not-revenue | core |
+| Effective Take Rate — bps of TPV [PAY] | The cut kept, in basis points (thin margins → bps) | Payments monetisation in its native unit | take-rate-base (bps-of-TPV — **NOT** the marketplace's %-of-GMV) | core |
+| Net Revenue (take-rate based) [PAY] | The fees the payments co actually keeps — the peer-comparable figure | The only payments number that maps to "Revenue" | revenue-basis (unbundle: ClearPay $14.8M net vs $17.3M bundled total) | core |
+| Restricted / Client-Float Cash [PAY] | Customer money held but not owned | Makes Spendable Cash & runway correct | restricted-cash | core |
+
+**Tier 5 — Derived (tool-computed; REFUSES across mismatched bases)**
+
+| Metric | Plain meaning | Why chosen / evidence | REFUSE condition | |
+|---|---|---|---|---|
+| Cash Runway (months) | Months until spendable cash runs out at current monthly burn | Survival horizon; the "when do we raise?" trigger | refuse if burn not monthly-normalised, if cash still includes restricted funds, or if either input missing | core |
+| Revenue / ARR per Employee | Revenue (or ARR) each employee generates | Core efficiency / operating-leverage read | refuse to mix ARR-numerator with revenue-numerator; refuse cross-currency without FX; caution comparing across business models | core |
+| ARR / Revenue Growth (QoQ; YoY only ≥5Q) | Growth vs prior quarter / same quarter last year | The core equity thesis; earliest accel/decel signal | refuse YoY unless ≥5 quarters; apply the rename-map first; watch restatements (PeopleFlow Q1 4.7→4.6M) | core |
+| GMV (marketplace) | Total value transacted (platform keeps only its take) | Shown for context — but **NOT on any page** | back-derived (≈ revenue / take-rate) → flag as derived, never place beside SaaS revenue | optional |
+| Rule of 40 | Growth % + margin % ≥ 40 (fast-growth vs burn balance) | Standard SaaS health glance | **no FCF leg in packs** → compute only after a single firm-wide margin proxy is pinned (see open decision D2b) | optional |
+
+**Discarded from the PE set (why-not → revisit-when)**
+
+| Metric (group) | Why NOT in v1 | Revisit when |
+|---|---|---|
+| EBITDA & Adjusted EBITDA | No income statement in the packs; a lone Non-cash D&A figure exists (FleetLink Q4'24, $0.9M) but with no operating income it **can't construct EBITDA**; "adjusted" add-backs are interpretive → violate determinism | A profitable/buyout co attaches an income statement with D&A |
+| Net debt · Leverage (ND/EBITDA) · EV/EBITDA · Debt paydown · DSCR | Buyout/credit constructs; a credit *facility* is *referenced* (FleetLink Q4'24) but no debt balance/schedule and no EBITDA are disclosed; DSCR is a lender-to-borrower metric | A leveraged holding with a debt schedule + positive EBITDA enters; valuation file joined as a 2nd data plane |
+| Operating/Net income & any P&L line below revenue | KPI packs carry no P&L below revenue | Packs attach a full income statement |
+| COGS · Gross-profit $ · OpEx by function (S&M/R&D/G&A) | Only the gross-margin *percent* is reported — **this absence is *why* GM comparability is a trap** | Packs disclose the cost bridge / OpEx split |
+| CAC & payback · LTV:CAC · Magic number · Burn multiple | Need an S&M line + new-logo counts + lifetime assumptions (absent/interpretive) | Packs add an S&M line + per-quarter new-logo count |
+| Net New ARR / ARR bridge (new/expansion/contraction/churn) | No ARR waterfall is disclosed — only end-of-period ARR + NRR | Packs add the ARR bridge (**highest-value future unlock**) |
+| Billings · Bookings · RPO · Deferred revenue | Need a balance sheet / deferred-revenue movement (absent) | Packs attach a balance sheet |
+| Balance-sheet & cash-flow items (DSO/AR, current ratio, capex, OCF, **FCF**, gross burn) | Need statements the KPI packs lack; missing FCF is also why "true" Rule-of-40 margin can't be taken off the page | Packs attach balance sheet + cash-flow statement |
+| Pipeline / weighted bookings | Reported by NovaCloud/TalentVault/ConstructIQ but management-estimated with differing stages/haircuts → not comparable | Only as an explicitly-flagged, non-ranked forward view |
+| Customer concentration (top-N % of ARR) | Disclosed once (NovaCloud "top-10 ≈ 30% of ARR") — a single point, not a series | Disclosed consistently for ≥2 quarters |
+
+**Assumptions behind the PE set (state these):**
+- Equity companies = the "PE/equity path"; the corpus reads as **growth/venture** (ARR-driven,
+  unprofitable), so v1 monitors operating quality, **not** buyout levers.
+- Packs disclose **business model, not ownership stake**; we monitor what's reported.
+- **Verified:** these are KPI/board packs, not financial statements (no P&L/BS/CF *statements*). Nuance:
+  a lone D&A figure and a facility *reference* exist in footnotes — so "no financials" means "no
+  statements," not "zero balance-sheet mentions."
+- **"Comparable" = comparable only AFTER** rename-map + basis normalisation + FX + restricted-cash
+  carve-out. Raw side-by-side numbers are non-comparable by default.
+- **FX:** period-average rate for revenue flows, period-end for balance-sheet cash; GBP point-in-time
+  metrics (PeopleFlow ARR/NRR) record the rate + source. FX-converted numbers trace to *pack + external
+  rate* → **not purely file-traceable** (disclose this).
+- **History:** MediSight & PeopleFlow have 3 quarters; CarbonTrack/TalentVault/ConstructIQ/ClearPay
+  embed a Q1'25 comparative column in their Q2'25 pack → QoQ is broadly computable; YoY only NovaCloud.
+  Over-time metrics return **"insufficient history,"** never a fabricated trend.
+- **Pass-through rule:** a source-reported figure the tool can't itself recompute (e.g. MediSight's
+  stated YoY growth) is **passed through with provenance and flagged "reported, not recomputed,"** not
+  suppressed.
+- Provenance is **file-level** (current parser). Corpus is **synthetic** — never imply real holdings.
+
+### 6A.3 The private-credit metric set (LendBridge)
+
+**Philosophy (one line):** with only **one lender** in the corpus, credit monitoring is
+**longitudinal** (LendBridge vs its own prior quarters), **never** a peer benchmark — and the tool must
+refuse to invent one. Corrected census: **7 core + 6 optional.**
+
+**Tier 1 — Yield & return (what the loan book earns)**
+
+| Metric | Plain meaning | Why chosen / evidence | Basis-tag | |
+|---|---|---|---|---|
+| Recognized Revenue | Total income booked — mostly interest earned | Cleanest, fully-reported line (5 qtrs: $10.1→12.7M) | revenue-basis-unconfirmed (interest-only vs interest+fees not pinned) | core |
+| Net Interest Margin (NIM) | Gap between interest earned and interest paid, as % of earning assets — the core "spread" | The lender's profit engine; the covenant is written against it | **denominator (avg earning assets) not disclosed → printed, not recomputable**; rising NIM may signal risk-curve migration, not health | core |
+| Gross Margin (lender spread) | Interest income minus cost of funds, as % — a *spread*, not a delivery margin | **The thesis in one number** — same word as SaaS GM, different machine | lender-spread-**NOT**-SaaS-COGS; **formula (int inc − cost of funds)/int inc gives 71–73% vs reported 58–62% → components opaque; report directly, don't publish the formula; never auto-compare to SaaS GM** | core |
+| Interest Expense | Interest paid to fund the loan book — cost of funds | Funding-cost half of the spread (5 qtrs) | — | optional |
+| Fee & Other Income | Non-interest income (origination fees, prepayment premiums) | Quality-of-earnings check | label-drift ("Fee & Other" vs "Fee & Ancillary" — match on footnote) | optional |
+| Pre-Provision Operating Margin | Profit before setting aside for loan losses — the shock absorber | Genuine buffer read | **round-trip rename** (PPOM↔Adjusted Operating Margin) + **real gaps Q4'24/Q1'25 → do NOT interpolate** | optional |
+
+**Tier 2 — Credit quality  `[LAGGING-ONLY — a material blind spot, not just "thin"]`**
+
+> This tier reports only **realised, already-happened** losses. There is **no leading indicator** in
+> the packs — no arrears/delinquency aging, no NPL, no watchlist. A real credit team's earliest warning
+> turns 2–4 quarters *before* charge-offs, and the tool simply cannot see it here. Say so plainly.
+
+| Metric | Plain meaning | Why chosen / evidence | Basis-tag | |
+|---|---|---|---|---|
+| Net Charge-off / Credit Loss Rate (LTM) | Share of loans written off as uncollectible over the last 12 months | The truest score of underwriting (4 qtrs: 3.9→3.1%) | **round-trip rename** (NCO↔Credit Loss Rate — match on footnote); **seasoning caveat: a falling LTM rate on a fast-growing, unseasoned book can be denominator inflation, not real improvement** | core |
+| Provision Coverage Ratio | Reserves set aside ÷ losses being charged off (is the cushion big enough?) | Only reserve-adequacy signal; has an explicit board minimum (2.0×) | single-point (introduced Q2'25); derived from LTM loss rate | optional |
+
+**Tier 3 — Leverage & capital**
+
+| Metric | Plain meaning | Why chosen / evidence | Basis-tag | |
+|---|---|---|---|---|
+| Balance Sheet Leverage | How much borrowed money vs own equity funds the book (a multiple) | Margin-of-safety read (2.9→2.7×) | **lender-funding-leverage NOT buyout** — never read as net-debt/EBITDA (no EBITDA exists); ratio type (debt/equity vs assets/equity) unconfirmed | core |
+
+**Tier 4 — Portfolio construction (what the book is made of)**
+
+| Metric | Plain meaning | Why chosen / evidence | Basis-tag | |
+|---|---|---|---|---|
+| Total Loan Book (gross) | Total principal outstanding before reserves | Headline size/growth; denominator for most ratios (274→316M) | growth caveat (~21% annualised is arguably a yellow flag, not clearly "moderate") | core |
+| Active Borrowers | How many separate customers/loans | Diversification read; count for avg loan size (1,250→1,420) | — | optional |
+| Average Loan Size | Typical size of one loan | Reported directly ($75→84k) | **does NOT equal Loan Book ÷ Borrowers (that gives ~$223k, off ~2.7×) → unit unresolved (multiple facilities per borrower?); NOT a cross-check** — itself a same-label trap | optional |
+
+**Tier 5 — Covenant & safety**
+
+| Metric | Plain meaning | Why chosen / evidence | Basis-tag | |
+|---|---|---|---|---|
+| Senior Covenant Headroom | Room left before the loan's rules break, in basis points (bigger = safer) | The single most actionable safety metric (+125→+148bps, **non-monotonic — dipped then widened**) | **the "7.5% minimum-NIM" basis is a HYPOTHESIS, not fact**: it can't be reconciled (NIM 9.4% − 7.5% = +190bps ≠ reported +148), and in Q4 NIM *rose* while headroom *fell* — proof the basis is unknown. Record the actual covenant before trusting it | core |
+
+**Tier 6 — Derived (tool-computed)**
+
+| Metric | Plain meaning | Why chosen / evidence | REFUSE / caveat | |
+|---|---|---|---|---|
+| Funding-cost coverage | Can earnings cover the interest the lender itself pays? | Standard lender safety read; inputs (Revenue, Interest Expense) present 5 qtrs | define the numerator consistently (NII vs revenue) | optional |
+| Risk-adjusted spread (NIM − LTM loss) | The spread *after* expected losses — the truest profitability read | The set's own "truthful comparable"; inputs exist 4 qtrs | cadence mismatch: blends a spot spread with an LTM loss rate — flag it | optional |
+
+**Discarded from the credit set (why-not → revisit-when)**
+
+| Metric (group) | Why NOT in v1 | Revisit when |
+|---|---|---|
+| **Liquidity / funding-continuity · undrawn facility capacity** | **Never disclosed — yet for a leveraged lender a funding-market freeze kills it long before charge-offs. The biggest conceptual gap; name it, don't hide it** | A liquidity/facility-utilisation schedule is added |
+| **Refinancing wall / debt-maturity profile** | Rollover risk on LendBridge's *own* funding isn't in the pack | A maturity ladder is disclosed |
+| Gross portfolio / asset yield (book-level) | Appears only at sector level, once (Q1'25 prose) — no series | Tabled book-level yield for ≥2 quarters |
+| Non-performing / delinquency (30/60/90+) | The leading indicator — never tabled (see Tier 2 note) | A delinquency-aging / NPL table appears |
+| Loan-loss reserves / allowance ratio | Allowance balance never tabled (only implied in Provision Coverage) | Balance sheet discloses an ACL line |
+| Provision expense | Not a tabled line; margins reported *pre*-provision only | Income statement breaks out provision-for-credit-losses |
+| Advance rate · Equity cushion/ratio | Need a borrowing-base cert or raw equity/assets (only the leverage *multiple* is given) | Borrowing-base cert or equity+assets tabled |
+| Sector / obligor concentration (top-N) | Disclosed once (Q2'24), non-recurring | Consistent segmentation for ≥2 quarters |
+| Coverage vs board minimums (DSCR, interest/asset coverage) | Need cash-flow-for-debt-service + the minimums (in the credit agreement, not the pack) | A covenant-compliance certificate is attached |
+| Watchlist / internal risk-grade migration | The lender's private radar — kept out of a borrower-supplied summary | A detailed credit pack with risk grades |
+| Total Headcount · Basic EPS | Reported, but the first is efficiency (not credit) and the second is a single *unaudited* point | Added to an efficiency view / audited & serialised |
+| Loan-tape · vintage curves · LGD · roll-rate · stress/PD · ALM/duration | All need a structured loan-level feed or statistical modelling — the opposite of deterministic page-extraction | A loan-tape feed / risk-modelling module is stood up (v2+) |
+
+**Assumptions behind the credit set (state these):**
+- **One-lender limit → longitudinal only.** No cross-company credit benchmark is possible; the tool
+  refuses to place a credit metric beside another company's number.
+- **Footnote/contract definitions rule** — match on footnote-defined equivalence, never the label
+  string (two round-trip renames prove it: NCO↔Credit Loss Rate, PPOM↔Adjusted Operating Margin).
+- **Gross-margin non-comparability (flagship):** a lender's GM (a *spread*) ≠ a SaaS GM (delivery
+  margin). Never auto-compare; the truthful lender comparable is **NIM / risk-adjusted spread**.
+- **Leverage is lender-funding, not buyout** (no EBITDA anywhere → no buyout-leverage metric exists).
+- **LTM cadence** on the loss rate — never re-annualise, never mix with a quarterly figure.
+- **Reporting gaps are real** (PPOM absent Q4'24/Q1'25) — **do not interpolate**; missing ≠ zero ≠
+  average of neighbours.
+- **Defined-but-not-tabled:** a metric can be footnote-defined before its first value (NCO & Covenant
+  Headroom in Q2'24). Definition presence ≠ data presence.
+- **Several core reads are printed but NOT recomputable from the page** — NIM (no earning-assets
+  denominator), lender GM (formula ≠ reported), Covenant Headroom (can't reconcile). Treat as "reported
+  directly, components opaque," and don't publish a formula that doesn't reproduce.
+- **Liability side unmodeled:** with no liquidity/funding data, v1 assumes asset-side health proxies for
+  repayment safety — an assumption it **cannot verify** (the honest limit for a leveraged lender).
+- Provenance is **file-level**. LendBridge is a **synthetic** stand-in for Sagard Credit Partners —
+  never imply a real holding.
+
+### 6A.4 Metric decisions for you to record  `[OPEN — choose per your "state why / why-not / assumptions" rule]`
+
+These are genuine judgment calls the analysis surfaced but did **not** lock:
+
+| # | Decision | Options | My lean |
+|---|---|---|---|
+| **D2a** | How many sector packs to *demo* | (i) all four (SaaS + marketplace + payments + credit) · (ii) just **SaaS + credit** | **(ii)** — SaaS vs credit is the sharpest same-label collision; mention the others exist |
+| **D2b** | Rule-of-40 margin proxy (no FCF in packs) | gross-margin variant · burn-derived cash-margin variant | pin **one** firm-wide; gross-margin variant is simplest to defend |
+| **D2c** | Build the credit path in the *live demo*? | full path · a single "same engine handles your credit book" slide | **single slide** — one lender can't be benchmarked, so it's a *proof of range*, not a demo screen |
+| **D2d** | MediSight Trap-E rename ("Expansion ARR as % of Total ARR") | honor the footnote equivalence · flag as a break | **flag** — the numerators differ; flagging *is* the product |
+| **D2e** | Restatement / cross-quarter conflict policy | latest wins · table wins over commentary · surface both with provenance | **surface both** (table as primary), flagged |
+| **D2f** | Credit borrower archetype the path targets | LendBridge-style **specialty lender** (asset-side metrics) · real Sagard-Credit-Partners **mid-market borrower** (EBITDA, ND/EBITDA, DSCR, covenant certs) | scope call for later — v1 = specialty-lender; note the borrower-EBITDA module as a roadmap branch |
+
+`☐ YOUR METRIC DECISIONS (D2a–D2f): __________________________________`
 
 ---
 
