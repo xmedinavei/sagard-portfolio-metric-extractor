@@ -5,10 +5,15 @@
 > between sessions. It is the "see the whole board" companion to the decision brief
 > (`00-foundations-and-decisions.md`).
 >
-> **Status as of 2026-07-09:** Foundations complete. **D1–D4 are now LOCKED** (see §4). The case study is
+> **Status as of 2026-07-10:** Foundations complete. **D1–D4 are now LOCKED** (see §4). The case study is
 > **scoped to the equity / PE path** — private credit is *classified out* (Doc 0 §4.5) and kept as a
-> documented extension. **Document i (Context & Problem) is drafted** (`i-context-and-problem.md`); Document
-> ii is next. Still open by design: **D5** (reconciliation) + metric sub-decisions **D2a–D2f**.
+> documented extension. **Document i (Context & Problem) is drafted** (`i-context-and-problem.md`). The
+> **full 24-PDF export has now been run and audited** (`ii-prototype-findings.md`): headline is clean
+> (24 docs / 99 valid / 0 invalid) but source-recall is **76%** — the tool silently drops 30 of 128
+> printed data points, exports 1 wrong value (MediSight ARR), and raises 15 sector-blind false alarms.
+> These verified defects are the evidence base for **Document ii**, which is next. Still open by design:
+> **D5** (reconciliation — now shown to be non-hypothetical, 5 live conflicts) + metric sub-decisions
+> **D2a–D2f**.
 >
 > **Plain-English promise:** finance/technical jargon is defined the first time it appears here, and fully
 > in the brief's Glossary (§11). If a term is unfamiliar, check there.
@@ -25,7 +30,8 @@ audience, and packaging that into four documents.
 |---|----------|---------------------|-----------|--------|
 | **0** | **Foundations & Decision Brief** (`00-foundations-and-decisions.md`) | Domain primer, corpus reality, the 4 decisions (now locked), **§4.2.1 trap-solutions**, **§4.5 PE/credit classifier**, §6A metric sets, Sagard tailoring, glossary. | — | ✅ **Complete** (D1–D4 locked 2026-07-09; 1161 lines) |
 | **i** | **Context & Problem** (`i-context-and-problem.md`) | The business problem, the manual pain, why automation matters — tailored to Sagard, in business-stakeholder language. Answers case-study section (1). | D1–D3 locked | ✅ **Drafted 2026-07-09** (under adversarial critique) |
-| **ii** | **The Prototype & Front-End** | What the tool does today, how it works, its limits, **and the front-end demo design**. Future expansion lives at the *end* of this doc. Answers case-study sections (2) + (3). | Doc i | ⬜ Not started (front-end deliberately deferred) |
+| **ii-evidence** | **Prototype findings** (`ii-prototype-findings.md`) | ✅ Verified export result + defect audit (76% recall, 5 defect classes, all source-quoted). The evidence base + demo insights for Doc ii. | Full export run | ✅ **Done 2026-07-10** |
+| **ii** | **The Prototype & Front-End** | What the tool does today, how it works, its limits, **and the front-end demo design**. Future expansion lives at the *end* of this doc. Answers case-study sections (2) + (3). | Doc i + ii-evidence | ⬜ Not started (evidence ready; front-end deliberately deferred) |
 | **iii** | **Slides** | The presentation deck: problem → prototype → live demo → roadmap. Answers all four case-study sections in slide form. | Docs i + ii | ⬜ Not started (very last) |
 
 > **Sequencing rule (why this order):** in a *business* case study the graders reward connecting technical
@@ -109,19 +115,21 @@ Full options + trade-offs live in the brief (§5–§8). Locked choices:
 These do **not** change the decisions, but must be done before numbers reach a slide (the whole pitch is
 "trust the numbers"):
 
-1. **Run the full 24-PDF export.** The current `outputs/` were generated on only **3 of 24** documents
-   (26 metric rows). The parsed data for all 24 already exists on disk, so this needs **no API key** — just
-   run the publish step over all parsed artifacts. *This is the recommended first action once decisions
-   land.*
-2. **Verify the historical (multi-quarter) numbers.** ✅ **The Q2'25 cross-company NRR league is now
-   PDF-verified** (2026-07-09): NovaCloud 123 / CarbonTrack 121 / TalentVault 119 / PeopleFlow 118 (GBP) /
-   ConstructIQ 112; ConstructIQ churn 6.3%. Also verified: NovaCloud revenue rename chain
-   (5.8/6.5/7.2/7.9/8.4), ConstructIQ burn $0.91M/qtr + cash $11.2M, ClearPay $38.4/6.2/32.2. **Still
-   unverified:** the earlier-quarter *series* (NovaCloud ARR $24M→$34.2M; LendBridge covenant
-   +125→+118→+132→+148 bps) — check these before they appear in the demo.
-3. **Fix "missing vs Not-Applicable."** The tool currently flags a lender's absent ARR / cash / burn as
-   "missing core metric" — a false alarm. This is part of implementing D2 (tiered + per-sector expected
-   metrics) and should land before the exception/early-warning view is demoed.
+1. **Run the full 24-PDF export.** ✅ **DONE 2026-07-10.** `make publish` over the 24 parsed fixtures (no
+   API key) → 24 docs / 99 valid / 0 invalid / 0 dup groups / 125 issues. Full defect audit in
+   `ii-prototype-findings.md`.
+2. **Verify the historical (multi-quarter) numbers.** ✅ **Both remaining series now source-verified
+   (2026-07-10):** NovaCloud ARR **$24.1 → 26.8 → 29.1 → 31.6 → 34.2M** is real in the PDFs — but the
+   export captures **only 1 of the 5** (label drift: `End-of-Period ARR` vs `ARR(End of Period)`).
+   LendBridge covenant **+125 → +118 → +132 → +148 bps** (Q3'24→Q2'25) verified — it is **non-canonical**,
+   so correctly absent from the export; monitoring it is the credit-path extension. (Earlier Q2'25 NRR
+   league + revenue rename chain remain verified.)
+3. **Fix "missing vs Not-Applicable."** ⚠️ Still open, now **quantified**: the flat check raises **15
+   sector-blind false alarms** (LendBridge ARR/burn ×10, marketplaces/payments ARR ×5). Fix = D2 tiered +
+   §4.5 classifier; must land before the exception/early-warning view is demoed. **New this round:** the
+   audit also found the export **silently drops 30 printed data points** (label drift dominant) and
+   **exports 1 wrong value** (MediSight ARR $22.4M, pulled from the summary's swapped cell instead of its
+   own $27.9M). See `ii-prototype-findings.md` §4.
 
 ---
 
@@ -144,6 +152,7 @@ These do **not** change the decisions, but must be done before numbers reach a s
 | `case-study/ENGAGEMENT-MAP.md` | **This file** — the status board / whole-board outline |
 | `case-study/00-foundations-and-decisions.md` | Document 0 — the full decision brief (options, trade-offs, recommendations, glossary) |
 | `case-study/i-context-and-problem.md` | Document i — Context & Problem (✅ drafted 2026-07-09) |
+| `case-study/ii-prototype-findings.md` | Document ii evidence — verified export result + defect audit (✅ 2026-07-10) |
 | `case-study/` (to come) | Documents ii (Prototype & Front-End), iii (Slides) |
 | `intake-pdf/*.pdf` | The 24 sample portfolio-company PDFs (the corpus) |
 | `outputs/` | Prototype output — **`parsed/` covers all 24 docs** (usable for verification); **`metrics_long.csv/.json` is still a 3-doc slice → re-run the export before demo numbers** |
