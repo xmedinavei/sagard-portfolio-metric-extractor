@@ -20,12 +20,13 @@ def normalize_candidates(
 ) -> tuple[list[NormalizedMetric], list[NormalizationIssue]]:
     """Turn detected candidates into conservative canonical metrics."""
 
+    enhanced = recall_mode == "enhanced"
     provisional_metrics: list[NormalizedMetric] = []
     issues: list[NormalizationIssue] = []
 
     for candidate in candidates:
         alias = resolve_candidate_alias(
-            candidate.raw_label, candidate.matched_alias)
+            candidate.raw_label, candidate.matched_alias, enhanced=enhanced)
         if alias is None or candidate.canonical_metric is None:
             continue
 

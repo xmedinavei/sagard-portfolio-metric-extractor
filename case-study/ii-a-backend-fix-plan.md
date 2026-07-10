@@ -326,6 +326,11 @@ specs below.
 **Edges:** P1 ∥ P2 (independent). P3 `Depends-on` P1 (GT-4). P4 `Depends-on` P0 (issue-field contract).
 P5 `Depends-on` {P1,P2,P3,P4 that shipped}. **Tight-core track = P0 → P1 → (scoped) P5.**
 
+> **Build status (2026-07-10):** ✅ **P0 BUILT+AUDITED+COMMITTED** (`e91349a`) · ✅ **P1 BUILT+AUDITED** · ✅ **P2 BUILT+AUDITED**
+> (P1+P2 built together in one session, main-thread sequential — they touch `detect_metrics.py` in non-overlapping regions;
+> 3-lens adversarial audit, retrocompat lens 0 findings, 7 minor/nit findings all fixed or recorded). ⏳ P3 → P4 → P5 next.
+> **Suite: 76 tests green; legacy byte-identical; ruff clean.** P1+P2 not yet committed.
+
 ## II.2 — Naming registry *(use these names verbatim in every phase and in the frontend)*
 
 **New file:** `portfolio_metrics/sector_profiles.py`
@@ -339,10 +344,13 @@ P5 `Depends-on` {P1,P2,P3,P4 that shipped}. **Tight-core track = P0 → P1 → (
 | `_EXTENDED_ALIAS_BY_LABEL` | `dict` | `metric_aliases.py:128` | `{**_ALIAS_BY_LABEL, **extended}` |
 | `find_alias_for_label(raw_label, *, enhanced=False)` | fn | `metric_aliases.py:135` | branch on `enhanced`; do **not** mutate `normalize_label_text` |
 | `resolve_candidate_alias(raw_label, matched_alias, *, enhanced=False)` | fn | `metric_aliases.py:143` | forward `enhanced` to both inner calls |
-| `_EQUIVALENCE_RE`, `_build_footnote_equivalence_map(parser_output)` | regex + fn | `metric_aliases.py:44` / `detect_metrics.py` | whole-document scan (cross-page) |
-| `SectorKind` | `Literal["saas","credit","marketplace","payments"]` | `schema.py:28` (beside `DocumentKind`) | new additive Literal |
-| `classify_sector(parser_output) -> SectorKind` | fn | `detect_metrics.py:219` | mirror `classify_document`; reads `combined_text()` |
-| `expected_metrics_for(sector) -> tuple[CanonicalMetric, ...]` | fn | `sector_profiles.py` | legacy/saas returns `CORE_METRICS` unchanged |
+| `_EQUIVALENCE_RE` + `find_label_equivalences(text)` + `strip_unit_suffix(label)` + `_UNIT_SUFFIX_RE` | regex + fns | `metric_aliases.py` | ✅ P1. Regex private; `find_label_equivalences` is the public pair-extractor consumed by the map-builder. Quote-robust (D-1a/F1) |
+| `_build_footnote_equivalence_map(parser_output, *, enhanced=False)` + `_register_equivalence` + `_lookup_footnote_equivalence` | fns | `detect_metrics.py` | ✅ P1. Whole-document scan (cross-page); enhanced early-returns empty in legacy |
+| `SectorKind` | `Literal["saas","credit","marketplace","payments"]` | `schema.py:32` (added by **Phase 0**, beside `DocumentKind` at :28) | ✅ pre-existing; P2 imports, never re-declares (D-2a) |
+| `classify_sector(parser_output) -> SectorKind` | fn | `detect_metrics.py` (after `classify_document`) | ✅ P2. `_SECTOR_ANCHORS` credit→payments→marketplace→saas; validated 24/24 docs |
+| `expected_metrics_for(sector) -> tuple[CanonicalMetric, ...]` | fn | `sector_profiles.py` | ✅ P2. `saas`==`CORE_METRICS` exactly; `credit`={rev,gm,headcount}; mkt/pay=CORE−{arr_eop} (D-2d) |
+| `NormalizedMetric.sector` populated (enhanced) | field write | `pipeline.py` `normalize_parser_output` | ✅ P2 (D-2b, flagged for veto). Legacy stays `None` |
+| `NormalizationIssue.period` on `missing_metric` (enhanced) | field write | `pipeline.py` `_build_missing_metric_issues` | ✅ P2 (D-2c). Legacy excludes via Phase-0 serializer |
 | **NormalizedMetric** new fields | `sector: SectorKind｜None=None`, `value_normalized: float｜None=None`, `currency: str｜None=None`, `comparison_status: Literal["comparable","refused","unchecked"]｜None=None` | after `schema.py:159` | frontend cockpit columns |
 | `metric_basis` (hardened) | `Literal["quarterly","period_end","monthly","ltm","interest_margin"]｜None` | `schema.py:156` | **must** keep all 4 existing + None; `interest_margin` is new (GT-4) |
 | **NormalizationIssue** new fields | `period: str｜None=None`, `expected_value: float｜None=None`, `observed_value: float｜None=None`, `delta: float｜None=None` | after `schema.py:173` | reconciliation-panel payload |
@@ -446,15 +454,15 @@ Built on the main thread 2026-07-10; audited by a 3-lens `phase-auditor` fan-out
 - **Coverage nits (FIXED):** added enhanced-CSV-columns, enhanced-issue-fields, and CLI-parse/resolve tests.
 - **Dismissed (auditor error):** "`build_metrics_export.recall_mode` not keyword-only" — it already is (leading `*`).
 
-> **Ship note:** `tests/golden/parsed/*.parsed.json` (24) + the 3 baselines are on disk but **not yet `git add`ed** (spec-flow defers shipping). They are not `.gitignore`d (only `outputs/*` is) — commit them when the phase ships.
+> **Ship note (resolved):** Phase 0 was committed as `e91349a` on `claude-planning-case-study` (golden corpus + 3 baselines included, 38 files, +4690). Phase 1 + Phase 2 are built + audited + green on top (uncommitted at time of writing) — see their build logs above.
 
 ---
 
 ## Phase 1 — Class A+B alias recovery + footnote stitching *(Build Spec)*
 
-> **Status:** not started · **Scope:** additive, gated · **Depends-on:** Phase 0 · **Blocks:** Phase 3 (GT-4),
-> Phase 5 · **Parallelizable-with:** Phase 2 · **Ground-truthed:** 2026-07-10 · **Target:** `metric_aliases.py`,
-> `detect_metrics.py`, `tests/fixtures/parsed/`
+> **Status:** ✅ **BUILT + AUDITED 2026-07-10** · **Scope:** additive, gated · **Depends-on:** Phase 0 · **Blocks:** Phase 3 (GT-4),
+> Phase 5 · **Parallelizable-with:** Phase 2 (built together, same session, main-thread sequential) · **Ground-truthed:** 2026-07-10
+> (re-anchored post-Phase-0) · **Target:** `metric_aliases.py`, `detect_metrics.py`, `normalize.py`, `tests/`
 
 **Purpose:** recover the 30 label-drift drops + the MediSight wrong value, behind the gate. Fixes Class A
 **and** B (own-report 27.9M gets captured, then the existing company-wins rank auto-outranks the summary
@@ -491,15 +499,30 @@ Built on the main thread 2026-07-10; audited by a 3-lens `phase-auditor` fan-out
 **Net: zero breaking.** Legacy output identical; enhanced adds recovered rows through the **existing**
 `NormalizedMetric` shape (no §A field needed until Phase 3).
 
-**§ Definition of done:** NovaCloud ARR 1→5 quarters (enhanced) · MediSight 27.9M captured + outranks 22.4M + `cross_document_conflicting_candidates` raised · negatives refused · legacy golden byte-identical.
+**§ Definition of done — ✅ MET (2026-07-10):** ✅ NovaCloud ARR 1→5 quarters (enhanced; all 5 quarters tested, legacy=1) · ✅ MediSight 27.9M captured + outranks 22.4M + `cross_document_conflicting_candidates` raised · ✅ negatives refused (both modes) · ✅ footnote quoted+unquoted parsing · ✅ legacy golden byte-identical · ✅ ruff clean.
+
+### Phase 1 — Build log (deviations + audit fixes)
+
+Built on the main thread 2026-07-10 (alongside Phase 2, sequentially — they share `detect_metrics.py` in non-overlapping regions) after a 2-agent read-only re-anchoring (Phase 0 had shifted every `detect_metrics.py`/`normalize.py` line +4/+1). Audited by a 3-lens `phase-auditor` fan-out (retrocompat · contract/registry · acceptance/DoD).
+
+**Deviations (recorded):**
+- **D-1a (footnote helpers split):** registry named `_EQUIVALENCE_RE` + `_build_footnote_equivalence_map(parser_output)`. Implemented as `_EQUIVALENCE_RE` + public `find_label_equivalences(text)` + `strip_unit_suffix()` + `_UNIT_SUFFIX_RE` in `metric_aliases.py`, and `_build_footnote_equivalence_map(parser_output, *, enhanced=False)` + `_register_equivalence()` + `_lookup_footnote_equivalence()` in `detect_metrics.py`. The regex stays private to its module; the map-builder consumes the public helper (cleaner than importing a private regex cross-module). §II.2 updated.
+- **D-1b (test corpus source):** spec 1.4a said add `tests/fixtures/parsed/MediSight_Q2_2025.parsed.json`, but that dir's exact 3-file inventory is pinned by `test_cli_normalize.py:12-19` — adding fixtures there breaks it. Phase 1 tests load the real drifted-label docs directly from the committed `tests/golden/parsed/` corpus instead (no new fixtures, no pinned-inventory breakage).
+- **D-1c (unit-suffix stitch):** added `strip_unit_suffix` so a table label `Net Revenue(USD)` matches a footnote that says `Net Revenue` — the frozen `normalize_label_text` is untouched.
+
+**Audit fixes applied:**
+- **F1 (minor, real robustness — FIXED):** `_EQUIVALENCE_RE` originally matched only *unquoted* labels; 6 of 7 corpus footnotes use `'X' is equivalent to 'Y'`. Made quotes optional delimiters → parses all 5 genuine equivalences, still rejects the 2 non-equivalences (LendBridge's `;`-broken credit note; a definition footnote). New quoted/unquoted parser test.
+- **F2 (minor, coverage — FIXED):** the "ARR 1→5" headline was pinned by only a single-quarter test. Added a test over all 5 NovaCloud quarters ([24.1/26.8/29.1/31.6/34.2]M) asserting legacy=1, enhanced=5.
+
+**Measured (24-doc corpus):** +18 valid metrics captured (116→134); 10 of the −29 missing-alarm reduction are Phase-1 recoveries (metric now captured). Legacy byte-identical.
 
 ---
 
 ## Phase 2 — Class C sector-aware missing-metric check *(Build Spec)*
 
-> **Status:** not started · **Scope:** additive, gated · **Depends-on:** Phase 0 · **Blocks:** Phase 5 ·
-> **Parallelizable-with:** Phase 1 · **Ground-truthed:** 2026-07-10 · **Target:** `detect_metrics.py`,
-> `sector_profiles.py` (new), `pipeline.py`, `schema.py`, `tests/`
+> **Status:** ✅ **BUILT + AUDITED 2026-07-10** · **Scope:** additive, gated · **Depends-on:** Phase 0 · **Blocks:** Phase 5 ·
+> **Parallelizable-with:** Phase 1 (built together, same session) · **Ground-truthed:** 2026-07-10 (re-anchored post-Phase-0) ·
+> **Target:** `detect_metrics.py`, `sector_profiles.py` (new), `pipeline.py`, `tests/`
 
 **Purpose:** stop the 15 sector-blind false alarms. **Key data-flow (GT):** sector **cannot** be
 fingerprinted from captured metrics (LendBridge's credit anchors aren't aliases, so its captured set is
@@ -524,7 +547,25 @@ fingerprinted from captured metrics (LendBridge's credit anchors aren't aliases,
 summary also renders in the publish path via `_summaries_by_source` (`publish.py:328`); threading
 `recall_mode` through the shared `normalize_documents` covers both.)*
 
-**§ Definition of done:** 15 false alarms → 0 (enhanced) · legacy golden + `test_cli_normalize.py:31` byte-identical · both-mode tests green.
+**§ Definition of done — ✅ MET (2026-07-10):** ✅ 19 sector-blind false alarms → 0 (enhanced) · ✅ real gaps preserved · ✅ legacy golden + `test_cli_normalize.py:31` byte-identical · ✅ both-mode tests green.
+
+### Phase 2 — Build log (deviations + audit fixes)
+
+Built alongside Phase 1 (same session, `detect_metrics.py` edited in a non-overlapping region). Audited by the same 3-lens fan-out.
+
+**Deviations (recorded):**
+- **D-2a (SectorKind pre-satisfied):** spec 2.1b said "define `SectorKind` → schema.py:28"; Phase 0 had **already** added it (now `schema.py:32`). Phase 2 imports it, never re-declares (avoids a double-decl). Registry line corrected.
+- **D-2b (metric.sector populated — SCOPE ADD, flagged for veto):** the audit noted the frozen §A `metrics[].sector` bind target stayed `null`. Because the overriding requirement is *"the backend must work as the frontend will expect"* and §A lists `sector` as a cockpit bind target, Phase 2 now **populates `metric.sector` in enhanced mode** (legacy stays `None`). This updated the Phase-0 enhanced-contract test (`tests/test_golden.py`) in lockstep to assert `sector` is populated. **Xavier can veto** → revert to null-until-later.
+- **D-2c (period on `missing_metric`):** §A lists `missing_metric` as carrying `period`; now populated in enhanced (legacy still excludes it via the Phase-0 serializer). Additive; contract-completeness.
+- **D-2d (credit profile excludes `cash_balance`):** verified empirically — LendBridge reports **no cash line** (a lender's liquidity is covenant headroom / balance-sheet leverage, per Doc 0 §6A credit set), so `cash_balance` is sector-inapplicable and correctly suppressed. This makes measured suppression **19** (LendBridge ARR/cash/burn ×5 = 15 + marketplace/payments ARR ×4), not the audit's estimated 15 — the audit under-counted LendBridge's cash. `expected_metrics_for`: `credit={revenue_qtr, gross_margin_pct, headcount}`; `marketplace/payments=CORE − {arr_eop}`; `saas=CORE_METRICS` exactly.
+
+**Audit fixes applied:**
+- **F3 (minor, coverage — FIXED):** only credit (LendBridge) was tested end-to-end; added marketplace (ApexFreight) + payments (ClearPay) enhanced-pipeline suppression tests.
+- **F4 (minor, coverage — FIXED):** added a `metric.sector` enhanced-populated / legacy-`None` test.
+
+**Measured:** 19 sector-blind false alarms suppressed; a real gap the sector **does** expect (LendBridge Q2'24 `headcount`) is still correctly flagged — sector-awareness silences false alarms without hiding real drops. 34 real gaps remain across the corpus (honest roadmap, not suppressed).
+
+**Sector classifier note:** `_SECTOR_ANCHORS` ordered credit → payments → marketplace → saas(default); validated across all 24 golden docs (0 misclassifications). The over-generic `settlement` payments anchor was dropped (credit-first ordering already handled LendBridge's stray match).
 
 ---
 

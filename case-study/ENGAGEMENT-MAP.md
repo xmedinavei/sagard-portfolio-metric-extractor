@@ -13,12 +13,15 @@
 > printed data points, exports 1 wrong value (MediSight ARR), and raises 15 sector-blind false alarms.
 > These verified defects are the evidence base for **Document ii**. **New (2026-07-10): Xavier chose to
 > fix the backend FIRST, before writing Doc ii** — so the demo shows the fix, not a promise. The spec-flow
-> Stage-3 master plan for that fix is drafted (`ii-a-backend-fix-plan.md`): a 6-phase, additive-and-gated
-> plan (`recall-mode` flag, default legacy) that keeps the 46-test / golden-export baseline byte-identical
-> until a single cutover phase. **Awaiting approval at its §9 gate — no code yet.** Key finding: the "1
-> wrong value" (MediSight ARR) is a label-drift drop in disguise, so the alias fix — not D5 — is the real
-> fix. Still open by design: **D5** (reconciliation — now non-hypothetical) + metric sub-decisions
-> **D2a–D2f**.
+> plan for that fix (`ii-a-backend-fix-plan.md`) is a 6-phase, additive-and-gated build (`recall-mode` flag,
+> default legacy) that keeps the golden-export baseline byte-identical until a single cutover phase.
+> **Progress (2026-07-10): Phases 0 + 1 + 2 are BUILT + AUDITED** (P0 committed `e91349a`; 76 tests green;
+> legacy byte-identical). P1 recovers the drifted labels (NovaCloud ARR **1→5 quarters**; MediSight's own
+> report **27.9M** now captured and outranks the summary's wrong 22.4M with a conflict flag). P2 makes the
+> missing-metric check **sector-aware** (19 false alarms suppressed; the lender is routed out of SaaS
+> checks). **Enhanced recall: 116→134 valid metrics captured.** P3→P4→P5 next, then Doc ii on the live
+> demo. Key finding held true: the "1 wrong value" (MediSight ARR) was a label-drift drop in disguise, so
+> the alias fix — not D5 — was the real fix. Still open by design: **D5** + metric sub-decisions **D2a–D2f**.
 >
 > **Plain-English promise:** finance/technical jargon is defined the first time it appears here, and fully
 > in the brief's Glossary (§11). If a term is unfamiliar, check there.
@@ -36,7 +39,7 @@ audience, and packaging that into four documents.
 | **0** | **Foundations & Decision Brief** (`00-foundations-and-decisions.md`) | Domain primer, corpus reality, the 4 decisions (now locked), **§4.2.1 trap-solutions**, **§4.5 PE/credit classifier**, §6A metric sets, Sagard tailoring, glossary. | — | ✅ **Complete** (D1–D4 locked 2026-07-09; 1161 lines) |
 | **i** | **Context & Problem** (`i-context-and-problem.md`) | The business problem, the manual pain, why automation matters — tailored to Sagard, in business-stakeholder language. Answers case-study section (1). | D1–D3 locked | ✅ **Drafted 2026-07-09** (under adversarial critique) |
 | **ii-evidence** | **Prototype findings** (`ii-prototype-findings.md`) | ✅ Verified export result + defect audit (76% recall, 5 defect classes, all source-quoted). The evidence base + demo insights for Doc ii. | Full export run | ✅ **Done 2026-07-10** |
-| **ii-a** | **Backend fix plan + build specs** (`ii-a-backend-fix-plan.md`) | Part I = Stage-3 master plan (6 phases, `recall-mode` gate, retrocompat audit). Part II = Stage-4 build-ready specs (frozen §A frontend contract, Build DAG, naming registry, per-phase action→file:line→acceptance, all ground-truthed). | ii-evidence + 2 agent fan-outs | 🟢 **Phase 0 BUILT + AUDITED 2026-07-10** (recall-mode gate + frozen §A contract + 24-doc golden guard; 55 tests green; F1/F2 audit fixes applied). Next = Phase 1. |
+| **ii-a** | **Backend fix plan + build specs** (`ii-a-backend-fix-plan.md`) | Part I = Stage-3 master plan (6 phases, `recall-mode` gate, retrocompat audit). Part II = Stage-4 build-ready specs (frozen §A frontend contract, Build DAG, naming registry, per-phase action→file:line→acceptance, all ground-truthed). | ii-evidence + 2 agent fan-outs | 🟢 **P0 (committed `e91349a`) + P1 + P2 BUILT + AUDITED 2026-07-10.** P1 = alias recovery + footnote stitch (NovaCloud ARR 1→5; MediSight 27.9M fix). P2 = sector-aware missing-check (19 false alarms suppressed; lender routed out). 76 tests green; legacy byte-identical. Next = P3→P4→P5, then Doc ii. |
 | **ii** | **The Prototype & Front-End** | What the tool does today, how it works, its limits, **and the front-end demo design**. Future expansion lives at the *end* of this doc. Answers case-study sections (2) + (3). | Doc i + ii-evidence + **backend fix** | ⬜ Not started (writes after the backend fix lands, so the demo is live) |
 | **iii** | **Slides** | The presentation deck: problem → prototype → live demo → roadmap. Answers all four case-study sections in slide form. | Docs i + ii | ⬜ Not started (very last) |
 
@@ -159,7 +162,7 @@ These do **not** change the decisions, but must be done before numbers reach a s
 | `case-study/00-foundations-and-decisions.md` | Document 0 — the full decision brief (options, trade-offs, recommendations, glossary) |
 | `case-study/i-context-and-problem.md` | Document i — Context & Problem (✅ drafted 2026-07-09) |
 | `case-study/ii-prototype-findings.md` | Document ii evidence — verified export result + defect audit (✅ 2026-07-10) |
-| `case-study/ii-a-backend-fix-plan.md` | Backend fix — Part I Stage-3 master plan + Part II Stage-4 build specs (frozen §A frontend contract, Build DAG, ground-truthed file:line). 🟢 build-ready, awaiting build approval 2026-07-10 |
+| `case-study/ii-a-backend-fix-plan.md` | Backend fix — Part I Stage-3 master plan + Part II Stage-4 build specs (frozen §A frontend contract, Build DAG, ground-truthed file:line). 🟢 **P0+P1+P2 built+audited 2026-07-10** (76 tests green, legacy byte-identical); P3–P5 pending |
 | `case-study/` (to come) | Documents ii (Prototype & Front-End), iii (Slides) |
 | `intake-pdf/*.pdf` | The 24 sample portfolio-company PDFs (the corpus) |
 | `outputs/` | Prototype output — **`parsed/` covers all 24 docs** (usable for verification); **`metrics_long.csv/.json` is still a 3-doc slice → re-run the export before demo numbers** |

@@ -128,8 +128,12 @@ def test_enhanced_json_emits_the_1_1_0_contract() -> None:
     produced = _serialize_export(_build_export("enhanced"))
     assert '"schema_version": "1.1.0"' in produced
     assert '"recall_mode": "enhanced"' in produced
-    # Metric-level and issue-level §A fields both present (null in Phase 0; later phases populate).
-    for marker in ('"sector": null', '"value_normalized": null',
+    # §A metric.sector is populated in enhanced (Phase 2 — the cockpit "route the lender
+    # out" bind target). Remaining new fields stay null until their producing phase
+    # (value_normalized: Phase 3; expected/observed/delta: Phase 4).
+    assert '"sector": "credit"' in produced  # LendBridge routed out
+    assert '"sector": "saas"' in produced
+    for marker in ('"value_normalized": null',
                    '"expected_value": null', '"observed_value": null', '"delta": null'):
         assert marker in produced, f"enhanced export missing contract field {marker}"
 

@@ -90,6 +90,26 @@ def test_normalize_parser_output_surfaces_missing_core_metrics_for_lendbridge() 
     assert ("LendBridge", "monthly_burn") in missing
 
 
+def test_normalize_parser_output_sector_aware_missing_check_for_lendbridge_enhanced() -> None:
+    # Same fixture, enhanced mode: the lender is routed out of the SaaS metric checks, so
+    # the three false "missing" alarms disappear while the captured set is unchanged.
+    result = normalize_parser_output(
+        _load_parser_output("LendBridge_Q2_2025.parsed.json"),
+        recall_mode="enhanced",
+    )
+    metrics = _metrics_by_company(result, "LendBridge")
+    missing = {
+        (issue.company_name, issue.canonical_metric)
+        for issue in result.issues
+        if issue.code == "missing_metric"
+    }
+
+    assert set(metrics) == {"revenue_qtr", "gross_margin_pct", "headcount"}
+    assert ("LendBridge", "arr_eop") not in missing
+    assert ("LendBridge", "cash_balance") not in missing
+    assert ("LendBridge", "monthly_burn") not in missing
+
+
 @pytest.mark.parametrize(
     ("pdf_name", "expected_company"),
     [

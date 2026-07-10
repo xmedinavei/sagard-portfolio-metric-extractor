@@ -31,6 +31,16 @@ def test_normalize_command_prints_phase3_summary(capsys) -> None:
     assert "missing core metrics: arr_eop, cash_balance, monthly_burn" in captured.out
 
 
+def test_normalize_command_enhanced_mode_drops_sector_blind_lender_alarms(capsys) -> None:
+    exit_code = main(
+        ["normalize", "--input-dir", str(FIXTURE_DIR), "--recall-mode", "enhanced"])
+    captured = capsys.readouterr()
+
+    assert exit_code == 0
+    # In enhanced mode the LendBridge (credit) line no longer reports SaaS-only metrics.
+    assert "missing core metrics: arr_eop, cash_balance, monthly_burn" not in captured.out
+
+
 def test_normalize_command_can_emit_json(capsys) -> None:
     exit_code = main(
         [

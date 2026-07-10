@@ -4,9 +4,16 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from .metric_aliases import NARRATIVE_ALIASES, find_alias_for_label, normalize_label_text
+from .metric_aliases import (
+    NARRATIVE_ALIASES,
+    MetricAlias,
+    find_alias_for_label,
+    find_label_equivalences,
+    normalize_label_text,
+    strip_unit_suffix,
+)
 from .parse_values import find_value_token, parse_value_text
-from .schema import DocumentKind, MetricCandidate, ParserOutput
+from .schema import DocumentKind, MetricCandidate, ParserOutput, SectorKind
 
 _QUARTER_RE = re.compile(r"\b(Q[1-4]\s+20\d{2})\b", re.IGNORECASE)
 _DATE_RE = re.compile(
@@ -81,6 +88,10 @@ def detect_metric_candidates(
 ) -> DetectionResult:
     """Detect candidate metric/value pairs from Phase 2 parser output."""
 
+    enhanced = recall_mode == "enhanced"
+    footnote_equivalences = _build_footnote_equivalence_map(
+        parser_output, enhanced=enhanced)
+
     document_type = classify_document(parser_output)
     period = infer_period(parser_output.combined_text())
     current_company = infer_default_company(parser_output, document_type)
@@ -132,7 +143,10 @@ def detect_metric_candidates(
                 line_for_table, table_context=table_context)
             if split_row is not None:
                 raw_label, raw_value = split_row
-                alias = find_alias_for_label(raw_label)
+                alias = find_alias_for_label(raw_label, enhanced=enhanced)
+                if alias is None and enhanced:
+                    alias = _lookup_footnote_equivalence(
+                        footnote_equivalences, raw_label)
                 if alias is not None:
                     candidate = MetricCandidate(
                         source_file=parser_output.file_name,
@@ -220,6 +234,29 @@ def classify_document(parser_output: ParserOutput) -> DocumentKind:
     if "portfolio_snapshot" in file_name or _PORTFOLIO_SUMMARY_RE.search(combined):
         return "portfolio_summary"
     return "company_report"
+
+
+# Recall-fix (Phase 2): sector vocabulary anchors, ordered most-specific-first. A sector
+# is chosen by the first family whose distinctive vocabulary appears in the document; a
+# document with no distinctive anchor is SaaS (the portfolio default). Sector is read from
+# whole-document text upstream because it cannot be fingerprinted from captured metrics
+# (a lender's credit anchors are not aliases, so its captured set looks like SaaS).
+_SECTOR_ANCHORS: tuple[tuple[SectorKind, tuple[str, ...]], ...] = (
+    ("credit", ("loan book", "net interest margin", "charge-off", "charge off",
+                "covenant headroom", "provision coverage")),
+    ("payments", ("tpv", "total payment volume", "client float")),
+    ("marketplace", ("gmv", "gross merchandise", "take rate", "take-rate")),
+)
+
+
+def classify_sector(parser_output: ParserOutput) -> SectorKind:
+    """Classify a document's business sector from unique vocabulary anchors (default SaaS)."""
+
+    combined = parser_output.combined_text().lower()
+    for sector, anchors in _SECTOR_ANCHORS:
+        if any(anchor in combined for anchor in anchors):
+            return sector
+    return "saas"
 
 
 def infer_period(text: str) -> str | None:
@@ -422,3 +459,49 @@ def _overlaps(span: tuple[int, int], occupied_spans: list[tuple[int, int]]) -> b
 
 def _is_numbered_note_line(line: str) -> bool:
     return bool(_NUMBERED_NOTE_RE.match(line))
+
+
+def _build_footnote_equivalence_map(
+    parser_output: ParserOutput, *, enhanced: bool = False
+) -> dict[str, MetricAlias]:
+    """Map a drifted label to a known alias when a footnote declares them equivalent.
+
+    Whole-document scan (equivalence footnotes are stripped before the per-line detector
+    runs, and may reference a label on another page). Only pairs where exactly one side
+    resolves to a known alias are registered, so undeclared or mutually-unknown
+    equivalences (e.g. LendBridge's credit-metric note) are safely ignored. Enhanced only.
+    """
+
+    mapping: dict[str, MetricAlias] = {}
+    if not enhanced:
+        return mapping
+
+    for left, right in find_label_equivalences(parser_output.combined_text()):
+        left_alias = find_alias_for_label(left, enhanced=True)
+        right_alias = find_alias_for_label(right, enhanced=True)
+        if right_alias is not None and left_alias is None:
+            _register_equivalence(mapping, left, right_alias)
+        elif left_alias is not None and right_alias is None:
+            _register_equivalence(mapping, right, left_alias)
+    return mapping
+
+
+def _register_equivalence(
+    mapping: dict[str, MetricAlias], drifted_label: str, alias: MetricAlias
+) -> None:
+    key = normalize_label_text(drifted_label)
+    if not key:
+        return
+    mapping.setdefault(key, alias)
+    stripped = strip_unit_suffix(key)
+    if stripped and stripped != key:
+        mapping.setdefault(stripped, alias)
+
+
+def _lookup_footnote_equivalence(
+    mapping: dict[str, MetricAlias], raw_label: str
+) -> MetricAlias | None:
+    if not mapping or not raw_label:
+        return None
+    normalized = normalize_label_text(raw_label)
+    return mapping.get(normalized) or mapping.get(strip_unit_suffix(normalized))
