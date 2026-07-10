@@ -11,8 +11,13 @@
 > **full 24-PDF export has now been run and audited** (`ii-prototype-findings.md`): headline is clean
 > (24 docs / 99 valid / 0 invalid) but source-recall is **76%** — the tool silently drops 30 of 128
 > printed data points, exports 1 wrong value (MediSight ARR), and raises 15 sector-blind false alarms.
-> These verified defects are the evidence base for **Document ii**, which is next. Still open by design:
-> **D5** (reconciliation — now shown to be non-hypothetical, 5 live conflicts) + metric sub-decisions
+> These verified defects are the evidence base for **Document ii**. **New (2026-07-10): Xavier chose to
+> fix the backend FIRST, before writing Doc ii** — so the demo shows the fix, not a promise. The spec-flow
+> Stage-3 master plan for that fix is drafted (`ii-a-backend-fix-plan.md`): a 6-phase, additive-and-gated
+> plan (`recall-mode` flag, default legacy) that keeps the 46-test / golden-export baseline byte-identical
+> until a single cutover phase. **Awaiting approval at its §9 gate — no code yet.** Key finding: the "1
+> wrong value" (MediSight ARR) is a label-drift drop in disguise, so the alias fix — not D5 — is the real
+> fix. Still open by design: **D5** (reconciliation — now non-hypothetical) + metric sub-decisions
 > **D2a–D2f**.
 >
 > **Plain-English promise:** finance/technical jargon is defined the first time it appears here, and fully
@@ -31,7 +36,8 @@ audience, and packaging that into four documents.
 | **0** | **Foundations & Decision Brief** (`00-foundations-and-decisions.md`) | Domain primer, corpus reality, the 4 decisions (now locked), **§4.2.1 trap-solutions**, **§4.5 PE/credit classifier**, §6A metric sets, Sagard tailoring, glossary. | — | ✅ **Complete** (D1–D4 locked 2026-07-09; 1161 lines) |
 | **i** | **Context & Problem** (`i-context-and-problem.md`) | The business problem, the manual pain, why automation matters — tailored to Sagard, in business-stakeholder language. Answers case-study section (1). | D1–D3 locked | ✅ **Drafted 2026-07-09** (under adversarial critique) |
 | **ii-evidence** | **Prototype findings** (`ii-prototype-findings.md`) | ✅ Verified export result + defect audit (76% recall, 5 defect classes, all source-quoted). The evidence base + demo insights for Doc ii. | Full export run | ✅ **Done 2026-07-10** |
-| **ii** | **The Prototype & Front-End** | What the tool does today, how it works, its limits, **and the front-end demo design**. Future expansion lives at the *end* of this doc. Answers case-study sections (2) + (3). | Doc i + ii-evidence | ⬜ Not started (evidence ready; front-end deliberately deferred) |
+| **ii-a** | **Backend fix master plan** (`ii-a-backend-fix-plan.md`) | Spec-flow Stage-3 plan to FIX the backend before Doc ii: 6 phases, additive-and-gated (`recall-mode` flag), full retrocompat audit, file:line seams. | ii-evidence + backend investigation | 🟡 **Drafted 2026-07-10 — awaiting approval at §9** |
+| **ii** | **The Prototype & Front-End** | What the tool does today, how it works, its limits, **and the front-end demo design**. Future expansion lives at the *end* of this doc. Answers case-study sections (2) + (3). | Doc i + ii-evidence + **backend fix** | ⬜ Not started (writes after the backend fix lands, so the demo is live) |
 | **iii** | **Slides** | The presentation deck: problem → prototype → live demo → roadmap. Answers all four case-study sections in slide form. | Docs i + ii | ⬜ Not started (very last) |
 
 > **Sequencing rule (why this order):** in a *business* case study the graders reward connecting technical
@@ -153,6 +159,7 @@ These do **not** change the decisions, but must be done before numbers reach a s
 | `case-study/00-foundations-and-decisions.md` | Document 0 — the full decision brief (options, trade-offs, recommendations, glossary) |
 | `case-study/i-context-and-problem.md` | Document i — Context & Problem (✅ drafted 2026-07-09) |
 | `case-study/ii-prototype-findings.md` | Document ii evidence — verified export result + defect audit (✅ 2026-07-10) |
+| `case-study/ii-a-backend-fix-plan.md` | Backend fix master plan — spec-flow Stage 3, 6 phases, retrocompat audit (🟡 awaiting approval 2026-07-10) |
 | `case-study/` (to come) | Documents ii (Prototype & Front-End), iii (Slides) |
 | `intake-pdf/*.pdf` | The 24 sample portfolio-company PDFs (the corpus) |
 | `outputs/` | Prototype output — **`parsed/` covers all 24 docs** (usable for verification); **`metrics_long.csv/.json` is still a 3-doc slice → re-run the export before demo numbers** |
