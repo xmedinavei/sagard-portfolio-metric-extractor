@@ -62,6 +62,10 @@ LEGACY_JSON_EXCLUDE = {
     "export_metadata": {"recall_mode"},
     **LEGACY_RESULT_EXCLUDE,
 }
+# Recall-fix (Phase 3): reporting bases that are structurally non-comparable to an ordinary
+# product/COGS margin — a lender's interest margin can never anchor a comparable cohort, no
+# matter how many lenders are present. Used by the refuse-to-compare (basis_collision) scan.
+_ISOLATED_BASES: frozenset[str] = frozenset({"interest_margin"})
 
 
 @dataclass(frozen=True, slots=True)
@@ -94,9 +98,17 @@ def build_metrics_export(
         for issue in result.issues
     ]
 
-    deduped_metrics, dedupe_issues = _dedupe_cross_document_metrics(metrics)
+    deduped_metrics, dedupe_issues = _dedupe_cross_document_metrics(
+        metrics, recall_mode=recall_mode)
     metrics = sorted(deduped_metrics, key=_metric_sort_key)
-    issues = sorted([*issues, *dedupe_issues], key=_issue_sort_key)
+    # Recall-fix (Phase 3): refuse cross-company comparison of a canonical metric reported
+    # on incompatible bases (e.g. a lender's interest-margin gross margin beside SaaS ones).
+    # Enhanced only; non-destructive (marks rows + emits an issue, never drops or rewrites).
+    collision_issues = (
+        _detect_basis_collisions(metrics) if recall_mode == "enhanced" else []
+    )
+    issues = sorted(
+        [*issues, *dedupe_issues, *collision_issues], key=_issue_sort_key)
 
     valid_metric_count = sum(1 for metric in metrics if metric.is_valid)
     export_metadata = ExportMetadata(
@@ -127,6 +139,8 @@ def build_metrics_export(
 
 def _dedupe_cross_document_metrics(
     metrics: Iterable[NormalizedMetric],
+    *,
+    recall_mode: str = "legacy",
 ) -> tuple[list[NormalizedMetric], list[NormalizationIssue]]:
     selected: dict[tuple[str, str | None, str], NormalizedMetric] = {}
     issues: list[NormalizationIssue] = []
@@ -166,7 +180,109 @@ def _dedupe_cross_document_metrics(
             )
         )
 
+        # Recall-fix (Phase 4, D5): when the two sources genuinely disagree, raise a louder
+        # cross-validation flag for the reconciliation panel — WITHOUT changing the winner
+        # (company-report still wins above). Semantics locked in §A: observed = retained
+        # (own/company report), expected = suppressed (summary), delta = observed − expected.
+        if recall_mode == "enhanced" and not identical_value:
+            delta = (
+                round(retained.value - suppressed.value, 6)
+                if retained.value is not None and suppressed.value is not None
+                else None
+            )
+            issues.append(
+                NormalizationIssue(
+                    severity="warning",
+                    code="cross_source_discrepancy",
+                    message=(
+                        f"Cross-source discrepancy for `{retained.canonical_metric}` "
+                        f"({retained.company_name}): retained {retained.raw_value_text} from "
+                        f"`{retained.source_file}` vs {suppressed.raw_value_text} from "
+                        f"`{suppressed.source_file}`."
+                    ),
+                    source_file=retained.source_file,
+                    source_page=retained.source_page,
+                    company_name=retained.company_name,
+                    canonical_metric=retained.canonical_metric,
+                    raw_label=suppressed.raw_label,
+                    raw_value_text=suppressed.raw_value_text,
+                    period=retained.period,
+                    expected_value=suppressed.value,
+                    observed_value=retained.value,
+                    delta=delta,
+                )
+            )
+
     return list(selected.values()), issues
+
+
+def _detect_basis_collisions(
+    metrics: list[NormalizedMetric],
+) -> list[NormalizationIssue]:
+    """Refuse cross-company comparison of a canonical metric reported on incompatible bases.
+
+    Groups the exported metrics by canonical metric; when a group mixes reporting bases
+    (e.g. a lender's ``interest_margin`` ``gross_margin_pct`` beside SaaS ``quarterly`` ones)
+    the non-comparable rows are marked ``comparison_status="refused"`` and one
+    ``basis_collision`` issue is emitted per group. Non-destructive — no value or dedup key
+    is touched. Enhanced only (the caller gates it).
+
+    Comparability is decided **structurally, not by vote**: an isolated basis (a lender's
+    interest margin) is categorically non-comparable to an ordinary product margin, so it can
+    never be the comparable cohort even if lenders outnumber SaaS. The comparable anchor is
+    the most common **non-isolated** basis; every isolated basis and every non-isolated
+    minority is refused against it. If every basis is isolated, all rows are refused.
+    """
+
+    groups: dict[str, list[NormalizedMetric]] = {}
+    for metric in metrics:
+        if metric.is_valid and metric.metric_basis is not None:
+            groups.setdefault(metric.canonical_metric, []).append(metric)
+
+    issues: list[NormalizationIssue] = []
+    for canonical_metric, group in sorted(groups.items()):
+        bases = {metric.metric_basis for metric in group}
+        if len(bases) < 2:
+            continue
+
+        basis_counts: dict[str, int] = {}
+        for metric in group:
+            basis_counts[metric.metric_basis] = basis_counts.get(
+                metric.metric_basis, 0) + 1
+        comparable_bases = [b for b in bases if b not in _ISOLATED_BASES]
+        if comparable_bases:
+            anchor_basis = max(
+                sorted(comparable_bases), key=lambda basis: basis_counts[basis])
+            refused = [m for m in group if m.metric_basis != anchor_basis]
+        else:
+            anchor_basis = None
+            refused = list(group)
+
+        for metric in refused:
+            metric.comparison_status = "refused"
+
+        refused_desc = ", ".join(sorted(
+            {f"{metric.company_name} ({metric.metric_basis})" for metric in refused}))
+        anchor_desc = (
+            f"the comparable `{anchor_basis}` basis" if anchor_basis is not None
+            else "each other (no comparable basis)")
+        representative = min(
+            refused, key=lambda metric: (metric.source_file, metric.company_name, metric.period or ""))
+        issues.append(
+            NormalizationIssue(
+                severity="warning",
+                code="basis_collision",
+                message=(
+                    f"Refused to compare `{canonical_metric}`: {len(refused)} row(s) report "
+                    f"a basis incompatible with {anchor_desc} — {refused_desc}."
+                ),
+                source_file=representative.source_file,
+                canonical_metric=canonical_metric,
+                # §A frozen contract: basis_collision carries `period` (representative row).
+                period=representative.period,
+            )
+        )
+    return issues
 
 
 def _serialize_export(export: MetricsLongExport) -> str:
@@ -255,6 +371,15 @@ def render_summary_markdown(export: MetricsLongExport) -> str:
         if missing_core:
             lines.append(
                 f"  - missing core metrics: {', '.join(missing_core)}")
+
+    # Recall-fix (Phase 3): surface metrics the tool refused to compare across bases. Empty
+    # in legacy (no basis_collision issues are ever emitted), so legacy output is unchanged.
+    refused_issues = [
+        issue for issue in export.issues if issue.code == "basis_collision"]
+    if refused_issues:
+        lines.extend(["", "## Refused comparisons", ""])
+        for issue in refused_issues:
+            lines.append(f"- {issue.message}")
 
     return "\n".join(lines).strip() + "\n"
 

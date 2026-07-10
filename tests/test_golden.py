@@ -138,6 +138,20 @@ def test_enhanced_json_emits_the_1_1_0_contract() -> None:
         assert marker in produced, f"enhanced export missing contract field {marker}"
 
 
+def test_enhanced_populates_phase3_and_phase4_fields_on_golden_corpus() -> None:
+    # E2E proof over all 24 docs that the P3/P4 producers actually fire on the real corpus.
+    produced = _serialize_export(_build_export("enhanced"))
+    # Phase 3: ClearPay restricted-cash exclusion → normalized cash beside the raw balance.
+    assert '"value_normalized": 32200000.0' in produced
+    # Phase 3: LendBridge interest-margin basis + the refused cross-basis comparison.
+    assert '"metric_basis": "interest_margin"' in produced
+    assert '"comparison_status": "refused"' in produced
+    assert '"code": "basis_collision"' in produced
+    # Phase 4 (D5): MediSight own(27.9M) vs summary(22.4M) surfaces with observed/expected/delta.
+    assert '"code": "cross_source_discrepancy"' in produced
+    assert '"delta": 5500000.0' in produced
+
+
 def test_enhanced_csv_has_contract_columns_and_legacy_does_not() -> None:
     enhanced_header = _csv_text(_build_export("enhanced"), enhanced=True).splitlines()[0]
     legacy_header = _csv_text(_build_export("legacy"), enhanced=False).splitlines()[0]

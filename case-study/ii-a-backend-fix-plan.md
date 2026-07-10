@@ -326,10 +326,11 @@ specs below.
 **Edges:** P1 ∥ P2 (independent). P3 `Depends-on` P1 (GT-4). P4 `Depends-on` P0 (issue-field contract).
 P5 `Depends-on` {P1,P2,P3,P4 that shipped}. **Tight-core track = P0 → P1 → (scoped) P5.**
 
-> **Build status (2026-07-10):** ✅ **P0 BUILT+AUDITED+COMMITTED** (`e91349a`) · ✅ **P1 BUILT+AUDITED** · ✅ **P2 BUILT+AUDITED**
-> (P1+P2 built together in one session, main-thread sequential — they touch `detect_metrics.py` in non-overlapping regions;
-> 3-lens adversarial audit, retrocompat lens 0 findings, 7 minor/nit findings all fixed or recorded). ⏳ P3 → P4 → P5 next.
-> **Suite: 76 tests green; legacy byte-identical; ruff clean.** P1+P2 not yet committed.
+> **Build status (2026-07-10):** ✅ **P0 BUILT+AUDITED+COMMITTED** (`e91349a`) · ✅ **P1+P2 BUILT+AUDITED+COMMITTED** (`9987ba2`) ·
+> ✅ **P3 BUILT+AUDITED** · ✅ **P4 BUILT+AUDITED** (P3+P4 built together in one session, main-thread sequential — they share
+> `publish.py` in adjacent regions; 4-lens adversarial audit wf_069746ed-39d, **retrocompat lens 0 findings**, 1 real correctness
+> bug [F1 frequency-vote inversion] + 3 smaller gaps all fixed). ⏳ P5 (cutover) next. **Suite: 89 tests green; legacy
+> byte-identical (JSON/CSV/summary); ruff clean.** P3+P4 not yet committed.
 
 ## II.2 — Naming registry *(use these names verbatim in every phase and in the frontend)*
 
@@ -360,6 +361,12 @@ P5 `Depends-on` {P1,P2,P3,P4 that shipped}. **Tight-core track = P0 → P1 → (
 | `_serialize_export(export)` (mode read from `export_metadata.recall_mode`), `LEGACY_JSON_EXCLUDE`, `LEGACY_RESULT_EXCLUDE`, `EXPORT_SCHEMA_VERSION_ENHANCED` | fn + consts | `publish.py` | mode-gated JSON (GT-1); ✅ built P0 (signature simplified vs original registry — see Phase 0 build log D-0a/b/c) |
 | `CSV_FIELDNAMES` / `CSV_FIELDNAMES_ENHANCED` | tuples | `publish.py:22` | mode-selected header |
 | golden guard | `tests/golden/parsed/*.parsed.json`, `tests/golden/metrics_long.legacy.json`, `make verify-golden`, `tests/test_golden.py` | new | GT-3 |
+| enhanced per-doc enrichment (`metric_basis="interest_margin"` for credit GM · `value_normalized` · `comparison_status="comparable"`) | field writes | `pipeline.py` `normalize_parser_output` (enhanced block) | ✅ P3. Sector-driven basis (D-3a); centralized here not in `normalize.py` (D-3b). Legacy leaves all `None` |
+| `_detect_restricted_cash_exclusion(text) -> float｜None` + `_RESTRICTED_CASH_RE` | fn + regex | `pipeline.py` | ✅ P3. Reads the segregated client-float footnote; applied only to a payments company's current-period cash (F3) |
+| `_detect_basis_collisions(metrics) -> list[NormalizationIssue]` + `_ISOLATED_BASES` | fn + const | `publish.py` | ✅ P3. **Structural** refusal (not frequency) — `interest_margin` never anchors (F1); marks `comparison_status="refused"` + emits one `basis_collision` per group (with `period`, F2) |
+| "Refused comparisons" section | summary block | `publish.py` `render_summary_markdown` | ✅ P3. Enhanced-only (data-gated on `basis_collision` issues); legacy summary byte-identical |
+| `_dedupe_cross_document_metrics(metrics, *, recall_mode="legacy")` | fn | `publish.py` | ✅ P4. Forwards the gate; conflict branch emits `cross_source_discrepancy` (enhanced) — winner unchanged |
+| `cross_source_discrepancy` emit | issue write | `publish.py` `_dedupe_cross_document_metrics` | ✅ P4. `observed=retained(own)`, `expected=suppressed(summary)`, `delta=observed−expected` (null-guarded), `period=retained.period` |
 
 ## §A — FROZEN backend→frontend contract *(declared once here; referenced by anchor)*
 
@@ -384,13 +391,17 @@ P5 `Depends-on` {P1,P2,P3,P4 that shipped}. **Tight-core track = P0 → P1 → (
 |---|---|---|
 | `missing_metric` | Exception (now sector-aware) | `period` |
 | `unrecognized_label` *(new)* | Exception ("dropped, not absent") | `period`, `raw_label` |
-| `basis_collision` *(new)* | Refused-comparison | `period` |
-| `cross_document_conflicting_candidates` | Reconciliation | `period`, `expected_value`, `observed_value`, `delta` |
-| `cross_source_discrepancy` *(new, D5)* | Reconciliation | `period`, `expected_value`, `observed_value`, `delta` |
+| `basis_collision` *(new)* | Refused-comparison | `period` ✅ P3 |
+| `cross_document_conflicting_candidates` | Reconciliation | presence/winner signal only — reconciliation **numbers ride the co-emitted `cross_source_discrepancy` sibling** (same `company/period/metric`); this code stays unchanged per the P4 spec (D-4b) |
+| `cross_source_discrepancy` *(new, D5)* | Reconciliation | `period`, `expected_value`, `observed_value`, `delta` ✅ P4 |
 | `parse_failure`, `duplicate_candidate`, `conflicting_candidates`, `cross_document_duplicate`, `portfolio_summary_document` | *(unchanged)* | — |
 > New `issues[]` fields (all `null` in 1.0.0): `period`, `expected_value`, `observed_value`, `delta`.
 > **D5 semantics locked:** `observed_value` = retained (own/company-report) figure; `expected_value` =
 > suppressed (summary) figure; `delta = observed − expected` (null-guarded).
+> **Reconciliation-panel binding note (D-4b, built P4):** for a cross-document conflict the frontend reads the
+> numeric fields (`observed/expected/delta`) from the **`cross_source_discrepancy`** issue; the paired
+> `cross_document_conflicting_candidates` issue (same key) is the presence/winner marker. *(Xavier can veto →
+> duplicate the four fields onto `cross_document_conflicting_candidates` in enhanced mode, legacy-safe.)*
 
 ---
 
@@ -571,9 +582,9 @@ Built alongside Phase 1 (same session, `detect_metrics.py` edited in a non-overl
 
 ## Phase 3 — Class D basis tags + value_normalized + refuse-to-compare *(Build Spec)*
 
-> **Status:** not started · **Scope:** additive, gated · **Depends-on:** Phase 0, **Phase 1** (GT-4) ·
-> **Blocks:** Phase 5 · **Parallelizable-with:** Phase 2 · **Ground-truthed:** 2026-07-10 · **Target:**
-> `schema.py`, `metric_aliases.py`, `normalize.py`, `parse_values.py`, `publish.py`, `tests/`
+> **Status:** ✅ **BUILT + AUDITED 2026-07-10** · **Scope:** additive, gated · **Depends-on:** Phase 0, **Phase 1** (GT-4) ·
+> **Blocks:** Phase 5 · **Parallelizable-with:** Phase 2, Phase 4 (built together, same session, main-thread sequential) ·
+> **Ground-truthed:** 2026-07-10 (re-anchored post-P0/P1/P2) · **Target:** `pipeline.py`, `publish.py`, `tests/`
 
 **Purpose:** make the tool **visibly refuse** unsafe comparisons (demo insight #2). **GT-4:** the LendBridge
 gross-margin collision is invisible until an `interest_margin` basis is assigned to it via Phase-1
@@ -596,14 +607,33 @@ footnote-stitching (footnote (4), `LendBridge…parsed.md:102`).
 
 **Net: zero breaking.** Raw `value` never mutated (the canary invariant).
 
-**§ Definition of done:** gross-margin collision visibly refused (enhanced) · ClearPay normalized cash beside raw · legacy golden byte-identical · raw `.value` baselines all green.
+**§ Definition of done — ✅ MET (2026-07-10):** ✅ gross-margin collision visibly refused (enhanced; LendBridge ×5 `interest_margin` → `refused`, SaaS `quarterly` → `comparable`, one `basis_collision` issue) · ✅ ClearPay normalized cash `32.2M` beside raw `38.4M` · ✅ "Refused comparisons" summary section (enhanced only) · ✅ legacy golden byte-identical (JSON/CSV/summary) · ✅ raw `.value` never mutated (canary green) · ✅ ruff clean.
+
+### Phase 3 — Build log (deviations + audit fixes)
+
+Built on the main thread 2026-07-10 (alongside Phase 4, sequentially — they share `publish.py` in adjacent regions) after a full read-only re-ground-truth (P0/P1/P2 had shifted every line). Audited by a 4-lens `phase-auditor` fan-out (wf_069746ed-39d: retrocompat · contract/registry · correctness · test-adequacy) — retrocompat **0 findings**; the other lenses found 1 real correctness bug + 3 smaller gaps, all fixed.
+
+**Deviations (recorded — flagged for veto):**
+- **D-3a (interest_margin via SECTOR, not the P1 footnote map):** spec 3.1b said assign `interest_margin` in `infer_metric_basis` by reading the P1 equivalence/footnote map. Ground-truth killed that path: LendBridge's gross-margin footnote is a **definition** ("Gross Margin reflects net interest income net of cost of funds") — **not** an `equivalent to` equivalence, so P1's `find_label_equivalences` never carries it; and that footnote reliably appears only in Q4'24, not the Q2'25 demo quarter. Implemented **sector-driven** instead: in `normalize_parser_output`, enhanced + `sector=="credit"` + `gross_margin_pct` → `interest_margin`. 100% reliable across all 5 lender quarters and domain-correct (a lender's GM *is* a spread margin; Doc 0 §4.5/§6A). The footnote corroborates but is not required.
+- **D-3b (enrichment in `pipeline.py`, not `normalize.py`):** spec 3.2a placed `value_normalized` in `normalize.py:59`, but `normalize_candidates` has no `parser_output.combined_text()` — needed to read the restricted-cash footnote. Centralized all enhanced per-doc enrichment (sector · basis · `value_normalized` · `comparison_status`) in `normalize_parser_output` (pipeline.py), which has both the metrics and the full document text.
+- **D-3c (metric_basis Literal pre-satisfied):** spec 3.1a (harden `metric_basis` to include `interest_margin`) was already done by Phase 0 (`schema.py:33`). No change.
+- **D-3d (no new fixtures; load from golden):** spec 3.5 said add fixtures under `tests/fixtures/parsed/`, but that dir's inventory is pinned by `test_cli_normalize.py:12-19`. P3/P4 tests load the real drifted-label docs from the committed `tests/golden/parsed/` corpus instead (mirrors P1's D-1b).
+- **D-3e (`comparison_status` default):** enhanced rows start `"comparable"`; the collision scan flips refused rows to `"refused"`. `"unchecked"` stays reserved (valid in the Literal, unused for now).
+
+**Audit fixes applied:**
+- **F1 (MAJOR, real bug — FIXED):** `_detect_basis_collisions` refused by **frequency** ("minority basis loses"). If lenders ever out-numbered or tied SaaS, `interest_margin` became the "majority" and the SaaS rows were wrongly refused — inverting the thesis. The corpus masked it (SaaS is plural). Replaced with **structural** refusal: `_ISOLATED_BASES = {"interest_margin"}` can never anchor a comparable cohort; the anchor is the most common **non-isolated** basis, and every isolated basis (+ any non-isolated minority) is refused against it. New test: two lenders + one SaaS ⇒ both lenders refused, SaaS comparable.
+- **F2 (MAJOR, contract — FIXED):** `basis_collision` omitted the §A-frozen `period` field (emitted null). Now sets `period=representative.period`. New test asserts it is populated on the golden enhanced export.
+- **F3 (MINOR, correctness — FIXED):** the document-level restricted-cash amount was applied to every payments `cash_balance` row; scoped to `metric.period == detection.period` so a Q2 float can never touch a prior-period balance (no-op on the 1-row corpus; future-proofs multi-period capture).
+- **F4 (NIT, coverage — FIXED):** added a `cross_source_discrepancy` test with one unparsed value → `delta=None`, no crash.
+
+**Measured (24-doc corpus, enhanced):** ClearPay cash `38.4M` raw / `32.2M` normalized; LendBridge GM ×5 → `interest_margin` + `refused`; SaaS GM `quarterly` + `comparable`; one `basis_collision` issue; "Refused comparisons" summary section rendered. Legacy byte-identical.
 
 ---
 
 ## Phase 4 — D5 cross-validation flag *(Build Spec)*
 
-> **Status:** not started · **Scope:** additive, gated · **Depends-on:** Phase 0 (issue fields) ·
-> **Blocks:** Phase 5 · **Parallelizable-with:** Phase 3 · **Ground-truthed:** 2026-07-10 · **Target:**
+> **Status:** ✅ **BUILT + AUDITED 2026-07-10** · **Scope:** additive, gated · **Depends-on:** Phase 0 (issue fields) ·
+> **Blocks:** Phase 5 · **Parallelizable-with:** Phase 3 (built together, same session) · **Ground-truthed:** 2026-07-10 · **Target:**
 > `publish.py`, `tests/` · **Decision:** cross-validation flag, additive, **company-wins kept** (locked).
 
 **Purpose:** surface own-vs-summary discrepancies louder for the reconciliation panel, without changing the
@@ -622,7 +652,21 @@ winner. Machinery already works when 2 candidates exist (NovaCloud precedent, `t
 
 **Net: zero breaking.** Company-wins ordering and the existing conflict code preserved.
 
-**§ Definition of done:** MediSight discrepancy surfaced with delta (enhanced) · winner unchanged · `test_publish.py:147` still green · legacy golden byte-identical.
+**§ Definition of done — ✅ MET (2026-07-10):** ✅ MediSight own(27.9M)-vs-summary(22.4M) surfaces as `cross_source_discrepancy` with `observed=27.9M`, `expected=22.4M`, `delta=+5.5M` · ✅ winner unchanged (own report retained) · ✅ existing `cross_document_conflicting_candidates` preserved (`test_publish.py:147` green) · ✅ legacy golden byte-identical · ✅ 4 genuine discrepancies surfaced across the corpus (D5 flags every silent own-vs-summary disagreement, not just MediSight).
+
+### Phase 4 — Build log (deviations + audit fixes)
+
+Built alongside Phase 3 (same session, `publish.py` `_dedupe_cross_document_metrics` edited in a region adjacent to P3's `build_metrics_export`). Same 4-lens audit.
+
+**Deviations (recorded):**
+- **D-4a (`build_metrics_export` + CLI call-site pre-satisfied):** spec 4.1a said add `recall_mode` to `build_metrics_export` and pass it at `cli.py:622`. Phase 0 had already done **both** (publish.py:80, cli.py:655). P4's only wiring work was forwarding `recall_mode` one level deeper into `_dedupe_cross_document_metrics`.
+- **D-4b (`cross_document_conflicting_candidates` kept unchanged; §A clarified — flagged for veto):** audit F5 (minor) noted §A line 388 lists `period/expected_value/observed_value/delta` on `cross_document_conflicting_candidates`, but the (pre-existing) producer emits them null. The Phase-4 spec **explicitly says keep that issue unchanged** (pinned by `test_publish.py:147`), and the D5 design deliberately routes the reconciliation numbers through the **new co-emitted `cross_source_discrepancy` sibling** (same `company/period/metric` key, same conflict branch). Resolution: honor the spec — `cross_document_conflicting_candidates` stays the *presence/winner* signal; the numbers ride the sibling. §A note updated so the frontend binds the reconciliation figures on `cross_source_discrepancy`. **Xavier can veto** → duplicate the four fields onto `cross_document_conflicting_candidates` in enhanced mode (legacy-safe).
+
+**Audit fixes applied:**
+- **F4 (NIT, coverage — FIXED, shared with P3):** null-delta branch now tested (see Phase 3 log).
+- No P4-specific code defects found. Retrocompat lens: 0 findings. D5 semantics (observed=own, expected=summary, delta=observed−expected) confirmed correct by the contract lens.
+
+**Measured:** MediSight `arr_eop` discrepancy `+5.5M` surfaced; winner still the own report; 3 other genuine cross-doc conflicts also flagged; legacy emits only the existing conflict code.
 
 ---
 
