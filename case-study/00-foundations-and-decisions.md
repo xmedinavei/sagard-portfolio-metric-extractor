@@ -1,10 +1,15 @@
 # Document 0 — Foundations & Decision Brief
 ### Sagard "Portfolio Metrics Assistant" — Business Case Study (2nd round)
 
-> **Status:** DRAFT for Xavier to review and decide. Every major decision below is left **OPEN**.
+> **Status:** the four core decisions **D1–D4 are now LOCKED** (Xavier, 2026-07-09). A few *sub*-choices
+> remain open on purpose: the metric sub-decisions **D2a–D2f** (§6A.4) and the new **D5** reconciliation
+> policy (§4.2.1). Everything else below is settled and feeds straight into the persuasive documents.
+> **Scope decision (2026-07-09):** the case study is scoped to the **equity / PE monitoring path**.
+> Private credit is **not** dropped — the tool first *classifies* each pack as equity or credit (new
+> §4.5) and can monitor credit **longitudinally** as a documented **extension**; v1 simply builds and
+> demos the PE path.
 > **Purpose:** Define the business problem, the domain, and the key choices *before* we write the
-> persuasive documents (Context, Prototype, Slides). Nothing here is locked until you record your
-> choice in the **Decision Log** (Section 2).
+> persuasive documents (Context, Prototype, Slides).
 > **Audience of the final case study:** Sagard's investment & portfolio-operations teams (business
 > stakeholders), presented to the AI & Data team you'd join as a Forward Deployed Engineer (FDE).
 > **Owner / builder:** Xavier Medina.
@@ -40,7 +45,8 @@ you handle questions about trade-offs and limitations.
 
 > **"Same label doesn't mean the same metric. Comparability is the product — not extraction."**
 > The tool's real job is to *guarantee* that any two numbers placed side by side actually mean the same
-> thing, and to make every number *traceable* back to the exact page it came from.
+> thing, and to make every number *traceable* back to the exact source **file** it came from
+> (file-level today; page/snippet-level is a roadmap upgrade).
 
 **Why that thesis wins:** pulling numbers out of PDFs is the easy, commodity part. The hard, valuable
 part — the thing that makes an investment team *trust* and *adopt* the tool — is (a) knowing when two
@@ -54,7 +60,7 @@ on."
 |---|---|
 | (a) Quickly understand how each company is performing | One normalized view across companies + clean quarter-over-quarter trends |
 | (b) Reduce manual work preparing summaries/dashboards | Auto extract + normalize + reconcile + flag exceptions; no re-keying |
-| (c) Trust the numbers and trace them to source | Every number carries source file, page, original label, exact sentence, confidence |
+| (c) Trust the numbers and trace them to source | Every number carries its **source file**, original label, and confidence today; exact page/sentence is the roadmap upgrade |
 
 ---
 
@@ -63,16 +69,21 @@ on."
 Each decision is explained in full later. This table is the at-a-glance version. **My recommendation is
 shown, but the choice is yours.**
 
-| # | Decision | Options (short) | My recommendation | ☐ Your choice |
+| # | Decision | Options (short) | My recommendation | ✅ Your choice (2026-07-09) |
 |---|----------|-----------------|-------------------|---------------|
-| **D1** | Anchor **workflow + persona** | A Monitoring · B Watchlist · C Valuation · D LP-reporting · E Board-pack · F Covenant | **A — Quarterly monitoring (Portfolio-Ops)** | `__________` |
-| **D2** | **Metric set + philosophy** | A SaaS core-six · B Tiered · C Thematic · D Minimal · E Union · F ILPA | **B — Tiered (universal + sector packs + raw tail + derived)** | `__________` |
-| **D3** | **Automation ladder** (what we automate vs keep human) | Rungs 1–2 · **1–4** · 1–5 · 1–6 | **1–4 — "Monitoring Cockpit"** | `__________` |
-| **D4** | **Output / front-end** (build deferred) | A Cockpit · B Trend · C Heatmap · D Exceptions · E One-pager · G Chat · H Export | **A cockpit (primary) + G chat (stretch) + E fallback** | `__________` |
+| **D1** | Anchor **workflow + persona** | A Monitoring · B Watchlist · C Valuation · D LP-reporting · E Board-pack · F Covenant | **A — Quarterly monitoring (Portfolio-Ops)** | ✅ **A**, *plus explore **B** (watchlist) as a coexisting panel* |
+| **D2** | **Metric set + philosophy** | A SaaS core-six · B Tiered · C Thematic · D Minimal · E Union · F ILPA | **B — Tiered (universal + sector packs + raw tail + derived)** | ✅ **B** |
+| **D3** | **Automation ladder** (what we automate vs keep human) | Rungs 1–2 · **1–4** · 1–5 · 1–6 | **1–4 — "Monitoring Cockpit"** | ✅ **1–4 now**; rungs **5 & 6 = future extension** (options in §7) |
+| **D4** | **Output / front-end** (build deferred) | A Cockpit · B Trend · C Heatmap · D Exceptions · E One-pager · G Chat · H Export | **A cockpit (primary) + G chat (stretch) + E fallback** | ✅ **A**, *may fold in **B** (trend) + **C** (heatmap) as its panels* — build still last |
+| **D5** | **Reconciliation policy** (roll-up vs standalone) | A Company-wins · B Cross-validation flag · C Additive-only | *see §4.2.1* | ☐ **OPEN** — you will decide |
 
-> **Note on D4:** you asked to define the front-end *later*. D4 is included here as options + a leaning,
-> but we lock it when we write Document ii (Prototype & Front-End). It's here so the roadmap and scope
-> are complete.
+> **Note on D4:** you confirmed the front-end is defined **last** — the point right now is the *problem*,
+> the *metrics*, and *who it is for*; the presentation can be reshaped later. D1's B and D4's B/C are all
+> things that *coexist with A* (each is a panel/mode of the same cockpit), so "explore B/C" costs us
+> nothing to keep on the table. We lock the actual build when we write Document ii.
+>
+> **Still open on purpose:** **D5** (reconciliation policy, §4.2.1) and the metric sub-decisions
+> **D2a–D2f** (§6A.4). These are genuine judgment calls left for you.
 
 ---
 
@@ -206,11 +217,22 @@ benchmarking.)
 > Margin," but a footnote says it means *interest income minus cost of funds* — **not** the SaaS 78%
 > "Gross Margin," so putting them in one column is quietly wrong. Last year the lender called one metric
 > "Credit Loss Rate"; this year "Net Charge-off Rate" — so the **trend line silently breaks**. When it's
-> done, the sheet is stale, error-prone, and **nobody can quickly trace a number to the page it came
+> done, the sheet is stale, error-prone, and **nobody can quickly trace a number to the file it came
 > from.** Trust is low.
 
 The pain is not "reading PDFs is hard." It is **reconciliation, comparability, trust, and time** — every
 quarter, forever.
+
+**Scope of this case study (decided 2026-07-09).** That vignette mixes two *different animals* — a SaaS
+company and a **lender** — whose numbers must **never** share a column. That is exactly why step one of
+the tool is to **classify each pack** as **equity / PE** or **private credit** (new §4.5) and tag every
+company with its path. **This case study is scoped to the equity / PE monitoring path** — the 8
+equity-held operating companies. Private credit is **not thrown away**: the classifier isolates it, and
+because we are building a *monitoring* tool for the portfolio & operations team, the same engine can
+monitor the single lender **longitudinally** (against its own prior quarters) as a documented
+**extension** (§4.5, §6A.3). We *build and demo* PE; we *design for* credit. Why this narrowing: one
+lender can't be benchmarked, and the equity book is where the cross-company comparison story actually
+lives — so scoping to PE buys sharpness without discarding the multi-strategy reality.
 
 ---
 
@@ -245,17 +267,29 @@ three of the tool's differentiators at once.
 
 1. **Label drift** — same metric, many names. E.g. revenue appears as *Total Billings / Recognized
    Revenue / Net Revenue / Quarterly Revenue / Gross Transaction Revenue / Platform Revenue*. NovaCloud
-   alone renames its revenue line across 4 of its 5 quarters.
-2. **Definition non-equivalence** — same name, *different meaning*. LendBridge's "Gross Margin" is
-   footnoted as *interest income net of cost of funds* (a lending spread), **not** the SaaS
-   cost-of-delivery margin. Comparing them by label is confidently wrong.
-3. **Metric renames over time** — a company relabels its own metric between quarters. LendBridge's "Net
-   Charge-off Rate" was "Credit Loss Rate" in two prior quarters; "Pre-Provision Operating Margin" was
-   "Adjusted Operating Margin." Footnotes declare the equivalence; the trend breaks if you don't stitch.
-4. **Missing vs Not-Applicable (N/A)** — a lender legitimately has **no** ARR, cash balance, or monthly
-   burn. Your current tool flags these as *"missing core metric"* — a **false alarm** that overstates a
-   data problem. "Missing" (should exist, wasn't found) and "N/A" (never applies to this business) are
-   different, and conflating them destroys trust.
+   alone renames its revenue line 3 times across its 5 quarters.
+2. **Definition non-equivalence** — same name, *different meaning*. **This lives inside the equity book,
+   not just at the credit border:** "Gross Margin" is composed differently by each SaaS company
+   (CarbonTrack *excludes* customer-success + data-science costs; MediSight *excludes* implementation +
+   CS; NovaCloud/TalentVault/ConstructIQ state **no** definition at all — a *silent* basis). "Take rate"
+   is worse: FleetLink's is a **% of GMV** while ClearPay's is **basis points of TPV** — the same word on
+   two scales ~25× apart. Comparing any of these by label is confidently wrong. *(The most extreme case
+   — a lender's "Gross Margin" = interest income minus cost of funds, a lending spread — sits on the
+   credit path the classifier routes out of v1; §4.5.)*
+3. **Metric renames over time** — a company relabels its **own** metric between quarters. The equity
+   headline: **NovaCloud renames its revenue line 3 times across its 5 quarters** (Total Billings →
+   Recognized Revenue → Net Revenue → *back to* Recognized Revenue); MediSight drifts on its ARR label too. The
+   trend line **silently breaks** unless you stitch the aliases. *(The credit book shows the identical
+   pattern — LendBridge's "Net Charge-off Rate" ↔ "Credit Loss Rate", declared equivalent in a footnote
+   — evidence the mechanism is universal, not a one-off.)* Traps 1 + 3 together are the **label-drift
+   family**; the solution design is §4.2.1.
+4. **Missing vs Not-Applicable (N/A)** — **again visible inside the equity book:** FleetLink (a freight
+   *marketplace*) and ClearPay (a *payments* company) legitimately have **no ARR and no NRR** — those are
+   subscription-SaaS metrics that simply don't apply. Your current tool flags them as *"missing core
+   metric"* — a **false alarm** that overstates a data problem. "Missing" (should exist, wasn't found)
+   and "N/A" (never applies to this business model) are different, and conflating them destroys trust.
+   The fix is a **per-model expected-metric profile** (§6 D2). *(The lender is the loudest N/A case — no
+   ARR/cash/monthly-burn at all — which the §4.5 classifier handles by routing it to the credit profile.)*
 5. **Basis / unit traps** — ConstructIQ reports burn **per quarter**, everyone else **per month** (a 3×
    runway error if not converted); ClearPay's headline "Cash & Restricted Cash" ($38.4M) includes $6.2M
    of *segregated client money* that can't be spent (true operating cash = $32.2M); PeopleFlow reports in
@@ -269,16 +303,144 @@ three of the tool's differentiators at once.
 > holds TalentVault's numbers and vice-versa — a real parsing-fidelity wrinkle. Your pipeline still routed
 > the values to the right companies. Good "we handle messy reality" material, used carefully.
 
+### 4.2.1 How we defeat these traps — solution design (with trade-offs)
+
+> You flagged the **label-drift family (traps 1 + 3)** and the **basis traps (trap 5)** as the biggest
+> challenges and asked for *extra effort on solutions*; **trap 6 (reconciliation)** you left as an open
+> decision. This section answers all three. Every mechanism is **additive** over the current tool and
+> **leads with the deterministic option** — the LLM is reserved only for the genuinely ambiguous tail.
+> *(All numbers below are verified against `outputs/parsed/` on 2026-07-09.)*
+
+#### Trap 1 + 3 — label drift: many names → one canonical series
+
+**Why it is hard.** The label alone lies. *Silent basis*: "Gross Margin" / "Net Revenue" / "ARR" carry
+no definition — same word, different machine (SaaS delivery margin vs a lender's interest-minus-cost-of-funds
+spread; marketplace %-of-GMV vs payments bps-of-TPV take-rate). *Prose-only*: some MediSight metrics live
+in sentences, not tables (Q1'25 headcount 114 is footnoted "disclosed in commentary; not separately
+tabled"), so a table-row match misses them. *Footnote-only renames*: NovaCloud's revenue line runs **Total
+Billings $5.8M → Recognized Revenue $6.5M → Net Revenue $7.2M → Recognized Revenue $7.9M → $8.4M**
+(Q2'24→Q2'25). Only the Q4'24 footnote ("Net Revenue is equivalent to Recognized Revenue in prior
+periods") declares an equivalence — and it covers *only* the Net-Revenue↔Recognized-Revenue edge; the
+Total-Billings→Recognized-Revenue rename is **undeclared** (NovaCloud's Q2'24 footnote *does* tie Total
+Billings to ASC 606 recognized revenue — but only if you read it). Miss the footnote and the trend silently
+splits on the label alone.
+
+**(a) Registry + per-company alias map.** Two layers, stored as **human-owned data** (not code): canonical
+IDs + alias entries scoped `global → sector → company`, each carrying `{unit, basis, confidence, source,
+effective-periods}`. The existing 8 canonical IDs are unchanged and keep resolving identically; new
+asset-class metrics (e.g. `credit.net_charge_off_rate`) are **added** as new namespaced IDs current
+consumers ignore — additions, never edits to the 8. Company scope wins, so "Net Revenue" resolves to
+revenue for NovaCloud but never merges with marketplace "Net Revenue (take-rate based)".
+
+**(b) Footnote-equivalence stitching.** A deterministic scanner reads the company's own declaration phrases
+("equivalent to", "formerly", "terminology updated") and writes a **bidirectional, transitive equivalence
+edge** into the map — the highest-authority *automatable* signal. It collapses the **declared** edges:
+NovaCloud's Net-Revenue↔Recognized-Revenue and both LendBridge round-trips (Net Charge-off Rate ↔ Credit
+Loss Rate; Pre-Provision ↔ Adjusted Operating Margin), repairing those trend lines. Two limits it must
+respect: (i) an **undeclared** rename (NovaCloud Total Billings→Recognized Revenue) has no footnote → it
+falls to the fuzzy/human layer, never a silent merge; (ii) a footnote can *claim* equivalence while the
+basis differs — MediSight declares "Expansion ARR %" ≡ "ARR from Existing Accounts", but the labels imply
+different numerators, so map the label yet raise a **basis-change break** for a human.
+
+**(c) Detecting a new / unknown label — deterministic first.**
+
+| Approach | How it works | Trade-off | Verdict |
+|---|---|---|---|
+| Deterministic alias table | Exact match after cosmetic normalization (case / & / spaces) | Zero-cost, auditable; only knows *seeded* labels | **Lead** — handles the bulk |
+| Footnote-declared equivalence | Regex on the company's own declaration phrases | Highest authority, free; misses *undeclared* renames | **Lead** — auto-suggest, human ratifies |
+| Fuzzy / embedding match | Nearest known alias by string / vector similarity + score | Catches near-misses; risks false friends (SaaS vs lender GM) | **Assist** — gated by scope + unit/basis; queue only |
+| Constrained-LLM suggest | LLM picks only from the registry or returns "unknown"; cites the snippet | Handles prose / novel tail; slow, non-deterministic, costs | **Last resort** — ambiguous cases only, human-approve |
+
+**(d) Confidence, rulebook, queue.** Every resolution stamps `confidence + resolution_method`. High/medium
+rows export exactly as today; low-confidence rows **still export** with `review_status=pending` and are
+withheld only from *aggregation/comparison* until cleared — no row the current tool emits ever disappears.
+The **rulebook** (aliases + equivalence edges + sector/basis map) is human-owned and versioned: the machine
+*applies* it every run, humans *edit* it; an approved queue item becomes permanent, so a rename is ratified
+**once** and never re-asked.
+
+**Retrocompat (additive).** The 8 canonical IDs resolve identically; today's flat `ALIASES` list becomes
+the `global` default layer that per-company/sector maps override. Reuses the existing `confidence` /
+`metric_basis` columns and appends only optional columns (`resolution_method`, `alias_scope`,
+`equivalence_ref`, `review_status`) current consumers ignore. **Rejected:** global fuzzy auto-merge
+(manufactures the false comparison the tool exists to prevent) and LLM-first (cost, non-determinism, loses
+the rulebook's audit trail).
+
+#### Trap 5 — basis / unit normalization (periodicity · restricted cash · FX · LTM-vs-quarter)
+
+**Mechanism spine (all four sub-traps).** Give every metric a **mandatory basis-tag**
+`{periodicity, currency, scope}` from a fixed vocabulary; run small **deterministic normalization
+functions** that write a *new* `value_normalized` (**never overwrite the raw** `value`); use a dated **FX
+rate table** for currency; and **refuse-to-derive** — any computed metric (e.g. runway = cash ÷ burn)
+first checks its inputs share a compatible basis, else emits a *flag* instead of a wrong number.
+
+Concrete fix per sub-trap (verified corpus figures):
+- **Periodicity** — ConstructIQ "Quarterly Net Burn" **$0.91M ÷ 3 = $0.30M/mo**; runway $11.2M ÷ $0.30M ≈
+  **37 mo** — not the **~12 mo** you get by reading $0.91M as monthly (≈3× error; the pack's own narrative
+  even prints "approximately 12 months").
+- **Restricted cash** — ClearPay "Cash & Restricted Cash" **$38.4M** − **$6.2M** segregated client float =
+  **$32.2M** operating cash (stated verbatim; footnote excludes restricted from liquidity/runway). Keep the
+  headline raw; normalize the `cash` used for runway to operating.
+- **Currency / FX** — PeopleFlow reports GBP: FX-convert *levels* (Revenue 5.1M, ARR 21.4M) via the rate
+  table; but **NDR 118% is an LTM ratio computed in GBP** — tag it, do **not** FX-convert a percentage.
+- **LTM vs quarter** — tag NRR/logo-churn `periodicity=LTM`, revenue `=quarterly`, ARR `=period_end`
+  (annualized run-rate — never ×4); the tag blocks silent mixing.
+
+| Approach | How it works | Trade-off | Verdict |
+|---|---|---|---|
+| Auto-normalize silently | Convert all to one basis, emit one number | Fast, but hides guesses and destroys file-traceability; a silent wrong basis = the 3× runway error | **Reject** |
+| Normalize + show both + flag | Keep raw `value`, add `value_normalized` + basis-tag + flag | Wider output (extra columns); fully auditable | **Adopt (default)** for deterministic-safe cases |
+| Refuse & ask human | Emit no derived value when basis is unknown/mismatched; route to review | Some cells return empty and need a person | **Adopt (fallback)** for silent/unknown basis |
+
+- **Why hard:** the basis lives in footnotes/prose, not in the number — and is sometimes **silent** (no
+  stated basis), where deterministic rules cannot infer it and guessing is dangerous.
+- **Honest FX limit:** a converted figure traces to the *pack + an external rate*, so it is **not purely
+  file-traceable**; we record `fx_rate`, `fx_source`, `fx_date` to keep it auditable.
+- **Retrocompat:** `metric_basis` and `unit` already exist. We only *append* `value_normalized` /
+  `currency` / `fx_*` columns and harden `metric_basis` to a controlled vocabulary — raw `value`/`unit`
+  stay as-reported, so consumers keying columns by name are unaffected.
+
+#### Trap 6 — cross-document reconciliation  `[D5 — OPEN, you decide]`
+
+**The situation.** `Portfolio_Snapshot_Q2_2025` restates the *same* numbers under *different labels*
+(NovaCloud `ARR (End of Period)` → `Annual Recurring Revenue`; `Cash Balance` → `Cash`; `Total Headcount`
+→ `FTE` — values identical). Plus the display-layer swap (the MediSight/TalentVault header mix-up) the
+pipeline still routed correctly. So a roll-up is a *second witness* to overlapping numbers — and a place
+bugs can hide. The tool already **detects** overlaps today; the open question is **what to DO with a
+mismatch.**
+
+> **Corpus caveat (honest):** on today's inputs *every* cross-document overlap **agrees** — there is **no**
+> genuine value conflict anywhere in the corpus. So option B's near-term payoff is making silent agreements
+> **visible** (free confirmation), not resolving live conflicts.
+
+| Option | How it works | Trade-off | Verdict |
+|---|---|---|---|
+| **A. Company-wins + add** *(today)* | Standalone wins any value conflict; roll-up may only *add* fields the standalone omits | Safe and simple, but a real conflict lands only in an issue log reviewers rarely open | Keep as the **floor** |
+| **B. Cross-validation flag** *(your idea)* | Same value still wins, but every overlap is promoted to a visible **reconciliation status**: `agree` / `mismatch` (showing both sources + files) | One extra field; needs a tolerance rule so rounding gaps don't cry wolf. The equality check is **deterministic** — no LLM | ✅ **Recommend** — layer on A |
+| **C. Additive-only, never compare** | Roll-up fills gaps only; overlaps never checked | Zero conflict noise, but removes the conflict-logging the tool has today → **not additive** | Discard |
+
+**Recommendation — A as base, B on top.** The audit-ready persona (fund-finance / valuations) wants
+*reconciled, traceable* numbers: a roll-up that agrees is free confirmation; one that disagrees is exactly
+the signal they want. The check is objective, cheap, auditable. **Assumptions:** standalone stays
+system-of-record and always wins the emitted *value*; `agree`/`mismatch` is a value-equality test, **except**
+where a captured basis differs (monthly-vs-quarterly burn → tag `basis-difference`, not conflict);
+`reconciliation_status` is a **new optional** field, so every emitted value and existing key is unchanged.
+Provenance stays **file-level**.
+
+`☐ YOUR DECISION (D5 — reconciliation policy): __________________________________`
+
 ### 4.3 What insights this exact data can prove (for the demo)
 
 **Over-time (needs multi-quarter companies):**
 - **NovaCloud efficient-growth story:** ARR compounded ~$24M → $34.2M over 5 quarters (+42%), gross
   margin 74% → 78%, retention rising, monthly burn shrinking — *yet* cash drew down $29.5M → $19.6M
   (a runway-pressure story despite improving unit economics).
-- **LendBridge credit trend:** loan book $274M → $316M, net-interest-margin 8.6% → 9.4%, charge-off rate
-  improving 3.9% → 3.1% — *and* it demonstrates the rename trap (Credit Loss Rate ↔ Net Charge-off Rate)
-  and a **non-monotonic** covenant headroom (+125 → +118 → +132 → +148 bps: it *dipped then widened*, a
-  nice "trust the data, not the narrative" moment).
+- **LendBridge credit trend `[credit-path extension — not the v1 demo anchor]`:** loan book $274M →
+  $316M, net-interest-margin 8.6% → 9.4%, charge-off rate improving 3.9% → 3.1% — *and* it demonstrates
+  the rename trap (Credit Loss Rate ↔ Net Charge-off Rate) and a **non-monotonic** covenant headroom
+  (+125 → +118 → +132 → +148 bps: it *dipped then widened*, a nice "trust the data, not the narrative"
+  moment). **This is the proof that the same monitoring engine can track credit *longitudinally* once the
+  classifier (§4.5) routes it to the credit path — the documented extension. v1 builds/demos PE; this
+  bullet shows the credit path is real, not vapor.**
 
 **Cross-company (Q2'25 slice):**
 - **NRR (retention) league:** NovaCloud 123%, CarbonTrack 121%, TalentVault 119%, PeopleFlow 118%,
@@ -288,7 +450,8 @@ three of the tool's differentiators at once.
   explicit raise signal; doubles as the quarterly-vs-monthly-burn trap demo.
 
 **Trust / provenance:**
-- Click NovaCloud's revenue → show 5 raw labels collapsed into one column, each with its source page.
+- Click NovaCloud's revenue → show its raw labels (renamed 3 times across 5 quarters) collapsed into one
+  column, each traceable to its **source file** (file-level today; page/snippet-level is a roadmap item).
 - Show the snapshot restating NovaCloud under different labels, and the company report winning.
 
 > **Operational reality:** the current `outputs/` were generated on only **3 of 24** PDFs (26 metric
@@ -326,9 +489,58 @@ LendBridge's "gross margin" (interest income minus cost of funds) land in the **
 under the same word, meaning completely different things.** The two-path metric design in §6A is what
 stops the tool from ever placing them on the same axis.
 
+**How the split is enforced + scope:** the tool does **not** ask a human which path a company is on — a
+deterministic **classifier (§4.5)** reads each pack's *metric fingerprint* (ARR/NRR → equity; loan
+book/NIM/charge-offs → credit) and assigns the path automatically, then tags the company. **v1 is scoped
+to the equity / PE path** (8 companies, where cross-company comparison actually exists); the private-credit
+path is fully **designed** (§6A.3) and **monitorable longitudinally** as the documented extension — not
+built or demoed in v1.
+
+### 4.5 PE-vs-private-credit classifier add-on (metric-fingerprint router)
+
+**Why.** Sagard runs equity AND credit under one roof, and the two paths speak largely disjoint metric
+languages (§4.4). Before the tool can pick the right metric set (§6A.2 vs §6A.3) and wall off cross-path
+comparison, each intake pack must be **tagged** with its path. This add-on adds a *label only* — it never
+touches a value.
+
+**Deterministic core.** Route on each path's **unique anchor token(s)** and **ignore** tokens shared across
+paths (gross margin, recognized revenue, cash, headcount, and "take rate" — which appears in *both*
+marketplace and payments, differing only by base). Anchors: `ARR / NRR-NDR / logo churn / expansion` ⇒
+**equity·saas**; `completed shipments` (GMV / take-%-of-GMV) ⇒ **equity·marketplace**; `TPV / client-float
+cash / bps take-rate` ⇒ **equity·payments**; `loan book / NIM / provision coverage / covenant headroom` ⇒
+**private_credit**.
+
+**Feasibility (high, verified).** Each path carries at least one anchor no other path uses, so exactly one
+path fires per pack. Checked on the 4 latest-quarter packs: NovaCloud fires only SaaS (ARR $34.2M, logo
+churn 5.8%); ApexFreight only marketplace (completed shipments 1.28M; take rate 11.2% of GMV); ClearPay
+only payments (TPV $3.42B; 43bps; $6.2M client float); LendBridge only credit (loan book $316M, NIM 9.4%,
+charge-off 3.1%, covenant +148bps). Assuming anchors stay unique across all 24 packs, one confident hit per
+pack ⇒ ~100% accuracy *by construction* (not a modeled estimate). **Exception:** the Portfolio_Snapshot
+roll-up spans 4 companies — here all four are SaaS so it fires equity·saas cleanly, but a roll-up that ever
+included a lender would fire ≥2 paths and must route to the fallback below.
+
+| Approach | How it works | Trade-off | Verdict |
+|---|---|---|---|
+| **Deterministic fingerprint** *(lead)* | Match pack labels to each path's unique anchor token(s); take the sole path that fires | Assumes anchors stay unique; a new model, a tie, or a mixed roll-up needs a fallback | **Ship — v1 default.** Cheap, auditable, no API cost |
+| LLM classifier | Ask the LLM "equity or credit?" per pack | Overkill here; per-pack cost, non-deterministic, harder to audit | **No as primary** — ambiguity only |
+| **Hybrid** *(adopt)* | Deterministic first; escalate to LLM **only** on a tie/no-hit (a co that BOTH lends AND sells SaaS, or a mixed roll-up); a human confirms | One extra branch; the LLM leg stays dormant until a mixed pack arrives | **Adopt.** Deterministic runs today; LLM is the documented safety valve |
+
+**Storage (additive, file-level).** Append nullable columns after `notes` (`portfolio_path` =
+`equity | private_credit`; optional `business_model` = saas/marketplace/payments/specialty_lender), and one
+optional per-company path map in the JSON metadata. Existing 8-metric columns/keys and every current
+consumer are untouched; legacy/unclassified rows default to null. The tag drives (a) which metric set fires
+and (b) the guardrail that never places a lender's GM (an interest-minus-cost-of-funds spread) beside a SaaS
+GM (delivery margin).
+
+**Credit scope.** The corpus has **one** lender, so v1 **builds** the equity path (8 operating cos) and only
+**documents** credit (§6A.3) — no peer to benchmark. The classifier still tags LendBridge today, and its
+credit metrics are longitudinal (LendBridge vs its own 5 prior quarters), so **enabling the credit view
+later is a display flip over data the same engine already emits — no new extraction.** A 2nd lender unlocks
+cross-credit benchmarking. *(This is exactly the "monitor both over time" extension you asked about.)*
+
 ---
 
-## 5. DECISION 1 — Anchor workflow + persona  `[OPEN — you asked to discuss further]`
+## 5. DECISION 1 — Anchor workflow + persona  `[✅ LOCKED 2026-07-09 — A, + explore B as a panel]`
 
 **Why this decision matters:** this is the keystone. It decides *who you speak to*, *which companies you
 foreground*, *which deliverable you build*, and *which traps become headline features*. Pick a narrow
@@ -368,21 +580,26 @@ company→period→metric layer), so you never overclaim.
 **What we discard and why:** C & D (corpus can't close the loop end-to-end); F (single lender = no
 benchmarking). All kept as one-line "where this feeds next" roadmap notes.
 
-### Points to discuss (you flagged this one)
-1. **Persona emphasis.** Anchor firmly on **Portfolio Ops**, or present it as **Portfolio Ops + deal
-   teams** jointly? (Ops = the monitoring machine; deal teams = the sexier "board prep / watchlist" story.
-   My lean: anchor Ops, name deal teams as the heavy secondary consumer — you get both.)
-2. **How much to lean on the credit angle (LendBridge → Sagard Credit Partners).** It's a strong,
-   verifiable Sagard hook. Feature it as a *segment* of A ("and it handles your credit book too"), not the
-   anchor — agreed?
-3. **Breadth vs sharpness risk.** A's danger is looking like a generic dashboard. Mitigation: lead every
-   screen with provenance and with the tool *refusing* unsafe comparisons. Comfortable with that framing?
+### Points resolved (2026-07-09)
+1. **Persona emphasis → anchor Ops; deal teams are the heavy *secondary* consumer.** The cockpit is built
+   for the Portfolio-Ops monitoring loop; the deal partner reads its output (board prep / follow-on), so
+   we get both without over-claiming.
+2. **Credit angle → resolved by scope, not by emphasis.** Rather than "feature LendBridge as a segment,"
+   the tool now **classifies** each pack (§4.5) and **routes credit onto its own path**. v1 is scoped to
+   PE; credit is the documented **extension** (monitorable longitudinally, §6A.3). Cleaner story, no
+   over-claim on a single, un-benchmarkable lender.
+3. **Breadth vs sharpness → agreed.** Every screen **leads with provenance** and shows the tool
+   *refusing* unsafe comparisons — that is the moat vs generic BI.
 
-`☐ YOUR DECISION (D1): __________________________________`
+**Also explore (Xavier, D1 = A + B):** fold **Option B, Watchlist / early-warning**, in as a *panel* of
+the cockpit (it already sits downstream of A — the exception layer is nearly free once rungs 1–4 exist,
+§7). A and B **coexist**: A is the full monitoring view, B is the "what needs a look" cut of the same data.
+
+`✅ YOUR DECISION (D1): A (Quarterly monitoring / Portfolio-Ops anchor, deal teams secondary) + explore B (Watchlist) as a coexisting panel.`
 
 ---
 
-## 6. DECISION 2 — Metric set + philosophy  `[OPEN]`
+## 6. DECISION 2 — Metric set + philosophy  `[✅ LOCKED 2026-07-09 — B, Tiered]`
 
 **Why this decision matters:** this choice decides whether your cross-company and cross-quarter numbers
 can be *trusted* or are *confidently wrong*. The current tool standardizes on a **closed SaaS-shaped set
@@ -451,7 +668,7 @@ core — better as an export). C folds in as a *view*, D as the *universal tier*
 > (`plan/INTERVIEW_ASSUMPTIONS_LEDGER.md:241–245`: "sector-aware expectations, company-level metric
 > profiles, not-found vs not-applicable"). B is you following your own roadmap.
 
-`☐ YOUR DECISION (D2): __________________________________`
+`✅ YOUR DECISION (D2): B — the Tiered model (universal core + sector packs + raw tail + derived), with per-sector expected-metric profiles. Concrete metric sets per path are built in §6A; sub-choices D2a–D2f remain open (§6A.4).`
 
 ---
 
@@ -692,7 +909,7 @@ These are genuine judgment calls the analysis surfaced but did **not** lock:
 
 ---
 
-## 7. DECISION 3 — Automation ladder (what we automate vs keep human)  `[OPEN]`
+## 7. DECISION 3 — Automation ladder (what we automate vs keep human)  `[✅ LOCKED 2026-07-09 — rungs 1–4 now; 5 & 6 = future extension]`
 
 **Why this decision matters:** these numbers don't stay in a spreadsheet. They flow into **audited NAV
 marks**, **external LP reports**, and **legal covenant tests**. So the real question isn't "can we build
@@ -741,13 +958,41 @@ queue**.
 
 **What we discard and why:** "Full autopilot" (auto-publish to LPs, free-form LLM interpretation — violates
 every governance rule); "stop at rung 1" (leaves the differentiator unbuilt). Rungs 5–6 aren't rejected —
-they're the **roadmap** (draft-only, human-signed).
+they're the **future extension**, and the "how" (with options + trade-offs) is below.
 
-`☐ YOUR DECISION (D3): __________________________________`
+#### Rungs 5 & 6 — the future-extension roadmap (how)
+
+Both rungs sit **above the human line** (external + interpretive): automate the deterministic skeleton, a
+human signs anything that leaves the building, nothing auto-sends. **Purely additive** — reads the same
+normalized store rungs 1–4 fill (traceable to source file); the current 8-metric CSV/JSON is untouched.
+
+**Rung 5 — narrative commentary** (turn numbers into sentences)
+
+| Option | How | Trade-off |
+|---|---|---|
+| **Template-only** *(start here)* | Fill fixed sentence slots from the numbers — e.g. "Recognized Revenue was $8.4M, up 6% QoQ" — pure string formatting, no model | Deterministic, cited, cheap; but rigid, can read robotic |
+| Constrained grounded-LLM | LLM writes prose only from the extracted numbers + provenance; forbidden to add facts; human signs | Fluent; but a nondeterministic surface needing guardrails — a naive model calls *widening* covenant headroom "tightening" |
+| Hybrid *(target)* | Template writes the numeric skeleton (deterministic, correct); LLM only polishes the wording around it | Numbers stay machine-true, prose reads human; more moving parts |
+
+**Rung 6 — board / LP pack generation** (assemble outputs into a deliverable)
+
+| Option | How | Trade-off |
+|---|---|---|
+| **Assemble-to-DRAFT** *(start here)* | Stitch cockpit + rung-5 commentary into a draft pack; human reviews, signs, sends | Lowest risk, highest reuse; still needs a person in the loop |
+| Full ILPA export | Map to the standard LP-reporting template (ILPA) | LP-ready, big external win; but our metrics are only a *subset* of ILPA → large mapping + gap-fill |
+| Warehouse / BI feed | Push canonical numbers to a warehouse / BI tool | Internal, low-risk, no prose; but a poor live-demo surface |
+| Slack / email early-warning digest | Push rung-4 exceptions to a channel as "look here" | Fast internal value; stays surface-and-rank, never auto-escalates |
+
+**Recommended sequencing:** 5-template → 6-assemble-to-draft (+ internal Slack digest) → 5-hybrid →
+6-warehouse feed → 6-full-ILPA (last — biggest lift). Deterministic first; the LLM enters only at
+**5-hybrid**, on a numeric skeleton it cannot alter.
+
+
+`✅ YOUR DECISION (D3): Automate rungs 1–4 now (the "Monitoring Cockpit"); keep humans on decisions + anything external. Rungs 5 (draft commentary) & 6 (board/LP packs) are the future-extension roadmap — options + trade-offs immediately above this line.`
 
 ---
 
-## 8. DECISION 4 — Output / front-end  `[OPEN — build deferred to Document ii, as you asked]`
+## 8. DECISION 4 — Output / front-end  `[✅ LOCKED 2026-07-09 — A primary (+ B/C as panels); build still deferred to Doc ii]`
 
 You asked to define the front-end later. Here are the **8 options with trade-offs** (as requested) and a
 *leaning*, but we lock the build when we write Document ii.
@@ -778,7 +1023,7 @@ You asked to define the front-end later. Here are the **8 options with trade-off
 failure modes); warehouse/BI feed and Slack digest (great talking points, poor live surfaces); a
 standalone Excel export as the headline (undersells the tool).
 
-`☐ YOUR DECISION (D4 — can wait): __________________________________`
+`✅ YOUR DECISION (D4): A — the interactive cockpit — as the primary surface, with B (trend explorer) and C (portfolio heatmap) folded in as its panels; G (cited chat) kept as a stretch, E (one-pager) as the fallback. The actual build stays deferred to Document ii — right now the point is the problem, the metrics, and who it is for; the presentation can be reshaped later.`
 
 ---
 
@@ -798,11 +1043,15 @@ anything sent to auditors or LPs.
 
 **In scope for the case study:**
 - The quarterly monitoring workflow, for the Portfolio-Ops persona.
-- The tiered metric model (universal + sector packs + raw tail + derived).
+- **The equity / PE path only** — the classifier (§4.5) tags each pack and routes the single lender out;
+  cross-company comparison is an equity-book story.
+- The tiered metric model (universal + sector packs + raw tail + derived), with per-model expected-metric
+  profiles (fixes the false "missing" flag).
 - The full 24-doc run.
 - The cockpit demo with **one clean cross-company insight + one over-time insight.**
 
 **Explicitly "improve later" (the roadmap slide):**
+- **Private-credit path monitoring** (LendBridge longitudinal, §6A.3) — designed now, built later.
 - Draft commentary (rung 5), one-click board/LP packs (rung 6).
 - Warehouse/BI feed; Slack/email early-warning digest.
 - Deeper valuation & covenant math; ILPA export; entity-resolution registry; OCR for scanned PDFs.
@@ -884,14 +1133,22 @@ anything sent to auditors or LPs.
 
 ## 12. Open questions to discuss with Xavier
 
-1. **D1 persona:** anchor firmly on Portfolio Ops, or Portfolio Ops + deal teams jointly? (See §5 discussion.)
-2. **Interview date:** you said ~4–7 days of runway. What's the actual interview date? The deck is due
-   **48h before** — this sets the roadmap horizons and the front-end build budget.
-3. **Deck tool:** Google Slides, PowerPoint, or something else for Document iii?
-4. **Demo appetite (revisit later):** when we reach Document ii, do you want a real working cockpit
-   (self-contained HTML wired to the actual data), or a polished clickable mockup? (Deferred, per your call.)
-5. **D4 stretch:** is the "chat with your portfolio" worth the extra build for this audience, or keep it
-   as a roadmap slide only?
+**Resolved 2026-07-09:** D1 persona (anchor Ops, deal teams secondary — §5); D4 stretch (chat kept as a
+stretch, shown last — §8); credit emphasis (handled by scope + classifier §4.5); **interview runway = 4–7
+days from 2026-07-09** → interview ≈ **Jul 13–16**, deck due 48h before ≈ **Jul 11–14**; **deck tool = a
+self-contained HTML deck published as a Claude Artifact** (opens in a browser on Ubuntu, presents
+full-screen, exports to PDF via print; unifies with the D4 cockpit — both HTML; Google Slides = fallback).
+**Still live:**
+
+1. **D5 — reconciliation policy:** `DECIDE LATER (2026-07-09)` — recommendation **B (cross-validation
+   flag)** held; revisit when we build Doc ii. Options A/B/C in §4.2.1.
+2. **Metric sub-decisions D2a–D2f** (§6A.4) — sector packs to demo, Rule-of-40 proxy, build-credit-in-demo?,
+   MediSight Trap-E honor/flag, restatement policy, credit borrower archetype.
+3. **Demo appetite (revisit at Doc ii):** a real working cockpit (self-contained HTML wired to the actual
+   data) or a polished clickable mockup? (Deferred, per your call.)
+4. **Go-ahead to run the full 24-PDF export?** The parsed data for all 24 is already on disk
+   (`outputs/parsed/`); only the *metrics export* (`metrics_long.csv`) is still a 3-doc slice. One command
+   refreshes it — needed before any deck number.
 
 ---
 

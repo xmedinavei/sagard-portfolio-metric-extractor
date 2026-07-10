@@ -5,9 +5,10 @@
 > between sessions. It is the "see the whole board" companion to the decision brief
 > (`00-foundations-and-decisions.md`).
 >
-> **Status as of 2026-07-06:** Foundations researched and written; my independent re-research this session
-> **confirmed the same recommended spine**. Decisions **D1–D3 are still OPEN** — Xavier answers them
-> **tomorrow**. Nothing is locked.
+> **Status as of 2026-07-09:** Foundations complete. **D1–D4 are now LOCKED** (see §4). The case study is
+> **scoped to the equity / PE path** — private credit is *classified out* (Doc 0 §4.5) and kept as a
+> documented extension. **Document i (Context & Problem) is drafted** (`i-context-and-problem.md`); Document
+> ii is next. Still open by design: **D5** (reconciliation) + metric sub-decisions **D2a–D2f**.
 >
 > **Plain-English promise:** finance/technical jargon is defined the first time it appears here, and fully
 > in the brief's Glossary (§11). If a term is unfamiliar, check there.
@@ -22,8 +23,8 @@ audience, and packaging that into four documents.
 
 | # | Document | What it is / covers | Depends on | Status |
 |---|----------|---------------------|-----------|--------|
-| **0** | **Foundations & Decision Brief** (`00-foundations-and-decisions.md`) | Domain primer, corpus reality, the 4 key decisions with options + trade-offs + a recommendation each, Sagard tailoring, glossary. The choices are left OPEN for Xavier. | — | ✅ **Written**; ⏳ awaiting Xavier's D1–D3 choices (tomorrow) |
-| **i** | **Context & Problem** | The business problem, the manual pain, why automation matters — tailored to Sagard, in business-stakeholder language. Answers case-study section (1). | D1–D3 locked | ⬜ Not started (next after decisions) |
+| **0** | **Foundations & Decision Brief** (`00-foundations-and-decisions.md`) | Domain primer, corpus reality, the 4 decisions (now locked), **§4.2.1 trap-solutions**, **§4.5 PE/credit classifier**, §6A metric sets, Sagard tailoring, glossary. | — | ✅ **Complete** (D1–D4 locked 2026-07-09; 1161 lines) |
+| **i** | **Context & Problem** (`i-context-and-problem.md`) | The business problem, the manual pain, why automation matters — tailored to Sagard, in business-stakeholder language. Answers case-study section (1). | D1–D3 locked | ✅ **Drafted 2026-07-09** (under adversarial critique) |
 | **ii** | **The Prototype & Front-End** | What the tool does today, how it works, its limits, **and the front-end demo design**. Future expansion lives at the *end* of this doc. Answers case-study sections (2) + (3). | Doc i | ⬜ Not started (front-end deliberately deferred) |
 | **iii** | **Slides** | The presentation deck: problem → prototype → live demo → roadmap. Answers all four case-study sections in slide form. | Docs i + ii | ⬜ Not started (very last) |
 
@@ -56,7 +57,8 @@ audience, and packaging that into four documents.
 
 > **"Same label doesn't mean the same metric. Comparability is the product — not extraction."**
 > The tool's real job is to *guarantee* that any two numbers placed side by side actually mean the same
-> thing, and to make every number *traceable* back to the exact page it came from.
+> thing, and to make every number *traceable* back to its source **file** (file-level today; page-level is
+> a roadmap upgrade).
 
 **The one-story spine (how the decisions interlock):**
 
@@ -79,27 +81,26 @@ audience, and packaging that into four documents.
 
 ---
 
-## 4. The pending decisions (Xavier answers tomorrow)
+## 4. The decisions (LOCKED 2026-07-09)
 
-Full options + trade-offs live in the brief (§5–§8). Short form + my recommendation:
+Full options + trade-offs live in the brief (§5–§8). Locked choices:
 
-| # | Decision | My recommendation | Xavier's choice |
-|---|----------|-------------------|-----------------|
-| **D1** | Anchor workflow + persona | **A — Quarterly monitoring, anchored on Portfolio-Ops / Value-Creation lead** (deal teams = heavy secondary) | ⏳ tomorrow |
-| **D2** | Metric set + philosophy | **B — Tiered** (universal tier + sector packs + raw tail + derived layer) | ⏳ tomorrow |
-| **D3** | Automation ladder | **Rungs 1–4 — "Monitoring Cockpit"** (automate extract→normalize→aggregate→derive→detect; humans decide + own the rulebook) | ⏳ tomorrow |
-| **D4** | Output / front-end | **Deferred** to Document ii. Leaning: self-contained HTML cockpit (primary) + cited "chat with your portfolio" (stretch) + one-pager (fallback) | deferred |
+| # | Decision | Locked choice |
+|---|----------|-------------------|
+| **D1** | Anchor workflow + persona | ✅ **A** — Quarterly monitoring, Portfolio-Ops anchor (deal teams secondary) **+ explore B (Watchlist) as a coexisting panel** |
+| **D2** | Metric set + philosophy | ✅ **B** — Tiered (universal + sector packs + raw tail + derived); concrete sets in Doc 0 §6A |
+| **D3** | Automation ladder | ✅ **Rungs 1–4** now ("Monitoring Cockpit"); rungs 5 & 6 = future-extension roadmap (Doc 0 §7) |
+| **D4** | Output / front-end | ✅ **A** cockpit primary (+ B/C as panels, G chat stretch); build still deferred to Doc ii |
+| **D5** | Reconciliation policy | ☐ **OPEN** — decide-later; recommendation B (cross-validation flag) held (Doc 0 §4.2.1) |
 
-### The three open discussion points (the "deep conversation" for tomorrow)
-1. **Persona emphasis (D1 nuance).** Anchor firmly on Portfolio Ops, or co-lead Ops + deal teams equally?
-   *My lean:* anchor Ops, name deal teams the heavy secondary consumer — you get both stories without
-   diluting who owns it.
-2. **How hard to lean on the credit angle** (LendBridge → Sagard Credit Partners, their real direct-lending
-   business). *My lean:* feature it as a **segment** ("...and it handles your credit book too"), not the
-   anchor — there's only one lender in the corpus, so no credit-vs-credit benchmarking is possible.
-3. **Breadth-vs-sharpness risk.** D1's danger is looking like a generic BI dashboard. *Mitigation to
-   confirm:* every screen leads with **provenance** (the source trail behind each number) and with the tool
-   **visibly refusing** unsafe comparisons — the two things incumbent tools bury.
+### The three discussion points — RESOLVED (2026-07-09)
+1. **Persona emphasis (D1) →** anchor Ops; deal teams are the heavy *secondary* consumer. Both stories, no
+   dilution of ownership.
+2. **Credit angle →** resolved by *scope*, not emphasis: the tool **classifies** each pack (Doc 0 §4.5) and
+   routes the single lender to its own path. v1 = PE; credit is the documented extension. Cleaner than
+   featuring an un-benchmarkable lender.
+3. **Breadth-vs-sharpness →** confirmed: every screen leads with **provenance** and with the tool **visibly
+   refusing** unsafe comparisons — the moat vs generic BI.
 
 ---
 
@@ -112,11 +113,12 @@ These do **not** change the decisions, but must be done before numbers reach a s
    (26 metric rows). The parsed data for all 24 already exists on disk, so this needs **no API key** — just
    run the publish step over all parsed artifacts. *This is the recommended first action once decisions
    land.*
-2. **Verify the historical (multi-quarter) numbers.** The brief's §4.3 cites earlier-quarter series
-   (e.g. NovaCloud ARR $24M → $34.2M +42%; LendBridge covenant headroom +125 → +118 → +132 → +148 bps; the
-   NRR league table). The **Q2 2025** figures and the snapshot are verified from the PDFs; the
-   **earlier-quarter series are partly agent-derived and NOT yet checked** against every source PDF. Verify
-   each against the real export before it appears in Doc i or the demo.
+2. **Verify the historical (multi-quarter) numbers.** ✅ **The Q2'25 cross-company NRR league is now
+   PDF-verified** (2026-07-09): NovaCloud 123 / CarbonTrack 121 / TalentVault 119 / PeopleFlow 118 (GBP) /
+   ConstructIQ 112; ConstructIQ churn 6.3%. Also verified: NovaCloud revenue rename chain
+   (5.8/6.5/7.2/7.9/8.4), ConstructIQ burn $0.91M/qtr + cash $11.2M, ClearPay $38.4/6.2/32.2. **Still
+   unverified:** the earlier-quarter *series* (NovaCloud ARR $24M→$34.2M; LendBridge covenant
+   +125→+118→+132→+148 bps) — check these before they appear in the demo.
 3. **Fix "missing vs Not-Applicable."** The tool currently flags a lender's absent ARR / cash / burn as
    "missing core metric" — a false alarm. This is part of implementing D2 (tiered + per-sector expected
    metrics) and should land before the exception/early-warning view is demoed.
@@ -125,9 +127,10 @@ These do **not** change the decisions, but must be done before numbers reach a s
 
 ## 6. Logistics
 
-- **Timeline:** ~4–7 day runway (interview date TBC). **Deck is due 48h before the interview** — that sets
-  the roadmap horizons and the front-end build budget.
-- **Deck tool:** TBD (Google Slides / PowerPoint / other) — decide before Document iii.
+- **Timeline (2026-07-09):** 4–7 day runway → interview ≈ **Jul 13–16**, deck due 48h before ≈ **Jul
+  11–14**. Comfortable.
+- **Deck tool:** ✅ **self-contained HTML deck published as a Claude Artifact** (browser-native on Ubuntu,
+  full-screen present, PDF-via-print; unifies with the D4 HTML cockpit). Google Slides = fallback.
 - **Grading criteria (from the brief):** clarity of problem + solution; tailoring to non-technical business
   stakeholders; how well the demo tells the story; roadmap realism; handling of trade-offs/limitations
   questions.
@@ -140,9 +143,10 @@ These do **not** change the decisions, but must be done before numbers reach a s
 |------|-----------|
 | `case-study/ENGAGEMENT-MAP.md` | **This file** — the status board / whole-board outline |
 | `case-study/00-foundations-and-decisions.md` | Document 0 — the full decision brief (options, trade-offs, recommendations, glossary) |
-| `case-study/` (to come) | Documents i (Context & Problem), ii (Prototype & Front-End), iii (Slides) |
+| `case-study/i-context-and-problem.md` | Document i — Context & Problem (✅ drafted 2026-07-09) |
+| `case-study/` (to come) | Documents ii (Prototype & Front-End), iii (Slides) |
 | `intake-pdf/*.pdf` | The 24 sample portfolio-company PDFs (the corpus) |
-| `outputs/` | Prototype output (metrics_long.json/.csv, summary.md, parsed/) — **currently a 3-doc slice; re-run needed** |
+| `outputs/` | Prototype output — **`parsed/` covers all 24 docs** (usable for verification); **`metrics_long.csv/.json` is still a 3-doc slice → re-run the export before demo numbers** |
 | `portfolio_metrics/` | The crawl-phase prototype source (Python CLI) |
 | `spec/SPEC.md`, `plan/`, `options/` | Take-home-round material (spec, interview prep, architecture options) |
 | `personal/Sagard docs/FDE - Interview #2 - Case Study - Xavier Medina.pdf` | The official case-study brief from Sagard |
@@ -150,6 +154,6 @@ These do **not** change the decisions, but must be done before numbers reach a s
 ---
 
 ### Next step
-Xavier records **D1–D3** (in the brief's Decision Log, §2). Then, in order: run the full 24-PDF export +
-verify numbers → write **Document i (Context & Problem)** → **Document ii (Prototype & Front-End)** →
-**Document iii (Slides)**.
+D1–D4 locked; **Document i drafted** (`i-context-and-problem.md`, under adversarial critique). Then, in
+order: revise Doc i per critique → run the full 24-PDF export + verify remaining numbers → write **Document
+ii (Prototype & Front-End)** → **Document iii (Slides, HTML Artifact deck)**.
