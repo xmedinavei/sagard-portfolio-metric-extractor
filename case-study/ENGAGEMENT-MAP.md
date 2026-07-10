@@ -36,7 +36,7 @@ audience, and packaging that into four documents.
 | **0** | **Foundations & Decision Brief** (`00-foundations-and-decisions.md`) | Domain primer, corpus reality, the 4 decisions (now locked), **§4.2.1 trap-solutions**, **§4.5 PE/credit classifier**, §6A metric sets, Sagard tailoring, glossary. | — | ✅ **Complete** (D1–D4 locked 2026-07-09; 1161 lines) |
 | **i** | **Context & Problem** (`i-context-and-problem.md`) | The business problem, the manual pain, why automation matters — tailored to Sagard, in business-stakeholder language. Answers case-study section (1). | D1–D3 locked | ✅ **Drafted 2026-07-09** (under adversarial critique) |
 | **ii-evidence** | **Prototype findings** (`ii-prototype-findings.md`) | ✅ Verified export result + defect audit (76% recall, 5 defect classes, all source-quoted). The evidence base + demo insights for Doc ii. | Full export run | ✅ **Done 2026-07-10** |
-| **ii-a** | **Backend fix master plan** (`ii-a-backend-fix-plan.md`) | Spec-flow Stage-3 plan to FIX the backend before Doc ii: 6 phases, additive-and-gated (`recall-mode` flag), full retrocompat audit, file:line seams. | ii-evidence + backend investigation | 🟡 **Drafted 2026-07-10 — awaiting approval at §9** |
+| **ii-a** | **Backend fix plan + build specs** (`ii-a-backend-fix-plan.md`) | Part I = Stage-3 master plan (6 phases, `recall-mode` gate, retrocompat audit). Part II = Stage-4 build-ready specs (frozen §A frontend contract, Build DAG, naming registry, per-phase action→file:line→acceptance, all ground-truthed). | ii-evidence + 2 agent fan-outs | 🟢 **Exploded 2026-07-10 — gate #1–3 approved; awaiting build approval (no code yet)** |
 | **ii** | **The Prototype & Front-End** | What the tool does today, how it works, its limits, **and the front-end demo design**. Future expansion lives at the *end* of this doc. Answers case-study sections (2) + (3). | Doc i + ii-evidence + **backend fix** | ⬜ Not started (writes after the backend fix lands, so the demo is live) |
 | **iii** | **Slides** | The presentation deck: problem → prototype → live demo → roadmap. Answers all four case-study sections in slide form. | Docs i + ii | ⬜ Not started (very last) |
 
@@ -159,7 +159,7 @@ These do **not** change the decisions, but must be done before numbers reach a s
 | `case-study/00-foundations-and-decisions.md` | Document 0 — the full decision brief (options, trade-offs, recommendations, glossary) |
 | `case-study/i-context-and-problem.md` | Document i — Context & Problem (✅ drafted 2026-07-09) |
 | `case-study/ii-prototype-findings.md` | Document ii evidence — verified export result + defect audit (✅ 2026-07-10) |
-| `case-study/ii-a-backend-fix-plan.md` | Backend fix master plan — spec-flow Stage 3, 6 phases, retrocompat audit (🟡 awaiting approval 2026-07-10) |
+| `case-study/ii-a-backend-fix-plan.md` | Backend fix — Part I Stage-3 master plan + Part II Stage-4 build specs (frozen §A frontend contract, Build DAG, ground-truthed file:line). 🟢 build-ready, awaiting build approval 2026-07-10 |
 | `case-study/` (to come) | Documents ii (Prototype & Front-End), iii (Slides) |
 | `intake-pdf/*.pdf` | The 24 sample portfolio-company PDFs (the corpus) |
 | `outputs/` | Prototype output — **`parsed/` covers all 24 docs** (usable for verification); **`metrics_long.csv/.json` is still a 3-doc slice → re-run the export before demo numbers** |
