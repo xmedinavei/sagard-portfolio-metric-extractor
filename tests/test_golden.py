@@ -178,6 +178,35 @@ def test_enhanced_summary_is_byte_identical_to_golden() -> None:
     assert produced == GOLDEN_SUMMARY_ENHANCED.read_text(encoding="utf-8"), "enhanced summary.md drifted from golden"
 
 
+def test_enhanced_metric_row_key_is_unique_and_stable() -> None:
+    # Contract invariant the frontend cockpit binds to: the cockpit has no explicit row id,
+    # so it must synthesize a React/table key + content-hash from (company_name, period,
+    # canonical_metric). That tuple is unique only as an emergent consequence of the dedupe
+    # key (publish.py `_dedupe_cross_document_metrics`). This test guards that emergent
+    # property so a future change (e.g. widening the dedupe key) can't silently collide row
+    # keys — which would corrupt frontend selection/caching with no type error.
+    export = _build_export("enhanced")
+    keys = [(m.company_name, m.period, m.canonical_metric) for m in export.metrics]
+    assert len(keys) == len(set(keys)), "enhanced metrics[] row key (company, period, metric) is not unique"
+    assert all(m.company_name for m in export.metrics), "company_name must be non-null for a usable row key"
+
+
+def test_reconciliation_siblings_share_join_key_in_enhanced() -> None:
+    # §A reconciliation panel binds the presence-marker `cross_document_conflicting_candidates`
+    # to its numbers-bearing `cross_source_discrepancy` sibling on (company, period, metric).
+    # Guard that both siblings carry the SAME populated join key (the period-on-issue fix), so
+    # the documented join never silently matches nothing.
+    export = _build_export("enhanced")
+    markers = {(i.company_name, i.period, i.canonical_metric)
+               for i in export.issues if i.code == "cross_document_conflicting_candidates"}
+    numbers = {(i.company_name, i.period, i.canonical_metric)
+               for i in export.issues if i.code == "cross_source_discrepancy"}
+    assert numbers, "expected at least one cross_source_discrepancy on the corpus"
+    # every discrepancy (numbers) must pair to a presence-marker on the exact same key
+    assert numbers <= markers, f"reconciliation siblings unjoinable: {numbers - markers}"
+    assert all(period is not None for _, period, _ in numbers), "join key period must be populated"
+
+
 def test_enhanced_csv_has_contract_columns_and_legacy_does_not() -> None:
     enhanced_header = _csv_text(_build_export("enhanced"), enhanced=True).splitlines()[0]
     legacy_header = _csv_text(_build_export("legacy"), enhanced=False).splitlines()[0]

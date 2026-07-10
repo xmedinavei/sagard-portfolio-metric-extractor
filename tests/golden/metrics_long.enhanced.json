@@ -3175,7 +3175,7 @@
       "canonical_metric": "arr_eop",
       "raw_label": "ARR",
       "raw_value_text": "$16.9M",
-      "period": null,
+      "period": "Q2 2025",
       "expected_value": null,
       "observed_value": null,
       "delta": null
@@ -3205,7 +3205,7 @@
       "canonical_metric": "gross_margin_pct",
       "raw_label": "Gross Margin",
       "raw_value_text": "73%",
-      "period": null,
+      "period": "Q2 2025",
       "expected_value": null,
       "observed_value": null,
       "delta": null
@@ -3220,7 +3220,7 @@
       "canonical_metric": "headcount",
       "raw_label": "Headcount",
       "raw_value_text": "78",
-      "period": null,
+      "period": "Q2 2025",
       "expected_value": null,
       "observed_value": null,
       "delta": null
@@ -3235,7 +3235,7 @@
       "canonical_metric": "monthly_burn",
       "raw_label": "Net Burn(monthly)",
       "raw_value_text": "($0.55M)",
-      "period": null,
+      "period": "Q2 2025",
       "expected_value": null,
       "observed_value": null,
       "delta": null
@@ -3250,7 +3250,7 @@
       "canonical_metric": "net_revenue_retention_pct",
       "raw_label": "Net Revenue Retention",
       "raw_value_text": "121%",
-      "period": null,
+      "period": "Q2 2025",
       "expected_value": null,
       "observed_value": null,
       "delta": null
@@ -3265,7 +3265,7 @@
       "canonical_metric": "revenue_qtr",
       "raw_label": "Revenue",
       "raw_value_text": "$4.1M",
-      "period": null,
+      "period": "Q2 2025",
       "expected_value": null,
       "observed_value": null,
       "delta": null
@@ -3640,7 +3640,7 @@
       "canonical_metric": "arr_eop",
       "raw_label": "Contracted ARR",
       "raw_value_text": "$22.4M",
-      "period": null,
+      "period": "Q2 2025",
       "expected_value": null,
       "observed_value": null,
       "delta": null
@@ -3700,7 +3700,7 @@
       "canonical_metric": "gross_margin_pct",
       "raw_label": "Gross Margin",
       "raw_value_text": "76%",
-      "period": null,
+      "period": "Q2 2025",
       "expected_value": null,
       "observed_value": null,
       "delta": null
@@ -3730,7 +3730,7 @@
       "canonical_metric": "headcount",
       "raw_label": "Total Headcount",
       "raw_value_text": "121",
-      "period": null,
+      "period": "Q2 2025",
       "expected_value": null,
       "observed_value": null,
       "delta": null
@@ -3760,7 +3760,7 @@
       "canonical_metric": "revenue_qtr",
       "raw_label": "Quarterly Revenue",
       "raw_value_text": "$5.5M",
-      "period": null,
+      "period": "Q2 2025",
       "expected_value": null,
       "observed_value": null,
       "delta": null
@@ -3970,7 +3970,7 @@
       "canonical_metric": "arr_eop",
       "raw_label": "Annual Recurring Revenue",
       "raw_value_text": "$34.2M",
-      "period": null,
+      "period": "Q2 2025",
       "expected_value": null,
       "observed_value": null,
       "delta": null
@@ -3985,7 +3985,7 @@
       "canonical_metric": "cash_balance",
       "raw_label": "Cash",
       "raw_value_text": "$19.6M",
-      "period": null,
+      "period": "Q2 2025",
       "expected_value": null,
       "observed_value": null,
       "delta": null
@@ -4000,7 +4000,7 @@
       "canonical_metric": "gross_margin_pct",
       "raw_label": "Gross Margin",
       "raw_value_text": "78%",
-      "period": null,
+      "period": "Q2 2025",
       "expected_value": null,
       "observed_value": null,
       "delta": null
@@ -4030,7 +4030,7 @@
       "canonical_metric": "headcount",
       "raw_label": "FTE",
       "raw_value_text": "142",
-      "period": null,
+      "period": "Q2 2025",
       "expected_value": null,
       "observed_value": null,
       "delta": null
@@ -4045,7 +4045,7 @@
       "canonical_metric": "logo_churn_pct",
       "raw_label": "Logo Churn (LTM)",
       "raw_value_text": "5.8%",
-      "period": null,
+      "period": "Q2 2025",
       "expected_value": null,
       "observed_value": null,
       "delta": null
@@ -4060,7 +4060,7 @@
       "canonical_metric": "net_revenue_retention_pct",
       "raw_label": "Net Dollar Retention",
       "raw_value_text": "123%",
-      "period": null,
+      "period": "Q2 2025",
       "expected_value": null,
       "observed_value": null,
       "delta": null
@@ -4075,7 +4075,7 @@
       "canonical_metric": "revenue_qtr",
       "raw_label": "Recognized Revenue",
       "raw_value_text": "$8.4M",
-      "period": null,
+      "period": "Q2 2025",
       "expected_value": null,
       "observed_value": null,
       "delta": null
@@ -4585,7 +4585,7 @@
       "canonical_metric": "arr_eop",
       "raw_label": "Contracted ARR",
       "raw_value_text": "27.9M",
-      "period": null,
+      "period": "Q2 2025",
       "expected_value": null,
       "observed_value": null,
       "delta": null

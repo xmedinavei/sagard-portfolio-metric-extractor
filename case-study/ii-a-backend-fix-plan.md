@@ -392,18 +392,22 @@ P5 `Depends-on` {P1,P2,P3,P4 that shipped}. **Tight-core track = P0 → P1 → (
 | `code` | Panel | New fields carried |
 |---|---|---|
 | `missing_metric` | Exception (now sector-aware) | `period` |
-| `unrecognized_label` *(new)* | Exception ("dropped, not absent") | `period`, `raw_label` |
+| `unrecognized_label` *(new, **RESERVED — not emitted in v1**)* | Exception ("dropped, not absent") | `period`, `raw_label` |
 | `basis_collision` *(new)* | Refused-comparison | `period` ✅ P3 |
-| `cross_document_conflicting_candidates` | Reconciliation | presence/winner signal only — reconciliation **numbers ride the co-emitted `cross_source_discrepancy` sibling** (same `company/period/metric`); this code stays unchanged per the P4 spec (D-4b) |
+| `cross_document_conflicting_candidates` | Reconciliation | presence/winner signal only — reconciliation **numbers ride the co-emitted `cross_source_discrepancy` sibling** (same `company/period/metric`); now carries a populated `period` ✅ (post-P5 audit fix) so the sibling join key is symmetric |
 | `cross_source_discrepancy` *(new, D5)* | Reconciliation | `period`, `expected_value`, `observed_value`, `delta` ✅ P4 |
 | `parse_failure`, `duplicate_candidate`, `conflicting_candidates`, `cross_document_duplicate`, `portfolio_summary_document` | *(unchanged)* | — |
 > New `issues[]` fields (all `null` in 1.0.0): `period`, `expected_value`, `observed_value`, `delta`.
 > **D5 semantics locked:** `observed_value` = retained (own/company-report) figure; `expected_value` =
 > suppressed (summary) figure; `delta = observed − expected` (null-guarded).
-> **Reconciliation-panel binding note (D-4b, built P4):** for a cross-document conflict the frontend reads the
-> numeric fields (`observed/expected/delta`) from the **`cross_source_discrepancy`** issue; the paired
-> `cross_document_conflicting_candidates` issue (same key) is the presence/winner marker. *(Xavier can veto →
-> duplicate the four fields onto `cross_document_conflicting_candidates` in enhanced mode, legacy-safe.)*
+> **Reconciliation-panel binding note (D-4b, built P4; join key fixed post-P5):** for a cross-document conflict
+> the frontend reads the numeric fields (`observed/expected/delta`) from the **`cross_source_discrepancy`**
+> issue; the paired `cross_document_conflicting_candidates` issue is the presence/winner marker. **Both siblings
+> now carry the same populated `(company_name, period, canonical_metric)` join key** — the whole-backend audit
+> (2026-07-10) found the presence-marker's `period` was `null`, so the documented join matched nothing; the fix
+> sets `period=retained.period` on the marker (serializer-gated, legacy byte-identical). Guarded by
+> `test_reconciliation_siblings_share_join_key_in_enhanced`. *(Xavier can still veto → duplicate the four
+> numeric fields onto `cross_document_conflicting_candidates` in enhanced mode, legacy-safe.)*
 
 ---
 
@@ -771,4 +775,37 @@ footnotes (not blanket aliases); new `interest_margin` basis for the lender.
 **Still yours:** **D2a–D2f** (Doc 0 §6A.4 metric sub-decisions) — not needed for this build. Nothing else
 blocks Phase 0.
 
-> **Next:** `/spec-flow:4-build-phase` for **Phase 0 first** (the atomic gate everything depends on).
+## II.11 — Whole-backend contract audit *(all 6 phases vs §A, 2026-07-10)*
+
+After P0–P5 landed, the **whole backend** was adversarially audited against §A with a 4-lens fan-out (field/type
+conformance · issue code-set & reconciliation · render correctness · typed-binding robustness) — the question being
+"does the backend deliver *exactly* what the future cockpit expects?". **Verdict:** field/type conformance =
+**contract fully met** (every §A field emitted with the right type/enum/nullability; enhanced CSV columns match;
+no orphan fields); the other three lenses = **met with gaps**, all additive.
+
+**Fixed in this pass (1 code fix + doc honesty), retrocompat-safe:**
+
+| Finding | Severity | Fix | Guard |
+|---|---|---|---|
+| Reconciliation siblings unjoinable — `cross_document_conflicting_candidates` emitted `period=null` while its `cross_source_discrepancy` sibling carried `period`, so §A's documented `(company, period, metric)` join matched nothing | **major** (×2 lenses, CONFIRMED) | `publish.py`: set `period=retained.period` on the presence-marker issue. Serializer-gated (`_LEGACY_ISSUE_EXCLUDE`), legacy byte-identical; only enhanced JSON gains 18 populated periods | `test_reconciliation_siblings_share_join_key_in_enhanced` + regenerated enhanced golden |
+| No stable per-row key in §A — `(company, period, metric)` uniqueness was emergent, not guaranteed | minor (CONFIRMED) | test-only invariant (no output change) codifying the row key the cockpit binds to | `test_enhanced_metric_row_key_is_unique_and_stable` |
+| `unrecognized_label` enumerated in §A but never emitted (Phase 1.5 was optional, unbuilt) → dead frontend panel | **major** (×2 lenses, CONFIRMED) | §A honesty: marked **RESERVED — not emitted in v1** so the frontend builds no live binding. Emitting it is a scoped v-next feature (adds enhanced issues + golden re-baseline) | §A row annotated |
+
+**Deferred to v-next (documented so the frontend owner is not surprised — all intentional v1 scope or hypothetical-future, none block the demo):**
+
+- **`sector` is a whole-document signal** (`pipeline.py`): a metric surviving only from a multi-company summary
+  inherits the *document's* sector, not its own company's. Correct on today's corpus; would misroute if a lender
+  line ever lands in a SaaS-only snapshot. → derive sector per-company in a later pass.
+- **marketplace/payments `gross_margin_pct` shown `comparable`** beside SaaS GM (only the lender's `interest_margin`
+  is refused). Intentional v1 scope — the refuse-set is deliberately narrow. → widen `_ISOLATED_BASES` once those
+  constructs are defined.
+- **No machine-readable schema emitted** (`currency` always-null, `value_normalized` rarely non-null). A cockpit that
+  generates TS types from a sample export could mis-infer `null` for `string｜null`. → emit `model_json_schema()`
+  next to the export.
+- **basis-badge inconsistency** — unsuffixed synonyms ("Net Dollar Retention", "Annual Logo Churn") get `metric_basis=null`
+  while peers get `ltm`. Cosmetic (nothing falsely refused). → extend basis inference to the synonyms.
+- **`cross_source_discrepancy` provenance mix** — carries the *suppressed* candidate's `raw_label`/`raw_value_text`
+  next to the *retained* `observed_value`. §A binds the panel to the numeric fields (`observed/expected/delta`), not
+  these, so a §A-conformant panel is unaffected; latent drill-down trap only. → carry both sides or drop the raw pair.
+
+> **Next:** `/spec-flow:4-build-phase` for **Phase 0 first** (the atomic gate everything depends on). Backend build is complete (P0–P5 + this contract-audit pass); next up is **Doc ii (Prototype & Front-End)**.

@@ -177,6 +177,11 @@ def _dedupe_cross_document_metrics(
                 canonical_metric=retained.canonical_metric,
                 raw_label=suppressed.raw_label,
                 raw_value_text=suppressed.raw_value_text,
+                # §A reconciliation join key: carry `period` so this presence-marker issue
+                # shares the (company, period, canonical_metric) key with its co-emitted
+                # `cross_source_discrepancy` sibling below (which also sets period=retained.period).
+                # Serializer-gated: `period` is in _LEGACY_ISSUE_EXCLUDE, so legacy stays byte-identical.
+                period=retained.period,
             )
         )
 
