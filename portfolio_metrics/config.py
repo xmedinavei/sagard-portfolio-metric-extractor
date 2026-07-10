@@ -36,8 +36,12 @@ class Settings(BaseSettings):
     azure_document_intelligence_endpoint: str | None = None
     azure_document_intelligence_key: str | None = None
     azure_document_intelligence_model: str = "prebuilt-layout"
-    # Recall-fix (Phase 0): default recall behavior. Phase 5 flips this default to "enhanced".
-    recall_mode: Literal["legacy", "enhanced"] = "legacy"
+    # Recall-fix: default recall behavior. Phase 5 cutover (2026-07-10) flipped this
+    # single-sourced product default legacy→enhanced. The CLI reads it via
+    # `args.recall_mode or settings.recall_mode`; passing --recall-mode legacy (or
+    # flipping this token back) is the one-flag rollback. Direct library callers keep the
+    # conservative recall_mode="legacy" function-parameter default until they opt in.
+    recall_mode: Literal["legacy", "enhanced"] = "enhanced"
 
     @property
     def project_root(self) -> Path:

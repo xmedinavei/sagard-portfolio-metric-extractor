@@ -327,10 +327,12 @@ specs below.
 P5 `Depends-on` {P1,P2,P3,P4 that shipped}. **Tight-core track = P0 → P1 → (scoped) P5.**
 
 > **Build status (2026-07-10):** ✅ **P0 BUILT+AUDITED+COMMITTED** (`e91349a`) · ✅ **P1+P2 BUILT+AUDITED+COMMITTED** (`9987ba2`) ·
-> ✅ **P3 BUILT+AUDITED** · ✅ **P4 BUILT+AUDITED** (P3+P4 built together in one session, main-thread sequential — they share
-> `publish.py` in adjacent regions; 4-lens adversarial audit wf_069746ed-39d, **retrocompat lens 0 findings**, 1 real correctness
-> bug [F1 frequency-vote inversion] + 3 smaller gaps all fixed). ⏳ P5 (cutover) next. **Suite: 89 tests green; legacy
-> byte-identical (JSON/CSV/summary); ruff clean.** P3+P4 not yet committed.
+> ✅ **P3+P4 BUILT+AUDITED+COMMITTED** (`ce3e4df`; 4-lens audit wf_069746ed-39d, retrocompat 0 findings, F1 frequency-vote
+> inversion fixed) · ✅ **P5 (cutover) BUILT+AUDITED** — the default is now `enhanced` (single-sourced flip, one-flag rollback);
+> enhanced golden ADDED (legacy canary kept untouched); 2 CLI tests re-baselined with legacy guards; recall independently
+> re-audited **76% → 90%** (wrong `1→0`, false-alarms `15→0`, **0 regressions**). 4-lens audit wf_180ad59a-eb5:
+> **contract/registry + retrocompat 0 findings**; 1 doc-drift fix (stale `--help`) + 2 process notes. **Suite: 93 tests
+> green; legacy byte-identical (JSON/CSV/summary); ruff clean.** **P5 not yet committed** — the recall fix is complete.
 
 ## II.2 — Naming registry *(use these names verbatim in every phase and in the frontend)*
 
@@ -339,7 +341,7 @@ P5 `Depends-on` {P1,P2,P3,P4 that shipped}. **Tight-core track = P0 → P1 → (
 | Symbol | Kind | Home | Notes |
 |---|---|---|---|
 | `recall_mode` | keyword param, `str` `"legacy"｜"enhanced"` | threaded everywhere | default `"legacy"` at every hop |
-| `Settings.recall_mode` | `Literal["legacy","enhanced"] = "legacy"` | `config.py:32` (mirror `pdf_parser`) | Phase 5 flips the default token |
+| `Settings.recall_mode` | `Literal["legacy","enhanced"] = "enhanced"` | `config.py:40` | ✅ **P5** flipped the default token legacy→enhanced (single-sourced; function-param defaults stay `"legacy"` for one-flag rollback, D-5a) |
 | `--recall-mode` | CLI arg, `choices=("legacy","enhanced")`, `default=None` | `cli.py` publish+normalize subparsers | resolve `args.recall_mode or settings.recall_mode` (mirror `--parser`, cli.py:557) |
 | `EXTENDED_ALIASES` | `tuple[MetricAlias, ...]` | `metric_aliases.py:126` | gate-scoped; merged only when enhanced |
 | `_EXTENDED_ALIAS_BY_LABEL` | `dict` | `metric_aliases.py:128` | `{**_ALIAS_BY_LABEL, **extended}` |
@@ -360,7 +362,7 @@ P5 `Depends-on` {P1,P2,P3,P4 that shipped}. **Tight-core track = P0 → P1 → (
 | `EXPORT_SCHEMA_VERSION` | `"1.0.0"` legacy / `"1.1.0"` enhanced | `publish.py:21` | selected by mode, not bumped unconditionally |
 | `_serialize_export(export)` (mode read from `export_metadata.recall_mode`), `LEGACY_JSON_EXCLUDE`, `LEGACY_RESULT_EXCLUDE`, `EXPORT_SCHEMA_VERSION_ENHANCED` | fn + consts | `publish.py` | mode-gated JSON (GT-1); ✅ built P0 (signature simplified vs original registry — see Phase 0 build log D-0a/b/c) |
 | `CSV_FIELDNAMES` / `CSV_FIELDNAMES_ENHANCED` | tuples | `publish.py:22` | mode-selected header |
-| golden guard | `tests/golden/parsed/*.parsed.json`, `tests/golden/metrics_long.legacy.json`, `make verify-golden`, `tests/test_golden.py` | new | GT-3 |
+| golden guard | `tests/golden/parsed/*.parsed.json`, `tests/golden/metrics_long.{legacy,enhanced}.{json,csv}`, `tests/golden/summary.{legacy,enhanced}.md`, `make verify-golden`, `tests/test_golden.py` | new | GT-3; ✅ **P5** added the enhanced baselines + byte-identity tests (legacy kept as the retrocompat canary) |
 | enhanced per-doc enrichment (`metric_basis="interest_margin"` for credit GM · `value_normalized` · `comparison_status="comparable"`) | field writes | `pipeline.py` `normalize_parser_output` (enhanced block) | ✅ P3. Sector-driven basis (D-3a); centralized here not in `normalize.py` (D-3b). Legacy leaves all `None` |
 | `_detect_restricted_cash_exclusion(text) -> float｜None` + `_RESTRICTED_CASH_RE` | fn + regex | `pipeline.py` | ✅ P3. Reads the segregated client-float footnote; applied only to a payments company's current-period cash (F3) |
 | `_detect_basis_collisions(metrics) -> list[NormalizationIssue]` + `_ISOLATED_BASES` | fn + const | `publish.py` | ✅ P3. **Structural** refusal (not frequency) — `interest_margin` never anchors (F1); marks `comparison_status="refused"` + emits one `basis_collision` per group (with `period`, F2) |
@@ -672,9 +674,9 @@ Built alongside Phase 3 (same session, `publish.py` `_dedupe_cross_document_metr
 
 ## Phase 5 — Cutover *(Build Spec)* — the ONLY default change
 
-> **Status:** not started · **Scope:** **intentional default change** + re-baseline · **Depends-on:** the
-> phases that shipped · **Blocks:** — · **Ground-truthed:** 2026-07-10 · **Target:** `config.py`, `tests/`,
-> `tests/golden/`, `case-study/ii-prototype-findings.md`
+> **Status:** ✅ **BUILT + AUDITED 2026-07-10** · **Scope:** **intentional default change** + re-baseline ·
+> **Depends-on:** the phases that shipped (P0–P4, all landed) · **Blocks:** — · **Ground-truthed:** 2026-07-10 ·
+> **Target:** `config.py`, `tests/`, `tests/golden/`, `case-study/ii-prototype-findings.md`
 
 **Purpose:** flip default → enhanced, re-baseline the (narrow) affected tests, regenerate the committed
 golden, re-run the audit. **Re-baseline is narrow (GT):** only 2 tests hold legacy values that flip; all
@@ -690,7 +692,61 @@ not re-baseline).
 **§ Retrocompat notes:** this phase is the deliberate cutover; every change is gated behind *this phase*
 and reversible by 5.1. **Net: one intentional default change, re-baselined in-commit, one-flag rollback.**
 
-**§ Definition of done:** default enhanced · golden re-committed · 2 tests re-baselined + legacy guards green · `.value` canaries green · findings doc updated.
+**§ Definition of done — ✅ MET (2026-07-10):** ✅ default enhanced (`config.py:40` + a positive cutover-proof
+test; CLI no-flag publish → schema `1.1.0` verified end-to-end) · ✅ enhanced golden **ADDED** (`metrics_long.enhanced.{json,csv}`
++ `summary.enhanced.md`; legacy baselines kept untouched → canary preserved) · ✅ 2 CLI tests re-baselined with
+`--recall-mode legacy` guards green · ✅ all `.value ==` canaries green · ✅ findings doc updated (`ii-prototype-findings.md`
+§2.1: **76% → 90%**) · ✅ **93 tests green; ruff clean; `make verify-golden` green in both modes; legacy byte-identical.**
+
+### Phase 5 — Build log (deviations + audit fixes)
+
+Built on the main thread 2026-07-10. The flip's blast radius was found **empirically** (flip the default → run the
+full suite → re-baseline exactly what broke), not from the spec's static prediction — and the two differed (D-5b).
+Audited by a **4-lens `phase-auditor` fan-out** (wf_180ad59a-eb5: retrocompat · contract/registry · acceptance/DoD ·
+correctness/completeness): **contract/registry 0 findings** (the auditor independently **re-generated** the enhanced
+golden and confirmed it byte-identical + §A-conformant → deterministic, not self-referential); **retrocompat pass**
+(legacy baselines confirmed unchanged from `ce3e4df`, no missed test in the blast radius); 1 real minor doc-drift
+finding fixed + 2 process notes.
+
+**Deviations from the spec (recorded — flagged for veto):**
+- **D-5a (Settings-ONLY flip; function-param defaults preserved — the key call):** flipped **only** `Settings.recall_mode`
+  (`config.py:40`), **not** the `recall_mode="legacy"` keyword-only defaults on `normalize_parser_output` /
+  `build_metrics_export` / `normalize_documents`. Rationale: spec 5.1 calls the flip "single-sourced," and true
+  one-flag rollback requires exactly **one** default to revert. The CLI always resolves `args.recall_mode or
+  settings.recall_mode` (`cli.py:601,635`) and passes it explicitly, so `settings.recall_mode` is the sole **product**
+  default (what the demo/export uses); the function-param `"legacy"` defaults are the conservative **library** default
+  (direct callers opt in). **Consequence:** spec 5.3's prediction that `test_pipeline.py:87-90` would break is **wrong
+  for this design** — that test hits the preserved legacy function-default and stays green; its explicit-enhanced
+  sibling (`test_pipeline.py:93-110`) already covers the new behavior. **Xavier can veto** → also flip every
+  function-param default to `"enhanced"` (bigger blast radius, N-place rollback, weaker guarantee).
+- **D-5b (empirical blast radius ≠ predicted):** the 2 tests that actually broke were
+  `test_cli_normalize.py::test_normalize_command_prints_phase3_summary` (**predicted**) and
+  `test_publish.py::test_publish_command_can_emit_json_report` (**not predicted** — its `issue_count > 0` relied on the
+  sector-blind alarms enhanced now correctly suppresses). `test_pipeline.py:87-90` (**predicted**) did **not** break.
+  Both breaking tests pinned to `--recall-mode legacy` guards; a `*_legacy_mode_*` rename + a new
+  `test_normalize_command_defaults_to_enhanced_after_cutover` (positive proof the default flipped) were added.
+- **D-5c (additive golden, not overwrite):** chose the **additive** option in 5.2 — ADDED the 3 enhanced baselines +
+  3 byte-identity tests, keeping the legacy baselines + tests untouched. Retrocompat is non-negotiable: the legacy
+  byte-identity **canary is preserved forever**, and the enhanced (now-default) output gets its own full byte-identity
+  lock — stronger than the prior marker-presence checks, and it makes the new default reproducible.
+
+**Audit fixes applied:**
+- **F-5a (minor, real doc-drift — FIXED):** the CLI `--recall-mode` `--help` still read *"Defaults to the RECALL_MODE
+  setting (legacy)"* at `cli.py:126` + `:171` after the flip. Updated both to *"Overrides the RECALL_MODE setting
+  (default: enhanced)."* The flip's blast radius includes **user-facing help text**, not just tests — a class no test
+  would catch.
+- **F-5b (major = the in-flight 5.4 — RESOLVED):** the auditors ran against a snapshot *before* the findings-doc edit
+  landed. `ii-prototype-findings.md` §2.1 now carries the independently re-audited before/after.
+- **F-5c (minor, commit hygiene — HEEDED):** the 3 new enhanced golden files are untracked → must be explicitly
+  `git add`ed (never `git commit -a`), else a fresh checkout/CI raises `FileNotFoundError` in the enhanced byte-identity
+  tests. The commit step stages explicit paths.
+
+**Measured (independent per-company recall re-audit, wf_f9620838-b63, 10 agents, 0 errors):** recall
+**97/128 (76%) → 115/128 (90%)** · wrong values **1 → 0** · sector-blind false alarms **15 → 0** · **0 regressions**
+(enhanced is a strict additive superset). +18 recovered (NovaCloud ARR ×5; PeopleFlow GBP 11→18 full recall;
+MediSight own-report $27.9M now outranks the summary's $22.4M). 13 residual = **10 out-of-scope Class F** + **2
+flagged-not-silent** (declared-equivalence, not blanket-aliased) + **1 basis refusal** (ConstructIQ quarterly burn).
+Legacy byte-identical. **Test count 89 → 93; ruff clean.**
 
 ---
 

@@ -19,8 +19,13 @@ def test_resolve_parsed_inputs_reads_phase2_json_artifacts() -> None:
     }
 
 
-def test_normalize_command_prints_phase3_summary(capsys) -> None:
-    exit_code = main(["normalize", "--input-dir", str(FIXTURE_DIR)])
+def test_normalize_command_legacy_mode_prints_phase3_summary(capsys) -> None:
+    # Legacy guard (Phase 5 cutover): pinned to --recall-mode legacy so it keeps asserting
+    # the pre-cutover sector-blind output (LendBridge flagged for the three SaaS metrics).
+    # This is the retrocompat canary for the CLI normalize summary; the no-flag default is
+    # now enhanced (see test_normalize_command_defaults_to_enhanced_after_cutover).
+    exit_code = main(
+        ["normalize", "--input-dir", str(FIXTURE_DIR), "--recall-mode", "legacy"])
     captured = capsys.readouterr()
 
     assert exit_code == 0
@@ -38,6 +43,19 @@ def test_normalize_command_enhanced_mode_drops_sector_blind_lender_alarms(capsys
 
     assert exit_code == 0
     # In enhanced mode the LendBridge (credit) line no longer reports SaaS-only metrics.
+    assert "missing core metrics: arr_eop, cash_balance, monthly_burn" not in captured.out
+
+
+def test_normalize_command_defaults_to_enhanced_after_cutover(capsys) -> None:
+    # Phase 5 cutover proof: with NO --recall-mode flag the CLI now resolves
+    # settings.recall_mode == "enhanced" (the flipped single-sourced default), so the
+    # sector-blind LendBridge alarm is gone by default — same output as the explicit
+    # enhanced run above. This is the positive assertion that the default actually flipped.
+    exit_code = main(["normalize", "--input-dir", str(FIXTURE_DIR)])
+    captured = capsys.readouterr()
+
+    assert exit_code == 0
+    assert "Phase 3 normalization: ready" in captured.out
     assert "missing core metrics: arr_eop, cash_balance, monthly_burn" not in captured.out
 
 

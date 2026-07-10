@@ -123,7 +123,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--recall-mode",
         choices=("legacy", "enhanced"),
         default=None,
-        help="Recall behavior for this run. Defaults to the RECALL_MODE setting (legacy).",
+        help="Recall behavior for this run. Overrides the RECALL_MODE setting (default: enhanced).",
     )
 
     publish_parser = subparsers.add_parser(
@@ -168,7 +168,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--recall-mode",
         choices=("legacy", "enhanced"),
         default=None,
-        help="Recall behavior for this run. Defaults to the RECALL_MODE setting (legacy).",
+        help="Recall behavior for this run. Overrides the RECALL_MODE setting (default: enhanced).",
     )
     return parser
 

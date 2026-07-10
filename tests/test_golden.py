@@ -33,6 +33,12 @@ PARSED_DIR = GOLDEN_DIR / "parsed"
 GOLDEN_JSON = GOLDEN_DIR / "metrics_long.legacy.json"
 GOLDEN_CSV = GOLDEN_DIR / "metrics_long.legacy.csv"
 GOLDEN_SUMMARY = GOLDEN_DIR / "summary.legacy.md"
+# Enhanced (1.1.0) baselines — the new default output after the Phase 5 cutover. Locking
+# these byte-for-byte makes the now-default enhanced export a reproducible canary too, so
+# any future drift in the default output is caught, not just legacy regressions.
+GOLDEN_JSON_ENHANCED = GOLDEN_DIR / "metrics_long.enhanced.json"
+GOLDEN_CSV_ENHANCED = GOLDEN_DIR / "metrics_long.enhanced.csv"
+GOLDEN_SUMMARY_ENHANCED = GOLDEN_DIR / "summary.enhanced.md"
 FIXED_GENERATED_AT = datetime(2020, 1, 1, tzinfo=timezone.utc)
 
 # Fields introduced by the recall fix; they must NOT appear in legacy output. `"period"`
@@ -150,6 +156,26 @@ def test_enhanced_populates_phase3_and_phase4_fields_on_golden_corpus() -> None:
     # Phase 4 (D5): MediSight own(27.9M) vs summary(22.4M) surfaces with observed/expected/delta.
     assert '"code": "cross_source_discrepancy"' in produced
     assert '"delta": 5500000.0' in produced
+
+
+# --- enhanced byte-identity (the new default output, Phase 5 cutover) ---
+
+def test_enhanced_json_is_byte_identical_to_golden() -> None:
+    produced = _serialize_export(_build_export("enhanced"))
+    assert produced == GOLDEN_JSON_ENHANCED.read_text(encoding="utf-8"), (
+        "enhanced JSON drifted from tests/golden/metrics_long.enhanced.json — the "
+        "post-cutover default output changed; regenerate the baseline intentionally"
+    )
+
+
+def test_enhanced_csv_is_byte_identical_to_golden() -> None:
+    produced = _csv_text(_build_export("enhanced"), enhanced=True)
+    assert produced == GOLDEN_CSV_ENHANCED.read_text(encoding="utf-8"), "enhanced CSV drifted from golden"
+
+
+def test_enhanced_summary_is_byte_identical_to_golden() -> None:
+    produced = render_summary_markdown(_build_export("enhanced"))
+    assert produced == GOLDEN_SUMMARY_ENHANCED.read_text(encoding="utf-8"), "enhanced summary.md drifted from golden"
 
 
 def test_enhanced_csv_has_contract_columns_and_legacy_does_not() -> None:

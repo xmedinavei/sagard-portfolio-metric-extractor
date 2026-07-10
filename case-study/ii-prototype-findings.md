@@ -8,6 +8,8 @@
 >
 > **Status:** ✅ Export run and audited **2026-07-10**. Every number below is quoted from the source
 > `outputs/parsed/*.parsed.md` files or from `outputs/metrics_long.json`. Nothing here is inferred.
+> **Update (2026-07-10):** the backend recall fix has since shipped and been re-audited — recall
+> **76% → 90%**, wrong values **1 → 0**, false alarms **15 → 0**, zero regressions. See **§2.1**.
 >
 > **How this was produced (auditable):**
 > 1. `make publish` (i.e. `python -m portfolio_metrics publish --input-dir outputs/parsed …`) over the
@@ -43,12 +45,19 @@ they map one-to-one onto the solution design already written in Doc 0 §4.2.1.
 
 **Recall against the source documents** (the number that actually matters for a "trust the numbers" tool):
 
-> Of **128** canonical metric values physically present in the 24 source PDFs, the export reproduces
-> **97 correctly (76%)**, **silently drops 30**, and **exports 1 wrong value**.
+> **Before the fix:** Of **128** canonical metric values physically present in the 24 source PDFs, the
+> export reproduced **97 correctly (76%)**, **silently dropped 30**, and **exported 1 wrong value**.
+>
+> **After the backend recall fix** (enhanced mode made the default at the Phase 5 cutover, 2026-07-10):
+> the same 24-doc corpus now reproduces **115 correctly (90%)**, drops only **13** (down from 30),
+> exports **0 wrong values** (down from 1), and raises **0 sector-blind false alarms** (down from 15) —
+> with **0 regressions** (every value captured before is still captured; the enhanced set is a strict
+> additive superset). Independently re-audited per-company against the same source PDFs. See **§2.1**.
 
-That 76% is the "before" state. The 24% gap is not random noise — it clusters into five explainable,
-fixable failure modes (§4), dominated by **label drift** (the tool matches metric names by brittle
-string comparison, so a renamed line disappears).
+That 76% was the "before" state. The 24% gap was not random noise — it clustered into five explainable,
+fixable failure modes (§4), dominated by **label drift** (the tool matched metric names by brittle
+string comparison, so a renamed line disappeared). The fix targeted exactly those classes; §2.1 shows the
+after-state and, honestly, what still is *not* captured.
 
 ### Per-company reconciliation
 
@@ -70,6 +79,52 @@ string comparison, so a renamed line disappears).
 limitation (see §4-F), not label drift. Removing it, current-period recall is 97/120 ≈ **81%**.
 ‡ **ConstructIQ's 1 drop is a basis mismatch, not a pure miss** — the pack reports *Quarterly* Net Burn
 while the tool's field is *monthly*; refusing to map it is arguably correct behaviour (see §4-D).
+
+### 2.1 After the backend recall fix (enhanced default, 2026-07-10)
+
+Independently re-audited the same way — one reviewer per company, same source PDFs, same denominator (the
+128 physically-printed values do not change; only the numerator moves).
+
+| Company | Sector | Printed | Before OK | **After OK** | Still dropped | Wrong | Sector-blind false alarms |
+|---|---|---:|---:|---:|---:|---:|---:|
+| NovaCloud | SaaS | 40 | 30 | **39** | 1 | 0 | 0 |
+| CarbonTrack | SaaS | 16 | 8 | 8 | 8 † | 0 | 0 |
+| PeopleFlow | SaaS (GBP) | 18 | 11 | **18** | 0 | 0 | 0 |
+| MediSight | SaaS | 12 | 10 | **11** | 1 | **0** (was 1) | 0 |
+| TalentVault | SaaS | 7 | 6 | **7** | 0 | 0 | 0 |
+| ConstructIQ | SaaS | 8 | 7 | 7 | 1 ‡ | 0 | 0 |
+| ApexFreight | Marketplace | 3 | 3 | 3 | 0 | 0 | **0** (was 1) |
+| FleetLink | Marketplace | 6 | 4 | 4 | 2 | 0 | **0** (was 2) |
+| ClearPay | Payments | 4 | 4 | 4 | 0 | 0 | **0** (was 2) |
+| LendBridge | Private credit | 14 | 14 | 14 | 0 | 0 | **0** (was 10) |
+| **Total** | | **128** | **97 (76%)** | **115 (90%)** | **13** | **0** | **0** |
+
+**What the fix recovered (+18 correct captures, 97 → 115):** NovaCloud's ARR now reads across all 5
+quarters (the `End-of-Period ARR` word-order variant + `Contracted ARR` were recovered by the alias work);
+PeopleFlow's GBP `Subscription ARR (end of period)` and `Annual Logo Churn` are back (11 → 18, **full
+recall**); MediSight's Q2 ARR is now the company's own **$27.9M** (not the summary's mis-transcribed
+$22.4M) *and* it raises a cross-source discrepancy flag; and all **15 sector-blind false alarms**
+(LendBridge ×10, marketplaces/payments ×5) are gone because the missing-metric check is now sector-aware.
+**Zero regressions** — no value captured before was lost; enhanced is a strict additive superset of legacy.
+
+**What is still not captured (13) — and why that is honest, not alarming:**
+- **10 = out-of-scope Class F (narrative / prior-period parsing).** CarbonTrack's entire 8-value Q1
+  comparison column, plus MediSight's Q1 headcount (114) and FleetLink's headcount (199) that appear
+  **only in prose**, never in a table. This is a documented roadmap item (Doc 0 §7), not a label-drift miss.
+- **2 = declared-equivalence deliberately *not* blanket-aliased.** NovaCloud's `Total Billings` and
+  FleetLink's `Gross Transaction Revenue`. Auto-mapping these risks *semantic over-capture* — and a wrong
+  number is worse than a flagged blank — so the tool leaves them and **raises a `missing_metric` warning**:
+  flagged, not silent.
+- **1 = deliberate basis refusal.** ConstructIQ's *Quarterly* Net Burn is not silently coerced into the
+  *monthly* field. Refusing the unsafe basis is the governing thesis working as designed (§4-D).
+
+Excluding the out-of-scope Class F rows, current-scope recall is **115/118 ≈ 97%**, and each of the 3
+remaining gaps is either flagged or a correct refusal — **no silent drops within the fix's scope, and no
+wrong values anywhere in the export.**
+
+> **Reproduce:** `make publish` (now enhanced by default) over the 24 parsed fixtures → 116 metrics / 104
+> issues / schema `1.1.0`; `make publish` with `--recall-mode legacy` reproduces the byte-identical 76%
+> "before" (99 metrics / 125 issues / schema `1.0.0`). The gate is the one-flag rollback.
 
 ---
 
