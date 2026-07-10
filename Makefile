@@ -9,7 +9,7 @@ OUTPUT_DIR ?= outputs
 PARSED_OUTPUT_DIR ?= outputs/parsed
 FIXTURE_DIR ?= tests/fixtures/parsed
 
-.PHONY: setup install run demo full-demo preflight extract extract-fixtures normalize publish check test lint clean
+.PHONY: setup install run demo full-demo preflight extract extract-fixtures normalize publish check test verify-golden lint clean
 
 $(PYTHON):
 	$(SYSTEM_PYTHON) -m venv $(VENV_DIR)
@@ -58,6 +58,9 @@ check: setup
 
 test: setup
 	$(PYTHON) -m pytest
+
+verify-golden: setup
+	$(PYTHON) -m pytest tests/test_golden.py -q
 
 lint: setup
 	$(PYTHON) -m ruff check portfolio_metrics tests

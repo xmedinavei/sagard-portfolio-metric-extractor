@@ -27,6 +27,12 @@ MeasurementUnit = Literal[
 
 DocumentKind = Literal["company_report", "portfolio_summary"]
 
+# Recall-fix (Phase 0) additive contract types — see case-study/ii-a-backend-fix-plan.md §A.
+# These name the values the future monitoring cockpit binds to; enhanced mode populates them.
+SectorKind = Literal["saas", "credit", "marketplace", "payments"]
+MetricBasis = Literal["quarterly", "period_end", "monthly", "ltm", "interest_margin"]
+ComparisonStatus = Literal["comparable", "refused", "unchecked"]
+
 
 class ProvenanceStrategy(BaseModel):
     """Describes what source-location fidelity the current parser can guarantee."""
@@ -153,10 +159,15 @@ class NormalizedMetric(BaseModel):
     confidence: float = 0.0
     parsing_method: str | None = None
     detection_method: Literal["table_row", "narrative"]
-    metric_basis: str | None = None
+    metric_basis: MetricBasis | None = None
     notes: list[str] = Field(default_factory=list)
     is_valid: bool = True
     parse_error: str | None = None
+    # Recall-fix (Phase 0) additive frontend-contract fields; None in legacy, populated in enhanced.
+    sector: SectorKind | None = None
+    value_normalized: float | None = None
+    currency: str | None = None
+    comparison_status: ComparisonStatus | None = None
 
 
 class NormalizationIssue(BaseModel):
@@ -171,6 +182,11 @@ class NormalizationIssue(BaseModel):
     canonical_metric: CanonicalMetric | None = None
     raw_label: str | None = None
     raw_value_text: str | None = None
+    # Recall-fix (Phase 0) additive reconciliation-panel fields; None in legacy, populated in enhanced.
+    period: str | None = None
+    expected_value: float | None = None
+    observed_value: float | None = None
+    delta: float | None = None
 
 
 class NormalizationResult(BaseModel):
@@ -199,6 +215,8 @@ class ExportMetadata(BaseModel):
     issue_count: int = 0
     core_metrics: list[CanonicalMetric] = Field(default_factory=list)
     optional_metrics: list[CanonicalMetric] = Field(default_factory=list)
+    # Recall-fix (Phase 0): which recall mode produced this export ("legacy"|"enhanced").
+    recall_mode: str = "legacy"
 
 
 class MetricsLongExport(BaseModel):

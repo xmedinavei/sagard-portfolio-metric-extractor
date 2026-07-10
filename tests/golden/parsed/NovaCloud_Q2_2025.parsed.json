@@ -1,0 +1,24 @@
+{
+  "file_name": "NovaCloud_Q2_2025.pdf",
+  "source_path": "/home/xavierand_/Desktop/SWE/personal/sagard-portfolio-metric-extractor/intake-pdf/NovaCloud_Q2_2025.pdf",
+  "requested_parser": "firecrawl",
+  "parser_used": "firecrawl",
+  "raw_format": "markdown",
+  "page_count": 1,
+  "pages": [
+    {
+      "page_number": null,
+      "text": "NovaCloud Analytics Inc.\n\nPeriod: Q2 2025\n\nNovaCloud Analytics Inc. (\"NovaCloud\") is a B2B SaaS platform providing cloud-based analytics and observability tools to\nmid-market e-commerce and digital businesses across North America and Western Europe.\n\nKey Financial & Operating Metrics\n\n| Metric | Q2 2025 |\n| --- | --- |\n| Recognized Revenue(USD) | $8.4M |\n| ARR(End of Period) | $34.2M |\n| Gross Margin | 78% |\n| Net Dollar Retention | 123% |\n| Logo Churn(LTM) | 5.8% |\n| ARR per Full-Time Employee | $241k |\n| Cash Balance | $19.6M |\n| Monthly Net Burn | ($0.75M) |\n| Total Headcount | 142 |\n\nRecognized Revenue in Q2 2025 was $8.4M, up 6% quarter-over-quarter and 32% year-over-year. End-of-period ARR reached\n$34.2M. Gross margin improved to 78% as NovaCloud continued optimising its cloud infrastructure. New logo additions totalled 14\nin the quarter. Expansion revenue of $2.0M represented 24% of recognized revenue, the highest expansion mix to date.\n\nGo-to-Market & Pipeline Overview\n\n• Dependence on a limited number of large customers for a meaningful portion of ARR.\n\n| Stage | Opportunities | Total Pipeline | Weighted |\n| --- | --- | --- | --- |\n| Qualified | 36 | $9.8M | $4.2M |\n| Proposal/Negotiation | 18 | $7.1M | $3.6M |\n| Verbal Commit | 6 | $2.9M | $2.0M |\n\n• Competition from larger observability vendors moving down-market.\n\n(1) Net Dollar Retention is presented on a last-twelve-months basis; equivalent to NRR in Q1 2025 reporting.\n\n• Execution risk associated with larger enterprise deals and extended procurement cycles.\n\n(2) ARR per Full-Time Employee introduced as a recurring board metric in Q1 2025.\n\n(3) Monthly Net Burn reflects operating cash outflows; excludes non-cash stock-based compensation of $0.38M.",
+      "char_count": 1740
+    }
+  ],
+  "provenance": {
+    "file_level": true,
+    "page_level": false,
+    "snippet_level": false,
+    "description": "File-level provenance is guaranteed in v1; Firecrawl page count metadata is retained when available, but the extracted content is document-level markdown."
+  },
+  "notes": [
+    "Firecrawl PDF mode: auto."
+  ]
+}

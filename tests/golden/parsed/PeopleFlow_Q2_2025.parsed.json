@@ -1,0 +1,24 @@
+{
+  "file_name": "PeopleFlow_Q2_2025.pdf",
+  "source_path": "/home/xavierand_/Desktop/SWE/personal/sagard-portfolio-metric-extractor/intake-pdf/PeopleFlow_Q2_2025.pdf",
+  "requested_parser": "firecrawl",
+  "parser_used": "firecrawl",
+  "raw_format": "markdown",
+  "page_count": 1,
+  "pages": [
+    {
+      "page_number": null,
+      "text": "PeopleFlow HR Systems Ltd.\n\nInvestor Snapshot \\| Vertical SaaS – Human Capital Management\n\nQuarter Ended: Q2 2025 \\| Reporting Currency: GBP\n\nPeopleFlow HR Systems Ltd. (\"PeopleFlow\") provides human capital management tools to professional services firms in the UK\nand Ireland.\n\nKey Metrics – Q2 2025\n\n| Metric(GBP unless noted) | Q2 2025 |\n| --- | --- |\n| Quarterly Revenue | 5.1M |\n| Subscription ARR (end of period) | 21.4M |\n| Net Dollar Retention(LTM) | 118% |\n| Annual Logo Churn | 4.2% |\n| Paying Customer Logos | 412 |\n| Avg.Seats per Customer | 146 |\n| Module Attach Rate | 2.3 modules/acct |\n| Total Headcount | 96 |\n\nCommentary\n\nIn the quarter ended 30 June 2025, PeopleFlow delivered Quarterly Revenue of 5.1M, up from 4.6M in Q1 2025 (as restated; refer\nto footnote 2). End-of-period Subscription ARR reached 21.4M versus 19.8M in the prior quarter. Gross Margin was 73% in Q2\n2025, slightly below the 74% recorded in Q1 2025, as the company continued migrating workloads to a new cloud provider.\nHeadcount additions were concentrated in customer success and product. Average seats per customer increased to 146 as the\ncompany continued to drive module attach in performance and analytics.\n\nNon-Core Financial Items\n\n• FX translation gain on EUR-denominated contracts: +0.09M\n\n• One-time restructuring charge (office consolidation): (0.21M)\n\n(1) All figures in GBP unless otherwise stated.\n\n(2) Q1 2025 Quarterly Revenue has been restated from 4.7M to 4.6M to reflect the reversal of a contract modification initially recognised in Q1 but\nsubsequently unwound in April 2025 following a customer renegotiation. The Q1 2025 standalone investor report has not been reissued.\n\n(3) Gross Margin of 73% is discussed in commentary; not separately tabled this period.\n\n• Share-based compensation expense: 0.38M\n\n(4) Net Dollar Retention is computed in GBP; label maintained for cross-portfolio comparability.\n\n(5) Module Attach Rate introduced Q2 2025: avg. distinct platform modules per active account.",
+      "char_count": 2008
+    }
+  ],
+  "provenance": {
+    "file_level": true,
+    "page_level": false,
+    "snippet_level": false,
+    "description": "File-level provenance is guaranteed in v1; Firecrawl page count metadata is retained when available, but the extracted content is document-level markdown."
+  },
+  "notes": [
+    "Firecrawl PDF mode: auto."
+  ]
+}

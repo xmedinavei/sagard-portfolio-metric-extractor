@@ -1,0 +1,24 @@
+{
+  "file_name": "CarbonTrack_Q2_2025.pdf",
+  "source_path": "/home/xavierand_/Desktop/SWE/personal/sagard-portfolio-metric-extractor/intake-pdf/CarbonTrack_Q2_2025.pdf",
+  "requested_parser": "firecrawl",
+  "parser_used": "firecrawl",
+  "raw_format": "markdown",
+  "page_count": 2,
+  "pages": [
+    {
+      "page_number": null,
+      "text": "CarbonTrack Analytics Corp.\nPortfolio Update \\| ESG Data & Carbon Accounting Platform\n\nPeriod: Q2 2025\n\nCarbonTrack provides a cloud-native carbon accounting and Scope 1/2/3 emissions tracking platform to mid-market and enterprise\ncorporates with ESG reporting obligations. Pricing is per-entity with data ingestion add-ons. The company primarily serves clients in\nNorth America and Western Europe.\n\nHeadline Metrics – Q2 2025\n\n| Metric | Q2 2025 | Q1 2025 |\n| --- | --- | --- |\n| Contracted ARR | $16.9M | $15.2M |\n| Recognized Revenue | $4.1M | $3.8M |\n| Gross Margin | 73% | 72% |\n| Net Revenue Retention(LTM) | 121% | 118% |\n| Logo Churn(LTM) | 3.8% | 4.1% |\n| Paying Entities(platform) | 1,042 | 964 |\n| Total Headcount | 78 | 72 |\n| Monthly Net Burn | ($0.55M) | ($0.61M) |\n| Cash Balance | $13.8M | $14.8M |\n\n| Platform Metric | Q2 2025 |\n| --- | --- |\n| Emission Records Processed(QTD) | 88.4M |\n| Connected Data Source Integrations | 214 |\n| Scope3ValueChainEntitiesTracked | 28600 |\n| Avg.ReportingFrameworksperClient | 2.3 |\n| AutomatedAuditTrailCoverage | 96% |\n| APIDataIngestionUptime | 99.89% |\n\nNon-Recurring Items\n\nAverage reporting frameworks per client reached 2.3 in Q2 2025, reflecting growing multi-standard compliance needs (GHG\nProtocol, TCFD, CSRD, ISSB). Scope 3 value chain entity tracking grew 18% quarter-over-quarter. Net new paying entities added\nin Q2 2025 totalled 78, compared to 62 in Q1, driven by CSRD deadlines and CDP filing requirements.\n\n• Partnership integration fee from a large accounting network: +$0.2M (one-time; excluded from ARR and recurring revenue).\n\n• Non-cash stock-based compensation: $0.28M.\n\n* * *\n\n_(2) 'Paying Entities' counts each separately contracted reporting entity; group structures may consolidate multiple._ _(3) Gross Margin excludes customer success and data science costs._ _(4) Regulatory references (SEC, CSRD, ISSB) are for context; do not constitute legal or compliance advice._",
+      "char_count": 1952
+    }
+  ],
+  "provenance": {
+    "file_level": true,
+    "page_level": false,
+    "snippet_level": false,
+    "description": "File-level provenance is guaranteed in v1; Firecrawl page count metadata is retained when available, but the extracted content is document-level markdown."
+  },
+  "notes": [
+    "Firecrawl PDF mode: auto."
+  ]
+}

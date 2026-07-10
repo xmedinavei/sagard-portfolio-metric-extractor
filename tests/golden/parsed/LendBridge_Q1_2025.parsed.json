@@ -1,0 +1,24 @@
+{
+  "file_name": "LendBridge_Q1_2025.pdf",
+  "source_path": "/home/xavierand_/Desktop/SWE/personal/sagard-portfolio-metric-extractor/intake-pdf/LendBridge_Q1_2025.pdf",
+  "requested_parser": "firecrawl",
+  "parser_used": "firecrawl",
+  "raw_format": "markdown",
+  "page_count": 2,
+  "pages": [
+    {
+      "page_number": null,
+      "text": "LendBridge Capital Corp.\nQ1 2025 Performance Review\n\nPeriod Ended: Q1 2025\n\nLendBridge Capital Corp. provides working capital lines of credit to SMEs across North America, generating revenue through\ninterest income, fees, and treasury services.\n\nCondensed Income Summary\n\n| Item | Q1 2025 |\n| --- | --- |\n| Recognized Revenue | $12.1M |\n| Interest Expense | ($3.2M) |\n| Net Interest Margin | 9.3% |\n| Fee & Ancillary Income | $1.0M |\n| Gross Margin | 61% |\n\nCredit Portfolio Indicators\n\n| Metric | Q1 2025 |\n| --- | --- |\n| Total Loan Book (gross) | $302M |\n| Active Borrowers | 1,380 |\n| Average Loan Size | $81k |\n| Credit Loss Rate(LTM) | 3.3% |\n| Balance Sheet Leverage | 2.8x |\n| Senior Covenant Headroom | +132bps |\n| Total Headcount | 182 |\n\nPortfolio Sector Mix – Q1 2025\n\nLoan yields are presented at sector level for the first time in Q1 2025 as part of the refreshed portfolio monitoring framework.\nHospitality continues to carry the highest average yield at 13.1%, reflecting the risk premium embedded in origination pricing for the\nsector. Aggregate book yield averaged 11.9% in Q1 2025.\n\n* * *\n\n_(1) Credit Loss Rate is on a last-twelve-months (LTM) basis; net of recoveries._ _(2) Avg. Loan Yield is computed as annualized interest income divided by average outstanding balance per sector._ _(3) Operating margin metrics (Pre-Provision / Adjusted) are under review and not reported this period._",
+      "char_count": 1410
+    }
+  ],
+  "provenance": {
+    "file_level": true,
+    "page_level": false,
+    "snippet_level": false,
+    "description": "File-level provenance is guaranteed in v1; Firecrawl page count metadata is retained when available, but the extracted content is document-level markdown."
+  },
+  "notes": [
+    "Firecrawl PDF mode: auto."
+  ]
+}

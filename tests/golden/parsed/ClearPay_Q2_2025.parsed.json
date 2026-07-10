@@ -1,0 +1,24 @@
+{
+  "file_name": "ClearPay_Q2_2025.pdf",
+  "source_path": "/home/xavierand_/Desktop/SWE/personal/sagard-portfolio-metric-extractor/intake-pdf/ClearPay_Q2_2025.pdf",
+  "requested_parser": "firecrawl",
+  "parser_used": "firecrawl",
+  "raw_format": "markdown",
+  "page_count": 2,
+  "pages": [
+    {
+      "page_number": null,
+      "text": "ClearPay Technologies Ltd.\n\nPeriod: Q2 2025\n\nClearPay Technologies provides embedded payment rails and automated reconciliation tooling to mid-market B2B platforms in\nNorth America and the UK. Revenue is a blend of basis-point fees on processed volume, monthly platform access fees, and\nimplementation services. ClearPay holds a U.S. money transmitter licence in 42 states.\n\nFinancial Snapshot – Q2 2025\n\n| Metric | Q2 2025 | Q1 2025 |\n| --- | --- | --- |\n| Total Payment Volume(TPV) | $3.42B | $3.11B |\n| Net Revenue(take-rate based) | $14.8M | $13.5M |\n| Effective Take Rate | 43bps | 43bps |\n| Platform Access Revenue | $2.1M | $1.9M |\n| Implementation Services Revenue | $0.4M | $0.7M |\n| Total Recognized Revenue | $17.3M | $16.1M |\n| Gross Margin | 67% | 66% |\n| Total Headcount | 211 | 203 |\n| Cash&Restricted Cash | $38.4M | $40.1M |\n\nCash & Restricted Cash includes $6.2M held in segregated client float accounts as required under state money transmitter\nregulations. Available operating cash at period end was $32.2M. Implementation Services revenue declined QoQ as the large Q1\nonboarding cohort moved to steady-state.\n\n| Metric | Q2 2025 | Q1 2025 |\n| --- | --- | --- |\n| Active Connected Platforms | 184 | 171 |\n| Transactions Processed(QTD) | 28.6M | 26.1M |\n| Avg. Transaction Size | $119.6 | $119.2 |\n| Payment Failure Rate | 0.31% | 0.34% |\n| Reconciliation Accuracy Rate | 99.87% | 99.84% |\n| API Uptime(SLA:99.9%) | 99.94% | 99.91% |\n\n* * *\n\n_(2) Effective Take Rate computed as net revenue divided by TPV; excludes platform access and implementation revenue._ _(3) Restricted Cash of $6.2M is excluded from all liquidity and runway calculations._ _(4) Payment Failure Rate reflects hard failures at authorization; excludes soft declines resolved within 24 hours._ _(5) This document does not constitute a prospectus or offer of securities._",
+      "char_count": 1860
+    }
+  ],
+  "provenance": {
+    "file_level": true,
+    "page_level": false,
+    "snippet_level": false,
+    "description": "File-level provenance is guaranteed in v1; Firecrawl page count metadata is retained when available, but the extracted content is document-level markdown."
+  },
+  "notes": [
+    "Firecrawl PDF mode: auto."
+  ]
+}

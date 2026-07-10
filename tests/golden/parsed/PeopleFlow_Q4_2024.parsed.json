@@ -1,0 +1,24 @@
+{
+  "file_name": "PeopleFlow_Q4_2024.pdf",
+  "source_path": "/home/xavierand_/Desktop/SWE/personal/sagard-portfolio-metric-extractor/intake-pdf/PeopleFlow_Q4_2024.pdf",
+  "requested_parser": "firecrawl",
+  "parser_used": "firecrawl",
+  "raw_format": "markdown",
+  "page_count": 1,
+  "pages": [
+    {
+      "page_number": null,
+      "text": "PeopleFlow HR Systems Ltd.\n\nInvestor Snapshot \\| Vertical SaaS – Human Capital Management\n\nQuarter Ended: Q4 2024 \\| Reporting Currency: GBP\n\nPeopleFlow HR Systems Ltd. (\"PeopleFlow\") is a vertical SaaS company providing human capital management tools to\nprofessional services firms in the UK and Ireland. The platform spans core HR, performance management, payroll integration, and\nanalytics.\n\nKey Metrics – Q4 2024\n\n| Metric(GBP unless noted) | Q4 2024 |\n| --- | --- |\n| Quarterly Revenue | 4.4M |\n| Subscription ARR (end of period) | 18.3M |\n| Gross Margin | 74% |\n| Net Dollar Retention(LTM) | 116% |\n| Annual Logo Churn | 4.5% |\n| Paying Customer Logos | 379 |\n| Avg.Seats per Customer | 141 |\n| Total Headcount | 88 |\n\nCommentary\n\nPeopleFlow delivered Quarterly Revenue of 4.4M in Q4 2024, with end-of-period Subscription ARR reaching 18.3M. Gross Margin\nwas 74%, consistent with the prior-period target range. Headcount additions in Q4 were concentrated in customer success and\nproduct. Average seats per customer of 141 reflects steady module adoption across performance and analytics.\n\nNon-Core Financial Items\n\n• Share-based compensation expense: 0.33M\n\n• No material FX or restructuring items in Q4 2024.\n\n(1) All figures in GBP unless otherwise stated.\n\n(2) Net Dollar Retention (LTM) is computed in GBP; the label is maintained for cross-portfolio comparability.\n\n(3) Logo Churn is annualised on a last-twelve-months basis.\n\n(4) Gross Margin reflects cloud hosting and third-party data costs only; excludes customer success.",
+      "char_count": 1537
+    }
+  ],
+  "provenance": {
+    "file_level": true,
+    "page_level": false,
+    "snippet_level": false,
+    "description": "File-level provenance is guaranteed in v1; Firecrawl page count metadata is retained when available, but the extracted content is document-level markdown."
+  },
+  "notes": [
+    "Firecrawl PDF mode: auto."
+  ]
+}

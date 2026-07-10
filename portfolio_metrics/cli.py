@@ -15,7 +15,12 @@ from .extract_text import (
     resolve_pdf_inputs,
 )
 from .pipeline import normalize_parser_output
-from .publish import WrittenPublishArtifacts, build_metrics_export, write_publish_artifacts
+from .publish import (
+    LEGACY_RESULT_EXCLUDE,
+    WrittenPublishArtifacts,
+    build_metrics_export,
+    write_publish_artifacts,
+)
 from .schema import MetricsLongExport, NormalizationResult, ParserOutput
 from .terminal_ui import failure_line, note_line, phase_status_line, section_heading, warning_line
 from . import __version__
@@ -114,6 +119,12 @@ def build_parser() -> argparse.ArgumentParser:
         default="text",
         help="Choose text for humans or json for automation.",
     )
+    normalize_parser.add_argument(
+        "--recall-mode",
+        choices=("legacy", "enhanced"),
+        default=None,
+        help="Recall behavior for this run. Defaults to the RECALL_MODE setting (legacy).",
+    )
 
     publish_parser = subparsers.add_parser(
         "publish",
@@ -152,6 +163,12 @@ def build_parser() -> argparse.ArgumentParser:
         choices=("text", "json"),
         default="text",
         help="Choose text for humans or json for automation.",
+    )
+    publish_parser.add_argument(
+        "--recall-mode",
+        choices=("legacy", "enhanced"),
+        default=None,
+        help="Recall behavior for this run. Defaults to the RECALL_MODE setting (legacy).",
     )
     return parser
 
@@ -263,6 +280,8 @@ def format_preflight_report(report: dict[str, Any]) -> str:
 
 def normalize_documents(
     parsed_paths: Iterable[Path],
+    *,
+    recall_mode: str = "legacy",
 ) -> tuple[list[NormalizationResult], list[NormalizationFailure]]:
     results: list[NormalizationResult] = []
     failures: list[NormalizationFailure] = []
@@ -297,7 +316,8 @@ def normalize_documents(
             )
             continue
 
-        results.append(normalize_parser_output(parser_output))
+        results.append(normalize_parser_output(
+            parser_output, recall_mode=recall_mode))
 
     return results, failures
 
@@ -307,14 +327,21 @@ def build_normalize_report(
     input_dir: Path,
     results: Iterable[NormalizationResult],
     failures: Iterable[NormalizationFailure],
+    recall_mode: str = "legacy",
 ) -> dict[str, object]:
     result_list = list(results)
     failure_list = list(failures)
+    # Recall-fix (Phase 0): gate the §A fields on this second JSON surface too, so
+    # `normalize --format json` in legacy stays byte-identical to the pre-change 1.0.0 report.
+    result_exclude = None if recall_mode == "enhanced" else LEGACY_RESULT_EXCLUDE
     return {
         "input_dir": str(input_dir),
         "processed_count": len(result_list),
         "failure_count": len(failure_list),
-        "results": [result.model_dump(mode="json") for result in result_list],
+        "results": [
+            result.model_dump(mode="json", exclude=result_exclude)
+            for result in result_list
+        ],
         "failures": [
             {"input_path": str(item.input_path), "error": item.error}
             for item in failure_list
@@ -571,6 +598,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         input_dir = resolve_path(settings.project_root, args.input_dir)
         parsed_paths = resolve_parsed_inputs(
             settings.project_root, input_dir, args.inputs)
+        recall_mode = args.recall_mode or settings.recall_mode
 
         results: list[NormalizationResult] = []
         failures: list[NormalizationFailure] = []
@@ -582,12 +610,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                 )
             )
         else:
-            results, failures = normalize_documents(parsed_paths)
+            results, failures = normalize_documents(
+                parsed_paths, recall_mode=recall_mode)
 
         report = build_normalize_report(
             input_dir=input_dir,
             results=results,
             failures=failures,
+            recall_mode=recall_mode,
         )
 
         if args.format == "json":
@@ -602,6 +632,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         output_dir = resolve_path(settings.project_root, args.output_dir)
         parsed_paths = resolve_parsed_inputs(
             settings.project_root, input_dir, args.inputs)
+        recall_mode = args.recall_mode or settings.recall_mode
 
         results: list[NormalizationResult] = []
         failures: list[NormalizationFailure] = []
@@ -616,11 +647,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                 )
             )
         else:
-            results, failures = normalize_documents(parsed_paths)
+            results, failures = normalize_documents(
+                parsed_paths, recall_mode=recall_mode)
 
         if results:
             export = build_metrics_export(
-                results=results, parsed_paths=parsed_paths)
+                results=results, parsed_paths=parsed_paths, recall_mode=recall_mode)
             try:
                 written = write_publish_artifacts(
                     export,

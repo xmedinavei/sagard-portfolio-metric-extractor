@@ -36,6 +36,8 @@ class Settings(BaseSettings):
     azure_document_intelligence_endpoint: str | None = None
     azure_document_intelligence_key: str | None = None
     azure_document_intelligence_model: str = "prebuilt-layout"
+    # Recall-fix (Phase 0): default recall behavior. Phase 5 flips this default to "enhanced".
+    recall_mode: Literal["legacy", "enhanced"] = "legacy"
 
     @property
     def project_root(self) -> Path:

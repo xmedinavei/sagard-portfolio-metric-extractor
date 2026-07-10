@@ -349,7 +349,7 @@ P5 `Depends-on` {P1,P2,P3,P4 that shipped}. **Tight-core track = P0 → P1 → (
 | **ExportMetadata** new field | `recall_mode: str = "legacy"` | after `schema.py:201` | |
 | new issue codes | `"unrecognized_label"`, `"basis_collision"`, `"cross_source_discrepancy"` | (string literals) | additive; `code: str` is unconstrained |
 | `EXPORT_SCHEMA_VERSION` | `"1.0.0"` legacy / `"1.1.0"` enhanced | `publish.py:21` | selected by mode, not bumped unconditionally |
-| `_serialize_export(export, *, recall_mode)`, `LEGACY_JSON_EXCLUDE` | fn + const | `publish.py` | mode-gated JSON (GT-1) |
+| `_serialize_export(export)` (mode read from `export_metadata.recall_mode`), `LEGACY_JSON_EXCLUDE`, `LEGACY_RESULT_EXCLUDE`, `EXPORT_SCHEMA_VERSION_ENHANCED` | fn + consts | `publish.py` | mode-gated JSON (GT-1); ✅ built P0 (signature simplified vs original registry — see Phase 0 build log D-0a/b/c) |
 | `CSV_FIELDNAMES` / `CSV_FIELDNAMES_ENHANCED` | tuples | `publish.py:22` | mode-selected header |
 | golden guard | `tests/golden/parsed/*.parsed.json`, `tests/golden/metrics_long.legacy.json`, `make verify-golden`, `tests/test_golden.py` | new | GT-3 |
 
@@ -388,7 +388,7 @@ P5 `Depends-on` {P1,P2,P3,P4 that shipped}. **Tight-core track = P0 → P1 → (
 
 ## Phase 0 — Foundations gate *(Build Spec)*
 
-> **Status:** not started · **Scope:** additive, gated, no migration · **Depends-on:** — · **Blocks:** all ·
+> **Status:** ✅ **BUILT + AUDITED 2026-07-10** · **Scope:** additive, gated, no migration · **Depends-on:** — · **Blocks:** all ·
 > **Parallelizable-with:** — · **Ground-truthed:** 2026-07-10 · **Target:** `cli.py`, `config.py`,
 > `pipeline.py`, `detect_metrics.py`, `normalize.py`, `schema.py`, `publish.py`, `Makefile`, `tests/golden/`
 
@@ -429,7 +429,24 @@ guard, all inert (default legacy ⇒ output byte-identical). Atomic: lands whole
 
 **Net: zero breaking, zero migration.** Non-opted-in users (no flag) observe **byte-identical** output.
 
-**§ Definition of done:** 46 tests green · `make verify-golden` green · legacy byte-identical · enhanced emits 1.1.0 · flag inert by default.
+**§ Definition of done — ✅ MET (2026-07-10):** ✅ 55 tests green (46 baseline + 9 golden) · ✅ `make verify-golden` green (9) · ✅ legacy byte-identical (24-doc JSON **+ CSV + summary**, independently verified == pre-change HEAD `0826c92`) · ✅ enhanced emits 1.1.0 · ✅ flag inert by default · ✅ ruff clean.
+
+### Phase 0 — Build log (deviations + audit fixes)
+
+Built on the main thread 2026-07-10; audited by a 3-lens `phase-auditor` fan-out (retrocompat · contract/registry · acceptance/DoD); fixes applied and re-verified.
+
+**Deviations from the spec (recorded):**
+- **D-0a:** implemented `_serialize_export(export)` — reads the mode from `export.export_metadata.recall_mode` — instead of the registered `_serialize_export(export, *, recall_mode)`. Safer: the dumped exclude-set can never disagree with the metadata. Registry updated.
+- **D-0b:** added helper constant `EXPORT_SCHEMA_VERSION_ENHANCED = "1.1.0"` (registry listed only `EXPORT_SCHEMA_VERSION`); version is still selected by mode. Registered.
+- **D-0c:** added `LEGACY_RESULT_EXCLUDE` (a `NormalizationResult`-scoped subset of `LEGACY_JSON_EXCLUDE`) so the CLI normalize report reuses one exclude source (needed by F1).
+
+**Audit fixes applied:**
+- **F1 (major, real bug — FIXED):** `normalize --format json` was a SECOND legacy serialization surface leaking the §A fields (`build_normalize_report` → `model_dump` with no exclude). Fixed by threading `recall_mode` into `build_normalize_report` and gating with `LEGACY_RESULT_EXCLUDE`. Regression-guarded by two normalize-report tests. *(GT-1 originally anchored only the publish serializer — this is the missed second surface.)*
+- **F2 (major, under-delivery — FIXED):** golden guard covered 3 docs vs the spec's 24. Committed the 24-doc corpus at `tests/golden/parsed/` + baselines for **all three artifacts** (`metrics_long.legacy.{json,csv}`, `summary.legacy.md`); the guard diffs all 24. Baseline **independently verified byte-identical to genuine pre-change HEAD** (ran HEAD code under `-S` isolation over 24 docs → 121,097 bytes identical) — resolves the "self-referential baseline" concern.
+- **Coverage nits (FIXED):** added enhanced-CSV-columns, enhanced-issue-fields, and CLI-parse/resolve tests.
+- **Dismissed (auditor error):** "`build_metrics_export.recall_mode` not keyword-only" — it already is (leading `*`).
+
+> **Ship note:** `tests/golden/parsed/*.parsed.json` (24) + the 3 baselines are on disk but **not yet `git add`ed** (spec-flow defers shipping). They are not `.gitignore`d (only `outputs/*` is) — commit them when the phase ships.
 
 ---
 

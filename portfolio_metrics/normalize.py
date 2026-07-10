@@ -16,6 +16,7 @@ def normalize_candidates(
     candidates: Iterable[MetricCandidate],
     *,
     document_type: DocumentKind,
+    recall_mode: str = "legacy",
 ) -> tuple[list[NormalizedMetric], list[NormalizationIssue]]:
     """Turn detected candidates into conservative canonical metrics."""
 

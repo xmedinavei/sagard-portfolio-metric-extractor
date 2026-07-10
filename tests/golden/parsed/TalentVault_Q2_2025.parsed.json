@@ -1,0 +1,24 @@
+{
+  "file_name": "TalentVault_Q2_2025.pdf",
+  "source_path": "/home/xavierand_/Desktop/SWE/personal/sagard-portfolio-metric-extractor/intake-pdf/TalentVault_Q2_2025.pdf",
+  "requested_parser": "firecrawl",
+  "parser_used": "firecrawl",
+  "raw_format": "markdown",
+  "page_count": 2,
+  "pages": [
+    {
+      "page_number": null,
+      "text": "TalentVault Inc.\n\nPeriod: Q2 2025\n\nTalentVault provides an AI-powered talent intelligence platform to enterprise HR and recruiting teams, aggregating labour market\ndata, automating candidate sourcing, and providing predictive retention analytics. Pricing is per-seat with data feed tiers.\n\nKey Performance Indicators – Q2 2025\n\n| KPI | Q2 2025 | Q1 2025 |\n| --- | --- | --- |\n| Contracted ARR | $22.4M | $20.8M |\n| Quarterly Revenue (recognized) | $5.5M | $5.1M |\n| Gross Margin | 76% | 75% |\n| Gross Revenue Retention(LTM) | 91% | 90% |\n| Net Revenue Retention(LTM) | 119% | 116% |\n| Enterprise Accounts(>$100kARR) | 48 | 43 |\n| Total Paying Seats | 6,840 | 6,210 |\n| Total Headcount | 103 | 97 |\n| Monthly Net Burn | ($0.68M) | ($0.74M) |\n| Cash Balance | $17.9M | $19.0M |\n\nWeekly active users as a percentage of licensed seats reached 64% on a 30-day trailing basis, up from 61% in Q1 2025. Candidate\nprofiles processed during the quarter totalled approximately 4.2 million, a 14% increase quarter-over-quarter. AI-assisted shortlist\nadoption reached 73% of active users, compared to 68% in the prior quarter. The predictive retention module (launched Q1 2025)\nsaw uptake across 22 enterprise accounts by period end.\n\nAverage enterprise sales cycle extended to approximately 112 days in Q2 2025 versus 98 days in Q1, driven by increased\nprocurement scrutiny around AI vendor security assessments. Two verbal commitments from Q1 slipped to Q3 2025.\n\n| Pipeline Stage | \\# Deals | Total ACV | Wtd. ACV |\n| --- | --- | --- | --- |\n| Discovery/Qualified | 41 | $11.2M | $3.4M |\n| Active Evaluation | 22 | $8.6M | $4.3M |\n| Legal/Procurement | 9 | $4.1M | $3.1M |\n\n• Data provenance risk: a key labour market data supplier (~35% of coverage) is in contract renegotiation.\n\n• EU AI Act compliance investment estimated at $0.6M–$1.0M in H2 2025.\n\n* * *\n\n- Two large ATS vendors announced competing AI sourcing features in Q2 2025.\n  _(1) Contracted ARR reflects signed, active contracts; includes multi-year deals at full annualized value._ _(2) Gross Revenue Retention excludes expansion; Net Revenue Retention includes upsell and cross-sell._ _(3) Monthly Net Burn excludes non-cash stock-based compensation ($0.42M/quarter)._ _(4) Weighted ACV applies deal-stage probability haircuts to total pipeline ACV._",
+      "char_count": 2307
+    }
+  ],
+  "provenance": {
+    "file_level": true,
+    "page_level": false,
+    "snippet_level": false,
+    "description": "File-level provenance is guaranteed in v1; Firecrawl page count metadata is retained when available, but the extracted content is document-level markdown."
+  },
+  "notes": [
+    "Firecrawl PDF mode: auto."
+  ]
+}

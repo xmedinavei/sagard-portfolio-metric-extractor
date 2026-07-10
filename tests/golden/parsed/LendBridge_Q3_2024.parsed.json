@@ -1,0 +1,24 @@
+{
+  "file_name": "LendBridge_Q3_2024.pdf",
+  "source_path": "/home/xavierand_/Desktop/SWE/personal/sagard-portfolio-metric-extractor/intake-pdf/LendBridge_Q3_2024.pdf",
+  "requested_parser": "firecrawl",
+  "parser_used": "firecrawl",
+  "raw_format": "markdown",
+  "page_count": 2,
+  "pages": [
+    {
+      "page_number": null,
+      "text": "LendBridge Capital Corp.\nQ3 2024 Performance Review\n\nPeriod Ended: Q3 2024\n\nLendBridge Capital Corp. provides working capital lines to SMEs across North America through a technology-enabled specialty\nfinance model.\n\nCondensed Income Summary\n\n| Item | Q3 2024 |\n| --- | --- |\n| Recognized Revenue | $10.8M |\n| Interest Expense | ($3.0M) |\n| Net Interest Margin | 8.9% |\n| Fee & Ancillary Income | $0.8M |\n| Gross Margin | 59% |\n| Adjusted Operating Margin | 31% |\n\nCredit Portfolio Indicators\n\n| Metric | Q3 2024 |\n| --- | --- |\n| Total Loan Book (gross) | $274M |\n| Active Borrowers | 1,250 |\n| Average Loan Size | $75k |\n| Net Charge-off Rate(LTM) | 3.9% |\n| Balance Sheet Leverage | 2.9x |\n| Senior Covenant Headroom | +125bps |\n| Total Headcount | 169 |\n\nPortfolio Sector Mix – Q3 2024\n\nAdjusted Operating Margin of 31% in Q3 2024 reflects improved operating leverage as origination volumes grew without\nproportional headcount additions. The margin metric was relabelled from 'Pre-Provision Operating Margin' to align with internal\nmanagement reporting conventions adopted in Q3.\n\n* * *\n\n_(1) Adjusted Operating Margin excludes loan loss provisions and non-recurring items; formerly 'Pre-Provision Operating Margin'._ _(2) Net Charge-off Rate is on a last-twelve-months (LTM) basis._ _(3) Fee & Ancillary Income includes origination fees, prepayment premiums, and treasury service charges._",
+      "char_count": 1393
+    }
+  ],
+  "provenance": {
+    "file_level": true,
+    "page_level": false,
+    "snippet_level": false,
+    "description": "File-level provenance is guaranteed in v1; Firecrawl page count metadata is retained when available, but the extracted content is document-level markdown."
+  },
+  "notes": [
+    "Firecrawl PDF mode: auto."
+  ]
+}

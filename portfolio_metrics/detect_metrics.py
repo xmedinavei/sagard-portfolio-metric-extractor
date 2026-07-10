@@ -74,7 +74,11 @@ class TableContext:
     value_column_index: int | None = None
 
 
-def detect_metric_candidates(parser_output: ParserOutput) -> DetectionResult:
+def detect_metric_candidates(
+    parser_output: ParserOutput,
+    *,
+    recall_mode: str = "legacy",
+) -> DetectionResult:
     """Detect candidate metric/value pairs from Phase 2 parser output."""
 
     document_type = classify_document(parser_output)

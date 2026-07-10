@@ -1,0 +1,24 @@
+{
+  "file_name": "FleetLink_Q4_2024.pdf",
+  "source_path": "/home/xavierand_/Desktop/SWE/personal/sagard-portfolio-metric-extractor/intake-pdf/FleetLink_Q4_2024.pdf",
+  "requested_parser": "firecrawl",
+  "parser_used": "firecrawl",
+  "raw_format": "markdown",
+  "page_count": 1,
+  "pages": [
+    {
+      "page_number": null,
+      "text": "FleetLink Logistics Network\n\nPeriod: Q4 2024\n\nFleetLink operates a digital freight and last-mile logistics marketplace connecting shippers with a distributed network of carriers.\nRevenue is primarily transaction-based with additional fees from SaaS tools provided to larger accounts.\n\nNetwork & Volume Metrics\n\n| Metric | Q4 2024 |\n| --- | --- |\n| Completed Shipments | 1.07M |\n| Active Shippers | 3180 |\n| Active Carriers | 7210 |\n| On-Time Delivery Rate | 94.6% |\n| Average Take Rate | 10.8% |\n\nFinancial Summary\n\n| Metric | Q4 2024 |\n| --- | --- |\n| Platform Revenue (recognized) | 9.0M |\n| Gross Margin | 51% |\n| Contribution Margin / Shipment | $2.10 |\n| Marketing Spend as % of Revenue | 18% |\n| Support Tickets / 1,000 Shipments | 15.8 |\n| Total Headcount | 196 |\n\nPlatform Revenue of 9.0M in Q4 2024 was supported by growth in completed shipments quarter-over-quarter. Gross Margin of\n51% reflects ongoing optimisation of carrier pricing incentives. Headcount of 196 at quarter-end was primarily in product and\nengineering; commercial hiring remained selective.\n\n(1) On-Time Delivery Rate is carrier-reported with a 48-hour grace window per service agreement.\n\n(2) Contribution Margin per Shipment is post-carrier-cost, pre-overhead allocation.\n\n(3) Average Take Rate is computed on recognized GMV net of disputed transactions.\n\n(4) Non-cash D&A;: 0.9M. No changes to credit facilities in the quarter.",
+      "char_count": 1409
+    }
+  ],
+  "provenance": {
+    "file_level": true,
+    "page_level": false,
+    "snippet_level": false,
+    "description": "File-level provenance is guaranteed in v1; Firecrawl page count metadata is retained when available, but the extracted content is document-level markdown."
+  },
+  "notes": [
+    "Firecrawl PDF mode: auto."
+  ]
+}

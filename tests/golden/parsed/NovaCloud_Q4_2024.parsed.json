@@ -1,0 +1,24 @@
+{
+  "file_name": "NovaCloud_Q4_2024.pdf",
+  "source_path": "/home/xavierand_/Desktop/SWE/personal/sagard-portfolio-metric-extractor/intake-pdf/NovaCloud_Q4_2024.pdf",
+  "requested_parser": "firecrawl",
+  "parser_used": "firecrawl",
+  "raw_format": "markdown",
+  "page_count": 1,
+  "pages": [
+    {
+      "page_number": null,
+      "text": "NovaCloud Analytics Inc.\n\nPeriod: Q4 2024\n\nNovaCloud operates a B2B SaaS platform serving mid-market and enterprise digital businesses with analytics and observability\ntooling.\n\nQuarterly Operating Metrics\n\n| Metric | Q4 2024 |\n| --- | --- |\n| Net Revenue(USD) | $7.2M |\n| End-of-Period ARR | $29.1M |\n| Logo Churn Rate(LTM) | 6.5% |\n| Cash Balance | $24.0M |\n| Monthly Net Burn | ($0.88M) |\n| Cash Runway | ~27 months |\n| Total Headcount | 128 |\n\nPerformance Commentary\n\nNet Revenue of $7.2M in Q4 2024 represented an 11% increase over the prior quarter. Gross margin came in at 76%, a one-point\nimprovement versus Q3, reflecting continued cloud infrastructure efficiency gains. Net dollar retention on a trailing-twelve-month\nbasis reached 119% in Q4 2024, improving from 116% in Q3 2024, supported by strong expansion activity within existing\nenterprise accounts. New logo additions totalled 11. Expansion revenue of $1.4M was the highest in the company's history to date.\n\nHeadcount of 128 at quarter-end reflects selective additions in product and infrastructure engineering. Commercial team headcount\nremained flat as management evaluated the go-to-market organisational structure.\n\nKey Risks\n\n• ARR growth increasingly driven by expansion; new logo momentum remains below target.\n\n• Infrastructure cost efficiency gains may plateau without further architectural investment.\n\n• Enterprise sales cycle elongation observed in Q4; average deal time up approximately 15 days.\n\n(1) Net Revenue is equivalent to Recognized Revenue in prior periods; terminology updated for board reporting.\n\n(2) Gross Margin and Net Dollar Retention are discussed in the commentary section; not separately tabled.\n\n(3) Logo Churn is on a last-twelve-months (LTM) basis.",
+      "char_count": 1752
+    }
+  ],
+  "provenance": {
+    "file_level": true,
+    "page_level": false,
+    "snippet_level": false,
+    "description": "File-level provenance is guaranteed in v1; Firecrawl page count metadata is retained when available, but the extracted content is document-level markdown."
+  },
+  "notes": [
+    "Firecrawl PDF mode: auto."
+  ]
+}

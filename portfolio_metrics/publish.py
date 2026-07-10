@@ -19,6 +19,8 @@ from .schema import (
 )
 
 EXPORT_SCHEMA_VERSION = "1.0.0"
+# Recall-fix (Phase 0): enhanced mode emits the 1.1.0 superset contract (see §A); legacy stays 1.0.0.
+EXPORT_SCHEMA_VERSION_ENHANCED = "1.1.0"
 CSV_FIELDNAMES: tuple[str, ...] = (
     "company_name",
     "period",
@@ -40,6 +42,26 @@ CSV_FIELDNAMES: tuple[str, ...] = (
     "parse_error",
     "notes",
 )
+# Recall-fix (Phase 0): enhanced mode appends the frontend-contract columns; legacy keeps the 1.0.0 set.
+_ENHANCED_CSV_COLUMNS: tuple[str, ...] = (
+    "sector",
+    "value_normalized",
+    "currency",
+    "comparison_status",
+)
+CSV_FIELDNAMES_ENHANCED: tuple[str, ...] = CSV_FIELDNAMES + _ENHANCED_CSV_COLUMNS
+# Fields absent from the frozen 1.0.0 export; excluded from legacy serialization so legacy stays byte-identical.
+_LEGACY_METRIC_EXCLUDE = {"sector", "value_normalized", "currency", "comparison_status"}
+_LEGACY_ISSUE_EXCLUDE = {"period", "expected_value", "observed_value", "delta"}
+# Exclusion for a single NormalizationResult (metrics[] + issues[]) — reused by the CLI normalize report.
+LEGACY_RESULT_EXCLUDE = {
+    "metrics": {"__all__": _LEGACY_METRIC_EXCLUDE},
+    "issues": {"__all__": _LEGACY_ISSUE_EXCLUDE},
+}
+LEGACY_JSON_EXCLUDE = {
+    "export_metadata": {"recall_mode"},
+    **LEGACY_RESULT_EXCLUDE,
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -55,6 +77,7 @@ def build_metrics_export(
     results: Iterable[NormalizationResult],
     parsed_paths: Iterable[Path],
     generated_at: datetime | None = None,
+    recall_mode: str = "legacy",
 ) -> MetricsLongExport:
     """Build the canonical Phase 4 export from Phase 3 normalization results."""
 
@@ -77,7 +100,11 @@ def build_metrics_export(
 
     valid_metric_count = sum(1 for metric in metrics if metric.is_valid)
     export_metadata = ExportMetadata(
-        schema_version=EXPORT_SCHEMA_VERSION,
+        schema_version=(
+            EXPORT_SCHEMA_VERSION_ENHANCED
+            if recall_mode == "enhanced"
+            else EXPORT_SCHEMA_VERSION
+        ),
         generated_at=generated_at or datetime.now(timezone.utc),
         generator_name="portfolio-metrics",
         generator_version=__version__,
@@ -89,6 +116,7 @@ def build_metrics_export(
         issue_count=len(issues),
         core_metrics=list(CORE_METRICS),
         optional_metrics=list(OPTIONAL_METRICS),
+        recall_mode=recall_mode,
     )
     return MetricsLongExport(
         export_metadata=export_metadata,
@@ -141,6 +169,14 @@ def _dedupe_cross_document_metrics(
     return list(selected.values()), issues
 
 
+def _serialize_export(export: MetricsLongExport) -> str:
+    """Serialize the export as JSON, gating enhanced-only fields so legacy output is byte-identical to 1.0.0."""
+
+    if export.export_metadata.recall_mode == "enhanced":
+        return export.model_dump_json(indent=2) + "\n"
+    return export.model_dump_json(indent=2, exclude=LEGACY_JSON_EXCLUDE) + "\n"
+
+
 def write_publish_artifacts(
     export: MetricsLongExport,
     output_dir: Path,
@@ -155,9 +191,13 @@ def write_publish_artifacts(
     csv_path = output_dir / "metrics_long.csv" if include_csv else None
     summary_path = output_dir / "summary.md" if include_summary else None
 
-    _write_text_atomically(json_path, export.model_dump_json(indent=2) + "\n")
+    _write_text_atomically(json_path, _serialize_export(export))
     if csv_path is not None:
-        _write_csv_atomically(csv_path, export.metrics)
+        _write_csv_atomically(
+            csv_path,
+            export.metrics,
+            enhanced=export.export_metadata.recall_mode == "enhanced",
+        )
     if summary_path is not None:
         _write_text_atomically(summary_path, render_summary_markdown(export))
 
@@ -273,6 +313,10 @@ def _metric_to_csv_row(metric: NormalizedMetric) -> dict[str, str | float | int]
         "is_valid": "true" if metric.is_valid else "false",
         "parse_error": metric.parse_error or "",
         "notes": " | ".join(_collapse_whitespace(note) for note in metric.notes if note.strip()),
+        "sector": metric.sector or "",
+        "value_normalized": "" if metric.value_normalized is None else metric.value_normalized,
+        "currency": metric.currency or "",
+        "comparison_status": metric.comparison_status or "",
     }
 
 
@@ -350,8 +394,14 @@ def _summaries_by_source(
     return normalized
 
 
-def _write_csv_atomically(csv_path: Path, metrics: Iterable[NormalizedMetric]) -> None:
+def _write_csv_atomically(
+    csv_path: Path,
+    metrics: Iterable[NormalizedMetric],
+    *,
+    enhanced: bool = False,
+) -> None:
     csv_path.parent.mkdir(parents=True, exist_ok=True)
+    fieldnames = list(CSV_FIELDNAMES_ENHANCED if enhanced else CSV_FIELDNAMES)
     file_descriptor, temp_path = tempfile.mkstemp(
         prefix=f".{csv_path.name}.",
         suffix=".tmp",
@@ -359,7 +409,8 @@ def _write_csv_atomically(csv_path: Path, metrics: Iterable[NormalizedMetric]) -
     )
     try:
         with os.fdopen(file_descriptor, "w", encoding="utf-8", newline="") as handle:
-            writer = csv.DictWriter(handle, fieldnames=list(CSV_FIELDNAMES))
+            writer = csv.DictWriter(
+                handle, fieldnames=fieldnames, extrasaction="ignore")
             writer.writeheader()
             for metric in metrics:
                 writer.writerow(_metric_to_csv_row(metric))

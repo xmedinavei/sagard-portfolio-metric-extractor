@@ -1,0 +1,24 @@
+{
+  "file_name": "LendBridge_Q4_2024.pdf",
+  "source_path": "/home/xavierand_/Desktop/SWE/personal/sagard-portfolio-metric-extractor/intake-pdf/LendBridge_Q4_2024.pdf",
+  "requested_parser": "firecrawl",
+  "parser_used": "firecrawl",
+  "raw_format": "markdown",
+  "page_count": 1,
+  "pages": [
+    {
+      "page_number": null,
+      "text": "LendBridge Capital Corp.\nQ4 2024 Quarterly Credit Review\n\nPeriod Ended: Q4 2024\n\nLendBridge Capital Corp. is a specialty finance platform providing working capital solutions to SMEs across North America.\n\nCondensed Income Summary\n\n| Item | Q4 2024 |\n| --- | --- |\n| Recognized Revenue | $11.4M |\n| Interest Expense | ($3.1M) |\n| Net Interest Margin | 9.1% |\n| Fee & Ancillary Income | $0.9M |\n| Gross Margin | 60% |\n\nCredit Portfolio Indicators\n\n| Metric | Q4 2024 |\n| --- | --- |\n| Total Loan Book (gross) | $291M |\n| Active Borrowers | 1,310 |\n| Average Loan Size | $78k |\n| Credit Loss Rate(LTM) | 3.6% |\n| Balance Sheet Leverage | 2.9x |\n| Senior Covenant Headroom | +118bps |\n| Total Headcount | 175 |\n\nPortfolio Composition Commentary\n\nAverage loan size increased to $78k in Q4 2024, up from an average of $74k in Q3 2024, reflecting continued migration of the book\ntoward larger working capital facilities in the Manufacturing and Services segments. Total gross outstanding balances reached\n$291M at quarter end.\n\n(1) Credit Loss Rate replaces 'Net Charge-off Rate' terminology; calculated equivalently on a last-twelve-months basis.\n\n(2) Adjusted Operating Margin is not reported this quarter; refer to Gross Margin and NIM for profitability.\n\n(3) Gross Margin reflects net interest income net of cost of funds; excludes provisions and operating expenses.",
+      "char_count": 1363
+    }
+  ],
+  "provenance": {
+    "file_level": true,
+    "page_level": false,
+    "snippet_level": false,
+    "description": "File-level provenance is guaranteed in v1; Firecrawl page count metadata is retained when available, but the extracted content is document-level markdown."
+  },
+  "notes": [
+    "Firecrawl PDF mode: auto."
+  ]
+}
