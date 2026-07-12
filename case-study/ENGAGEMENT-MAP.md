@@ -16,8 +16,8 @@
 > plan for that fix (`ii-a-backend-fix-plan.md`) is a 6-phase, additive-and-gated build (`recall-mode` flag,
 > default legacy) that keeps the golden-export baseline byte-identical until a single cutover phase.
 > **Progress (2026-07-10): ALL 6 phases (0–5) are BUILT + AUDITED — the backend recall fix is COMPLETE.**
-> P0 `e91349a` + P1+P2 `9987ba2` + P3+P4 `ce3e4df` committed; **P5 (cutover) built+audited, not yet committed**;
-> **93 tests green**; legacy byte-identical. P1 recovers the drifted labels (NovaCloud ARR **1→5 quarters**;
+> P0 `e91349a` + P1+P2 `9987ba2` + P3+P4 `ce3e4df` + P5 `ac8d60b` + whole-backend contract audit `4d295b7`
+> **all committed & pushed (origin in sync)**; **95 tests green**; legacy byte-identical. P1 recovers the drifted labels (NovaCloud ARR **1→5 quarters**;
 > MediSight's own report **27.9M** now captured and outranks the summary's wrong 22.4M with a conflict flag).
 > P2 makes the missing-metric check **sector-aware** (15 false alarms suppressed; the lender is routed out of
 > SaaS checks). **P3 makes the tool visibly REFUSE unsafe comparisons** (a lender's gross margin is tagged
@@ -26,9 +26,13 @@
 > `+5.5M`; company-wins kept). **P5 flipped the default to `enhanced`** (single-sourced, one-flag rollback;
 > enhanced golden added, legacy canary kept) and the recall was **independently re-audited: 76% → 90%**
 > (wrong values `1→0`, sector-blind false alarms `15→0`, **0 regressions**). The demo now runs the fix live by
-> default. **Next = Doc ii (Prototype & Front-End) on the live demo → Doc iii (HTML deck).** Key finding held
-> true: the "1 wrong value" (MediSight ARR) was a label-drift drop in disguise, so the alias fix — not D5 — was
-> the real fix. Still open by design: metric sub-decisions **D2a–D2f**.
+> default. **The front-end is now SCOPED via spec-flow** (`docs/spec-flow/portfolio-cockpit/00-spec-and-scope.md`,
+> committed `7c898e8`): a **local Flask API + React SPA cockpit** that triggers the pipeline live from the front-end,
+> offline. This **supersedes** the earlier "self-contained HTML cockpit" idea — the DECK stays an HTML Artifact, but
+> the live COCKPIT is now a separate local app. **Next = `/spec-flow:2-main-plan` → build the cockpit → Doc ii
+> (Prototype & Front-End) narrative → Doc iii (HTML deck).** Key finding held true: the "1 wrong value" (MediSight
+> ARR) was a label-drift drop in disguise, so the alias fix — not D5 — was the real fix. Still open by design:
+> metric sub-decisions **D2a–D2f**.
 >
 > **Plain-English promise:** finance/technical jargon is defined the first time it appears here, and fully
 > in the brief's Glossary (§11). If a term is unfamiliar, check there.
@@ -46,8 +50,9 @@ audience, and packaging that into four documents.
 | **0** | **Foundations & Decision Brief** (`00-foundations-and-decisions.md`) | Domain primer, corpus reality, the 4 decisions (now locked), **§4.2.1 trap-solutions**, **§4.5 PE/credit classifier**, §6A metric sets, Sagard tailoring, glossary. | — | ✅ **Complete** (D1–D4 locked 2026-07-09; 1161 lines) |
 | **i** | **Context & Problem** (`i-context-and-problem.md`) | The business problem, the manual pain, why automation matters — tailored to Sagard, in business-stakeholder language. Answers case-study section (1). | D1–D3 locked | ✅ **Drafted 2026-07-09** (under adversarial critique) |
 | **ii-evidence** | **Prototype findings** (`ii-prototype-findings.md`) | ✅ Verified export result + defect audit (76% recall, 5 defect classes, all source-quoted). The evidence base + demo insights for Doc ii. | Full export run | ✅ **Done 2026-07-10** |
-| **ii-a** | **Backend fix plan + build specs** (`ii-a-backend-fix-plan.md`) | Part I = Stage-3 master plan (6 phases, `recall-mode` gate, retrocompat audit). Part II = Stage-4 build-ready specs (frozen §A frontend contract, Build DAG, naming registry, per-phase action→file:line→acceptance, all ground-truthed). | ii-evidence + 3 agent fan-outs | ✅ **ALL 6 phases (0–5) BUILT + AUDITED 2026-07-10 — recall fix COMPLETE.** P0 `e91349a` + P1+P2 `9987ba2` + P3+P4 `ce3e4df` committed; P5 built+audited, uncommitted. P1 = alias recovery + footnote stitch (NovaCloud ARR 1→5; MediSight 27.9M fix). P2 = sector-aware missing-check (15 false alarms suppressed). P3 = refuse-to-compare (lender GM tagged `interest_margin` + refused; ClearPay cash net of client float). P4 = D5 cross-validation flag (MediSight delta +5.5M). **P5 = cutover: default flipped to `enhanced` (single-sourced, one-flag rollback), recall independently re-audited 76%→90% (wrong 1→0, false-alarms 15→0, 0 regressions).** 93 tests green; legacy byte-identical; two 4-lens audits (contract/registry + retrocompat 0 findings). Next = Doc ii on the live demo. |
-| **ii** | **The Prototype & Front-End** | What the tool does today, how it works, its limits, **and the front-end demo design**. Future expansion lives at the *end* of this doc. Answers case-study sections (2) + (3). | Doc i + ii-evidence + **backend fix** | ⬜ Not started (writes after the backend fix lands, so the demo is live) |
+| **ii-a** | **Backend fix plan + build specs** (`ii-a-backend-fix-plan.md`) | Part I = Stage-3 master plan (6 phases, `recall-mode` gate, retrocompat audit). Part II = Stage-4 build-ready specs (frozen §A frontend contract, Build DAG, naming registry, per-phase action→file:line→acceptance, all ground-truthed). | ii-evidence + 3 agent fan-outs | ✅ **ALL 6 phases (0–5) BUILT + AUDITED 2026-07-10 — recall fix COMPLETE.** P0 `e91349a` + P1+P2 `9987ba2` + P3+P4 `ce3e4df` + P5 `ac8d60b` + contract audit `4d295b7` **all committed & pushed**. P1 = alias recovery + footnote stitch (NovaCloud ARR 1→5; MediSight 27.9M fix). P2 = sector-aware missing-check (15 false alarms suppressed). P3 = refuse-to-compare (lender GM tagged `interest_margin` + refused; ClearPay cash net of client float). P4 = D5 cross-validation flag (MediSight delta +5.5M). **P5 = cutover: default flipped to `enhanced` (single-sourced, one-flag rollback), recall independently re-audited 76%→90% (wrong 1→0, false-alarms 15→0, 0 regressions).** **95 tests green**; legacy byte-identical. **Front-end now scoped via spec-flow (`portfolio-cockpit`); next = build the cockpit → Doc ii.** |
+| **ii-b (spec)** | **Front-end spec & scope** (`docs/spec-flow/portfolio-cockpit/00-spec-and-scope.md`) | Spec-flow Stage 1+2: 13 locked decisions, named non-goals, success criteria for the cockpit app (Flask API + React SPA, full D4 panels, credit=proof-of-range, offline, G1 additive fix). | Backend done + foundations §9 | ✅ **Committed `7c898e8` 2026-07-10** — awaiting `/spec-flow:2-main-plan` |
+| **ii** | **The Prototype & Front-End** | What the tool does today, how it works, its limits, **and the front-end demo design**. Future expansion lives at the *end* of this doc. Answers case-study sections (2) + (3). | Doc i + ii-evidence + backend fix + **cockpit built** | ⬜ Not started (writes after the cockpit app is built, so the demo is live) |
 | **iii** | **Slides** | The presentation deck: problem → prototype → live demo → roadmap. Answers all four case-study sections in slide form. | Docs i + ii | ⬜ Not started (very last) |
 
 > **Sequencing rule (why this order):** in a *business* case study the graders reward connecting technical
@@ -140,9 +145,10 @@ These do **not** change the decisions, but must be done before numbers reach a s
    LendBridge covenant **+125 → +118 → +132 → +148 bps** (Q3'24→Q2'25) verified — it is **non-canonical**,
    so correctly absent from the export; monitoring it is the credit-path extension. (Earlier Q2'25 NRR
    league + revenue rename chain remain verified.)
-3. **Fix "missing vs Not-Applicable."** ⚠️ Still open, now **quantified**: the flat check raises **15
+3. **Fix "missing vs Not-Applicable."** ✅ **RESOLVED 2026-07-10** by the backend fix (P1 alias recovery + P2
+   sector-aware check). Was quantified as: the flat check raised **15
    sector-blind false alarms** (LendBridge ARR/burn ×10, marketplaces/payments ARR ×5). Fix = D2 tiered +
-   §4.5 classifier; must land before the exception/early-warning view is demoed. **New this round:** the
+   §4.5 classifier — **this LANDED (P1+P2): recall 76%→90%, false alarms 15→0, wrong value 1→0.** **Audit detail:** the
    audit also found the export **silently drops 30 printed data points** (label drift dominant) and
    **exports 1 wrong value** (MediSight ARR $22.4M, pulled from the summary's swapped cell instead of its
    own $27.9M). See `ii-prototype-findings.md` §4.
@@ -152,9 +158,11 @@ These do **not** change the decisions, but must be done before numbers reach a s
 ## 6. Logistics
 
 - **Timeline (2026-07-09):** 4–7 day runway → interview ≈ **Jul 13–16**, deck due 48h before ≈ **Jul
-  11–14**. Comfortable.
+  11–14**. **As of 2026-07-10: now 1–4 days out — tightening; the cockpit build + deck are the critical path.**
 - **Deck tool:** ✅ **self-contained HTML deck published as a Claude Artifact** (browser-native on Ubuntu,
-  full-screen present, PDF-via-print; unifies with the D4 HTML cockpit). Google Slides = fallback.
+  full-screen present, PDF-via-print). Google Slides = fallback. **Note (2026-07-10): the DECK and the live
+  COCKPIT are now SEPARATE surfaces** — deck = self-contained HTML Artifact; cockpit = a local Flask API +
+  React SPA app (spec-flow `portfolio-cockpit`). The deck can screenshot/embed the running cockpit.
 - **Grading criteria (from the brief):** clarity of problem + solution; tailoring to non-technical business
   stakeholders; how well the demo tells the story; roadmap realism; handling of trade-offs/limitations
   questions.
@@ -169,17 +177,31 @@ These do **not** change the decisions, but must be done before numbers reach a s
 | `case-study/00-foundations-and-decisions.md` | Document 0 — the full decision brief (options, trade-offs, recommendations, glossary) |
 | `case-study/i-context-and-problem.md` | Document i — Context & Problem (✅ drafted 2026-07-09) |
 | `case-study/ii-prototype-findings.md` | Document ii evidence — verified export result + defect audit (✅ 2026-07-10) |
-| `case-study/ii-a-backend-fix-plan.md` | Backend fix — Part I Stage-3 master plan + Part II Stage-4 build specs (frozen §A frontend contract, Build DAG, ground-truthed file:line). ✅ **P0–P5 built+audited 2026-07-10 — recall fix complete** (93 tests green, legacy byte-identical, recall 76%→90%; P0 `e91349a` + P1+P2 `9987ba2` + P3+P4 `ce3e4df` committed, P5 uncommitted) |
+| `case-study/ii-a-backend-fix-plan.md` | Backend fix — Part I Stage-3 master plan + Part II Stage-4 build specs (frozen §A frontend contract, Build DAG, ground-truthed file:line). ✅ **P0–P5 built+audited+committed+pushed 2026-07-10 — recall fix complete** (95 tests green, legacy byte-identical, recall 76%→90%; through commit `4d295b7`) |
+| `docs/spec-flow/portfolio-cockpit/00-spec-and-scope.md` | **Front-end spec** — spec-flow Stage 1+2: 13 locked decisions + scope/non-goals/success for the local **Flask API + React SPA** cockpit (✅ committed `7c898e8` 2026-07-10). An earlier `case-study/cockpit.html` static prototype was built then **deleted** — superseded by this spec. |
 | `case-study/` (to come) | Documents ii (Prototype & Front-End), iii (Slides) |
 | `intake-pdf/*.pdf` | The 24 sample portfolio-company PDFs (the corpus) |
-| `outputs/` | Prototype output — **`parsed/` covers all 24 docs** (usable for verification); **`metrics_long.csv/.json` is still a 3-doc slice → re-run the export before demo numbers** |
+| `outputs/` | Prototype output — **`parsed/` covers all 24 docs**; the full 24-doc **enhanced** export has been run (`make publish`). The cockpit re-runs it live from the app (offline, no API key). |
 | `portfolio_metrics/` | The crawl-phase prototype source (Python CLI) |
 | `spec/SPEC.md`, `plan/`, `options/` | Take-home-round material (spec, interview prep, architecture options) |
 | `personal/Sagard docs/FDE - Interview #2 - Case Study - Xavier Medina.pdf` | The official case-study brief from Sagard |
 
 ---
 
-### Next step
-D1–D4 locked; **Document i drafted** (`i-context-and-problem.md`, under adversarial critique). Then, in
-order: revise Doc i per critique → run the full 24-PDF export + verify remaining numbers → write **Document
-ii (Prototype & Front-End)** → **Document iii (Slides, HTML Artifact deck)**.
+### Next step — what's DONE vs what's MISSING (as of 2026-07-10)
+
+**✅ Done:** D1–D4 locked · Doc 0 complete · Doc i drafted+critiqued · full 24-PDF export + defect audit ·
+**backend recall fix P0–P5 complete, committed & pushed (95 tests, 76%→90%)** · **front-end scoped via
+spec-flow** (`portfolio-cockpit` spec, `7c898e8`).
+
+**⬜ Missing / remaining (in order):**
+1. **`/spec-flow:2-main-plan`** — phased master plan for the cockpit app. ⚠️ First check: **is Node/Vite
+   installed** on Xavier's machine (the React SPA needs it).
+2. **`/spec-flow:3-phase-plans` + build** the **Flask API + React SPA** cockpit — offline, triggers the
+   pipeline live from the front-end, full D4 panels, additive G1 fix. Serve a **pre-built** bundle for the demo.
+3. **Document ii (Prototype & Front-End)** narrative — written *after* the cockpit runs, so the demo is live.
+4. **Document iii (Slides / HTML Artifact deck)** — due **48h before** interview (≈ Jul 11–14, **imminent**).
+5. **Verification before the deck:** re-verify any number that reaches a slide; confirm the live-demo run is clean.
+
+**Deferred by design (do NOT block the build):** D5 reconciliation policy (backend already emits the flag);
+metric sub-decisions D2a–D2f (§6A.4); the enhanced/legacy toggle (v1 stretch).
