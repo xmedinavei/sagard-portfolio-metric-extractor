@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
@@ -16,5 +17,11 @@ export default defineConfig({
     proxy: {
       "/api": "http://127.0.0.1:5000",
     },
+  },
+  // Vitest reads this same file. Phase 1 uses logic-only unit tests over ../lib/grid,
+  // so the default "node" environment is enough (no jsdom). Vite ignores this key.
+  test: {
+    environment: "node",
+    include: ["src/**/*.test.ts"],
   },
 });

@@ -2,7 +2,7 @@
 
 > **Date:** 2026-07-12
 > **Status:** Build-ready — `5` phases
-> &nbsp;&nbsp;`✅` Phase 0 *(built + audited 2026-07-12)* · `☐` Phase 1 · `☐` Phase 2 · `☐` Phase 3 · `☐` Phase 4 *(flip to `☑` built, `✅` audited as each lands)*
+> &nbsp;&nbsp;`✅` Phase 0 *(built + audited 2026-07-12)* · `✅` Phase 1 *(built + audited 2026-07-12; fixes in `01-load-and-grid-fixes.md`)* · `☐` Phase 2 · `☐` Phase 3 · `☐` Phase 4 *(flip to `☑` built, `✅` audited as each lands)*
 > **Scope:** additive, gated, no migration; non-opted-in users (the CLI + 95-test suite + golden guard) observably unchanged.
 > **Parent plan:** [`../01-plan.md`](../01-plan.md)  ·  **Spec:** [`../00-spec-and-scope.md`](../00-spec-and-scope.md)
 > **Memory key:** `spec_flow_portfolio-cockpit`  ·  **Ground-truthed:** 2026-07-12 (workflows `wf_8cb631c5-2a4` + `wf_638c55b6-dd7`, 5 read-only `code-investigator` agents)
@@ -88,6 +88,8 @@ is parallel; its click-wiring into P2's trend points is a soft feed, not a hard 
 | `web/src/types.ts` | `MetricRow`, `IssueRow`, `ExportMetadata`, `MetricsExport`, `ReportsResponse`, `RunResponse` | 0 |
 | `web/src/components/ReportsList.tsx` | `ReportsList` | 1 |
 | `web/src/components/RagGrid.tsx` | `RagGrid` | 1 |
+| `web/src/lib/grid.ts` | pure grid logic (`SECTOR_ORDER`, `CANONICAL_METRIC_ORDER`, `parsePeriodKey`, `classifyCell`, `sectorApplicableMetrics`, `groupCompaniesBySector`, `latestByCompanyMetric`) — Phase-1-private, unit-tested | 1 |
+| `web/src/lib/appState.ts` | `initialStatus` (cold-start gate) — Phase-1-private | 1 |
 | `web/src/components/TrendExplorer.tsx` | `TrendExplorer` | 2 |
 | `web/src/components/RefusePanel.tsx` | `RefusePanel` | 3 |
 | `web/src/components/ReconciliationPanel.tsx` | `ReconciliationPanel` | 3 |
