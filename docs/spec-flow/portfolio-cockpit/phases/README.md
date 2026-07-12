@@ -2,7 +2,7 @@
 
 > **Date:** 2026-07-12
 > **Status:** Build-ready — `5` phases
-> &nbsp;&nbsp;`✅` Phase 0 *(built + audited 2026-07-12)* · `✅` Phase 1 *(built + audited 2026-07-12; fixes in `01-load-and-grid-fixes.md`)* · `✅` Phase 2 *(built + audited 2026-07-12; fixes in `02-trend-explorer-fixes.md`)* · `☐` Phase 3 · `☐` Phase 4 *(flip to `☑` built, `✅` audited as each lands)*
+> &nbsp;&nbsp;`✅` Phase 0 *(built + audited 2026-07-12)* · `✅` Phase 1 *(built + audited 2026-07-12; fixes in `01-load-and-grid-fixes.md`)* · `✅` Phase 2 *(built + audited 2026-07-12; fixes in `02-trend-explorer-fixes.md`)* · `✅` Phase 3 *(built + audited 2026-07-12; fixes + a user-approved backend parser fix in `03-comparison-safety-fixes.md`)* · `☐` Phase 4 *(flip to `☑` built, `✅` audited as each lands)*
 > **Scope:** additive, gated, no migration; non-opted-in users (the CLI + 95-test suite + golden guard) observably unchanged.
 > **Parent plan:** [`../01-plan.md`](../01-plan.md)  ·  **Spec:** [`../00-spec-and-scope.md`](../00-spec-and-scope.md)
 > **Memory key:** `spec_flow_portfolio-cockpit`  ·  **Ground-truthed:** 2026-07-12 (workflows `wf_8cb631c5-2a4` + `wf_638c55b6-dd7`, 5 read-only `code-investigator` agents)
@@ -95,10 +95,11 @@ is parallel; its click-wiring into P2's trend points is a soft feed, not a hard 
 | `web/src/components/RefusePanel.tsx` | `RefusePanel` | 3 |
 | `web/src/components/ReconciliationPanel.tsx` | `ReconciliationPanel` | 3 |
 | `web/src/components/ExceptionsPanel.tsx` | `ExceptionsPanel` | 3 |
-| `web/src/components/BreadthPanel.tsx` | `BreadthPanel` *(first-to-cut de-scope candidate)* | 3 |
+| `web/src/components/BreadthPanel.tsx` | `BreadthPanel` *(kept — all 4 built)* | 3 |
+| `web/src/lib/comparison.ts` | pure comparison logic (`REFUSED_STATUS`, `INTEREST_MARGIN_BASIS`, `RECONCILE_CODE`, `BASIS_COLLISION_CODE`, `MISSING_METRIC_CODE`, `CROSS_SOURCE_MATCH_CODE`, `refusedRows`, `basisCollisionIssues`, `reconciliationSummary`, `missingMetricsByCompany`, `breadthByMetric`) — Phase-3-private, unit-tested | 3 |
 | `web/src/components/ProvenanceDrawer.tsx` | `ProvenanceDrawer` | 4 |
 
-### Edits to existing symbols (all append-only)
+### Edits to existing symbols (append-only, except the one Phase-3 correctness fix noted)
 
 | Symbol | Where (`file:line`) | Change |
 | --- | --- | --- |
@@ -106,6 +107,8 @@ is parallel; its click-wiring into P2's trend points is a soft feed, not a hard 
 | `serve` + `build-web` targets | `Makefile` after `:67` | new recipe blocks (mirror `publish` `Makefile:52-53`) |
 | `[project.optional-dependencies]` | `pyproject.toml:22` | add key `web = ["flask>=3.1,<4.0"]` (alongside existing `dev`) |
 | `.gitignore` | append (after `:24`) | one line: `node_modules/` |
+| `_split_label_and_value` whitespace branch | `detect_metrics.py` | **Phase 3 (user-approved) correctness fix** — period-aware column pick for layout tables (was `columns[-1]`). Golden byte-identical. NOT append-only. See `03-comparison-safety-fixes.md` P1. |
+| `App.tsx` | `web/src/App.tsx` | append 4 panel imports + 4 `<Panel export={data} />` inside the loaded block (Phase 3) |
 
 ### API routes, query keys, constants
 
@@ -123,6 +126,7 @@ is parallel; its click-wiring into P2's trend points is a soft feed, not a hard 
 | `RECONCILE_CODE` | `"cross_source_discrepancy"` (issue `code`) | 3 |
 | `BASIS_COLLISION_CODE` | `"basis_collision"` (issue `code`) | 3 |
 | `MISSING_METRIC_CODE` | `"missing_metric"` (issue `code`) | 3 |
+| `CROSS_SOURCE_MATCH_CODE` | `"cross_document_duplicate"` (issue `code` — the AGREE counterpart to `RECONCILE_CODE`; additive) | 3 |
 
 ### Export contract field names (bind verbatim — see `00-foundations.md` §A.4 for the full frozen shape)
 

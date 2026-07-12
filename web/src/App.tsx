@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 
 import { fetchMetrics, fetchReports, runPipeline } from "./api";
+import { BreadthPanel } from "./components/BreadthPanel";
+import { ExceptionsPanel } from "./components/ExceptionsPanel";
 import { RagGrid } from "./components/RagGrid";
+import { ReconciliationPanel } from "./components/ReconciliationPanel";
+import { RefusePanel } from "./components/RefusePanel";
 import { ReportsList } from "./components/ReportsList";
 import { TrendExplorer } from "./components/TrendExplorer";
 import { initialStatus } from "./lib/appState";
@@ -143,6 +147,14 @@ export function App() {
           <RagGrid export={data} />
 
           <TrendExplorer export={data} />
+
+          <RefusePanel export={data} />
+
+          <ReconciliationPanel export={data} />
+
+          <ExceptionsPanel export={data} />
+
+          <BreadthPanel export={data} />
         </>
       )}
     </main>

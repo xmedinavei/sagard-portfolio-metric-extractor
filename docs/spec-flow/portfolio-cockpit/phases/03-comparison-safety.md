@@ -1,8 +1,8 @@
 # Phase 3: Flagship #2 — refuse-to-compare + reconciliation + exceptions + breadth (Build Spec)
 
 > **Date:** 2026-07-12
-> **Status:** Not started · target `~4` frontend tests (3 if breadth is cut) *(flip to In progress / Built / Audited)*
-> **Scope:** additive, gated, no migration; non-opted-in users observably unchanged (frontend-only, reads loaded export).
+> **Status:** ✅ Built + Audited (2026-07-12) · all **4 panels** built (breadth kept) · **12 frontend tests** (comparison.ts logic) · backend **105**/**97**, golden **15** byte-identical · audit fixes + one **user-approved backend parser fix** in [`03-comparison-safety-fixes.md`](./03-comparison-safety-fixes.md)
+> **Scope:** additive, gated, no migration; non-opted-in users observably unchanged. **Build deviation:** this phase also carries a user-approved backend correctness fix to `detect_metrics.py` (the offline parser read the wrong table column — see the fixes doc). The golden canary stays byte-identical.
 > **Depends-on:** Phase 0 (foundations gate), Phase 1 (loaded export state)  ·  **Blocks:** none
 > **Feeds:** refused/flagged rows that Phase 4 makes click-to-source (soft feed)  ·  **Parallelizable-with:** Phase 2, Phase 4
 > **Parent plan:** [`../01-plan.md` §7 Phase 3](../01-plan.md)  ·  **Index:** [`./README.md`](./README.md)
@@ -28,31 +28,31 @@ Phase 3 builds the **second demo insight** — the "trust the numbers" cluster t
 
 ### 3.1 Refuse-to-compare panel
 
-- `☐` **3.1a** `RefusePanel` → `web/src/components/RefusePanel.tsx` (new). Surface every `MetricRow` where `comparison_status === REFUSED_STATUS` (`"refused"`) — these carry `metric_basis === INTEREST_MARGIN_BASIS` (`"interest_margin"`). Render them visibly flagged: **"refused — different basis (interest margin vs gross margin)."** Also surface the companion `IssueRow` where `code === BASIS_COLLISION_CODE` (`"basis_collision"`), using its `message`.
-- **Acceptance:** all **5** LendBridge gross-margin rows show "refused — different basis"; exactly **1** `basis_collision` issue is surfaced; **no other** rows are refused (the refused set is exactly those 5 — plan §3.3).
+- `✅` **3.1a** `RefusePanel` → `web/src/components/RefusePanel.tsx` (new). Surface every `MetricRow` where `comparison_status === REFUSED_STATUS` (`"refused"`) — these carry `metric_basis === INTEREST_MARGIN_BASIS` (`"interest_margin"`). Render them visibly flagged: **"refused — different basis (interest margin vs gross margin)."** Also surface the companion `IssueRow` where `code === BASIS_COLLISION_CODE` (`"basis_collision"`), using its `message`. *(Built: `refusedRows` + `basisCollisionIssues` in `comparison.ts`; the refusal reason is derived from the row's own `metric_basis` — data-driven, not hardcoded. **Build note:** the `basis_collision` issue's `company_name` is **null** live [company is only in `message`], so the panel takes the company from the refused **rows**, which carry it.)*
+- **Acceptance:** ✅ all **5** LendBridge gross-margin rows show "refused — different basis"; exactly **1** `basis_collision` issue is surfaced; **no other** rows are refused (verified live: `comparable:111, refused:5`).
 
 *Template to copy: none in-repo; a filtered list over `export.metrics` + `export.issues`.*
 
 ### 3.2 Reconciliation panel — cross-source discrepancy, own-report wins, dedupe the mirror
 
-- `☐` **3.2a** `ReconciliationPanel` → `web/src/components/ReconciliationPanel.tsx` (new). Filter `export.issues` to `code === RECONCILE_CODE` (`"cross_source_discrepancy"`). For each, render a card using the **flat** issue fields (NOT a nested object): `company_name`, `canonical_metric`, `period`, `observed_value` (the **retained company-report** number), `expected_value` (the **suppressed summary** number), `delta` (`observed − expected`). Show it as "company report **won**" with the delta.
-- `☐` **3.2b** **Dedupe the mirror-pair** (DEC-E): MediSight (+5.5M) and TalentVault (−5.5M) are the **same** conflict mirrored across two documents — and they are **different companies**, so a `(company, period, canonical_metric)` join will **not** catch it. Key the dedupe on the **unordered value-magnitude pair `{|observed_value|, |expected_value|}` within the same `period`** and collapse to **one card per conflict**. ⚠️ **Build-time live-verify:** the exact fields on the TalentVault mirror row were not confirmed against the live export in planning — before finalizing the key, print the two `cross_source_discrepancy` rows from a live run and confirm they share the magnitude pair (adjust the key if the data shows otherwise; record it in §Live findings).
-- **Acceptance:** exactly **one** MediSight reconciliation card, showing observed 27.9M vs expected 22.4M (**delta +5.5M**), company-report winning; the TalentVault −5.5M mirror is **not** shown as a second card.
+- `✅` **3.2a** `ReconciliationPanel` → `web/src/components/ReconciliationPanel.tsx` (new). Filter `export.issues` to `code === RECONCILE_CODE` (`"cross_source_discrepancy"`) for disagreements. Render each as a card using the **flat** issue fields: `company_name`, `canonical_metric`, `period`, `observed_value` (**retained company-report**), `expected_value` (**suppressed summary**), `delta` (`observed − expected`) — "company report **kept**." *(Built: `reconciliationSummary` in `comparison.ts`; H4 respected — binds `cross_source_discrepancy`, never the delta-less `cross_document_conflicting_candidates` marker.)*
+- `✅` **3.2b** **Build deviation (see [`03-comparison-safety-fixes.md`](./03-comparison-safety-fixes.md) P1/D1).** The spec's magnitude-pair mirror dedupe was designed for the MediSight +5.5M / TalentVault −5.5M conflict — which **does not exist**. Live-verify found it was an artifact of a **backend parser bug** (the offline reader picked the prior-quarter column). After the **user-approved parser fix**, there are **0** disagreements and **22** confirmed agreements. Dedupe now uses the correct **natural key `(company, canonical_metric, period)`**; the panel is reframed as an honest cross-source **check** that also counts confirmed matches via `CROSS_SOURCE_MATCH_CODE` (`cross_document_duplicate`).
+- **Acceptance:** ✅ (reframed) the panel shows an honest cross-source check — verified live **22 numbers cross-checked, 22 agree, 0 disagree** — and a conflict card (company report kept, summary set aside, signed delta, largest-`|delta|` first) would surface if any disagreement existed.
 
 *Template to copy: none in-repo. Note the semantics are locked in `publish.py:188-217` — `observed_value`=retained, `expected_value`=suppressed, `delta=round(observed−expected,6)`.*
 
 ### 3.3 Exceptions / early-warning — sector-aware missing metrics
 
-- `☐` **3.3a** `ExceptionsPanel` → `web/src/components/ExceptionsPanel.tsx` (new). Filter `export.issues` to `code === MISSING_METRIC_CODE` (`"missing_metric"`); each carries `company_name`, `canonical_metric`, `period`. Group by company. These are **already sector-aware** (the backend only flags a metric as missing if it applies to that company's sector), so the frontend just renders them faithfully — it must **not** re-derive "missing" itself.
-- **Acceptance:** LendBridge (credit) shows only genuine gaps (e.g. one `headcount`), and **never** a SaaS metric like `arr_eop` as "missing" (success criterion #5 — zero false "missing"); the total missing set matches the export (34 issues today, sector-aware).
+- `✅` **3.3a** `ExceptionsPanel` → `web/src/components/ExceptionsPanel.tsx` (new). Filter `export.issues` to `code === MISSING_METRIC_CODE` (`"missing_metric"`); each carries `company_name`, `canonical_metric`, `period`. Group by company. These are **already sector-aware** (the backend only flags a metric missing if it applies to that company's sector), so the frontend renders faithfully — it must **not** re-derive "missing". *(Built: `missingMetricsByCompany` in `comparison.ts`; the issues fire per document/period, so it dedupes to distinct `(company, metric)` — live **30 raw → 18 distinct** — and attaches sector.)*
+- **Acceptance:** ✅ LendBridge (credit) has **zero** `missing_metric` issues live, so it never appears and can never show a SaaS metric like `arr_eop` as "missing" (success #5 — zero false "missing"); metrics ever flagged are only sector-appropriate core metrics (`cash_balance`, `headcount`, `monthly_burn`, `revenue_qtr`). *(Spec said "34 issues"; live is 30 raw / 18 distinct.)*
 
 *Template to copy: none in-repo; a grouped list over the filtered issues.*
 
 ### 3.4 Breadth panel — label-drift showcase *(⚠️ FIRST-TO-CUT de-scope candidate)*
 
-- `☐` **3.4a** `BreadthPanel` → `web/src/components/BreadthPanel.tsx` (new). Reframed per DEC-D as a **label-drift / raw-terminology showcase**: show how many **distinct `raw_label` values** (the source's own wording) collapse to each `canonical_metric`, plus the 2 optional canonical metrics present (`net_revenue_retention_pct`, `logo_churn_pct`). This is **on-thesis** (it reuses `raw_label`, already bound in provenance) and honest — there is **no open raw-tail**, so do **not** invent a "other/unrecognized" bucket.
-- `☐` **3.4b** **De-scope switch:** if Phase 3 is running long, **omit this entire group** — do not wire `BreadthPanel` into `App`. Dropping `3.4` must leave `3.1`/`3.2`/`3.3` fully intact.
-- **Acceptance:** EITHER the panel shows source-terminology breadth honestly (30 distinct raw labels across the canonical IDs + the 2 optional metrics, no fake raw-tail), OR it is cleanly omitted with the other three panels working and no dead import/route left behind.
+- `✅` **3.4a** `BreadthPanel` → `web/src/components/BreadthPanel.tsx` (new). Reframed per DEC-D as a **label-drift / raw-terminology showcase**: shows how many **distinct `raw_label` values** collapse to each `canonical_metric`, plus the 2 optional canonical metrics present (`net_revenue_retention_pct`, `logo_churn_pct`). On-thesis (reuses `raw_label`) and honest — **no invented "other/unrecognized" bucket**. *(Built: `breadthByMetric` in `comparison.ts`; counts are data-driven, never hardcoded; blank labels skipped.)*
+- `✅` **3.4b** **De-scope switch — NOT taken.** Xavier chose "build all 4 panels" (AskUserQuestion), so `BreadthPanel` is built and wired into `App`. (Had it been cut, `3.1`/`3.2`/`3.3` would have stayed intact with no dead import.)
+- **Acceptance:** ✅ the panel shows source-terminology breadth honestly — verified live **29 distinct raw labels** across the canonical metrics (spec said ~30) + both optional metrics present (NRR 11 rows, logo churn 10), no fake raw-tail.
 
 *Template to copy: reuse the `raw_label` access from provenance (Phase 4) — group `export.metrics` by `canonical_metric`, count `distinct(raw_label)`.*
 
@@ -67,24 +67,42 @@ Phase 3 builds the **second demo insight** — the "trust the numbers" cluster t
 | Change | Class | Why safe |
 | --- | --- | --- |
 | New `RefusePanel`, `ReconciliationPanel`, `ExceptionsPanel`, `BreadthPanel` | ✅ SAFE | New files under `web/src/components/`; render-only; read the loaded export. |
-| No backend calls added | ✅ SAFE | Reuses Phase 1's loaded export; no new route or contract. |
-| Breadth panel omitted under de-scope | ✅ SAFE | Cutting `3.4` removes a leaf component; `3.1`–`3.3` untouched; no shared code affected. |
+| New `web/src/lib/comparison.ts` pure logic | ✅ SAFE | New file under `web/src/lib/`; DOM-free, unit-tested; imports only `../types` + `./grid` (no cycle). 5 registry consts defined fresh (additive) — `grid.ts`'s private `missing_metric` literal is left untouched. |
+| Append 4 imports + 4 `<Panel export={data} />` to `App.tsx` | ✅ SAFE | 8 additive lines **inside** the pre-existing `status === "loaded" && data` block, after the Phase 1/2 panels; idle/loading/error + Phase 1/2 states observably unchanged. |
+| **Backend parser fix — `detect_metrics.py` whitespace column picker** | ⚠️ **CONDITIONAL** | **Build deviation (user-approved).** Corrects a real bug (the offline layout reader took the last/prior-quarter column). Confined to the whitespace branch; the markdown branch (hence the **golden canary**) is byte-identical. Not gated by `recall_mode` (a correctness fix). Safe because no consumer depended on the buggy prior-quarter value, and the frozen golden output is unchanged. See [`03-comparison-safety-fixes.md`](./03-comparison-safety-fixes.md) P1. |
+| +2 locking tests in `tests/test_detect_metrics.py` | ✅ SAFE | Additive tests only; suite count 95→97 flask-absent / 103→105 flask-present. No existing test changed. |
+| Breadth panel omitted under de-scope | — | **Not taken** — all 4 panels built (Xavier chose "build all 4"). |
 
-**Net: zero breaking, zero migration.** Non-opted-in users observably unchanged — frontend-only panels reading the frozen export.
+**Net: no ❌ BREAKING.** The frontend is net-new + additive. The one ⚠️ CONDITIONAL is the user-approved backend correctness fix, whose blast radius (26 live rows corrected across 4 companies) was empirically mapped and whose retrocompat contract — the byte-identical golden export + the 15-test golden guard + `import portfolio_metrics` loading no flask — is preserved.
 
 ## § Definition of done
 
-1. [ ] All `3.M` task groups complete (or `3.4` cleanly omitted); every **Acceptance** met.
-2. [ ] ~4 frontend tests (5 refused rows + 1 basis_collision; one deduped MediSight card; LendBridge no false SaaS "missing"; breadth honest OR absent); `make test` still **95**.
-3. [ ] Every change classified in **§ Retrocompat notes**; nothing BREAKING.
-4. [ ] Reconciliation bound to `cross_source_discrepancy` (not the marker); no RESERVED field bound; the mirror is deduped.
-5. [ ] Symbol names match the README naming registry verbatim (`RefusePanel`, `ReconciliationPanel`, `ExceptionsPanel`, `BreadthPanel`, `REFUSED_STATUS`, `INTEREST_MARGIN_BASIS`, `RECONCILE_CODE`, `BASIS_COLLISION_CODE`, `MISSING_METRIC_CODE`).
-6. [ ] *(n/a — no §A here.)*
+1. [x] All 4 `3.M` task groups complete (breadth kept); every **Acceptance** met live.
+2. [x] **12** frontend tests (comparison.ts logic — refused set, basis_collision filter, H4 bind-not-marker, natural-key dedupe, all-clear, LendBridge-absent, breadth distinct labels, + defensive null branches); total frontend **33** (11 P1 + 10 P2 + 12 P3). `make test` = **97** flask-absent / **105** flask-present (was 95/103; **+2** parser-fix locking tests only); golden **15** byte-identical.
+3. [x] Every change classified in **§ Retrocompat notes** — including the user-approved backend parser fix (⚠️ CONDITIONAL); nothing BREAKING.
+4. [x] Reconciliation bound to `cross_source_discrepancy` (not the marker — H4); no RESERVED field bound (H5); dedupe on the natural key `(company, metric, period)` (the spec's magnitude-pair mirror was fiction — see fixes doc D1).
+5. [x] Symbol names match the README naming registry verbatim (`RefusePanel`, `ReconciliationPanel`, `ExceptionsPanel`, `BreadthPanel`, `REFUSED_STATUS`, `INTEREST_MARGIN_BASIS`, `RECONCILE_CODE`, `BASIS_COLLISION_CODE`, `MISSING_METRIC_CODE`); new `comparison.ts` + additive `CROSS_SOURCE_MATCH_CODE` added to the registry.
+6. [x] *(n/a — no §A here; consumes `00-foundations.md` §A.4.)*
 
 ---
 
-## § Live findings *(build agent fills during `/spec-flow:4-build-phase`)*
+## § Live findings
 
-## § Implementation notes *(build agent fills)*
+- **The spec's reconciliation flagship was fiction — caused by a real parser bug.** A Step-2 live-verify found **no** MediSight `cross_source_discrepancy`; the "22.4M" belongs to TalentVault, MediSight's 27.9M is an exact `cross_document_duplicate`, and "+5.5M" subtracted two different companies. Root cause: the offline `LocalPdfParser` (whitespace layout) read `columns[-1]` = the **prior-quarter** column for the two-column reports of **CarbonTrack / TalentVault / ClearPay / ConstructIQ**, producing **11 false conflicts** + **15 silently-wrong numbers**. Fixed (user-approved) — see [`03-comparison-safety-fixes.md`](./03-comparison-safety-fixes.md) P1.
+- **Post-fix live export (enhanced, the app path):** `cross_source_discrepancy` **0** (was 11), `cross_document_duplicate` **22** (was 11), `metric_count` **116** (unchanged). CarbonTrack ARR Q2 now `$16.9M` (was `$15.2M`).
+- **Refuse (3.1):** exactly **5** LendBridge `gross_margin_pct` refused (all `interest_margin`); exactly **1** `basis_collision`, whose `company_name` is **null** (company only in `message`).
+- **Exceptions (3.3):** **30 raw** `missing_metric` → **18 distinct** `(company, metric)`; **LendBridge has zero** (never asked for SaaS metrics); flagged metrics are only `cash_balance / headcount / monthly_burn / revenue_qtr`.
+- **Breadth (3.4):** **29** distinct `raw_label`s (spec ~30); both optional metrics present (NRR 11, logo churn 10).
+- **9-code open set:** 8 of 9 codes appear live (`parse_failure` never fires — all 24 PDFs parse cleanly). Panels filter to their specific codes and ignore the rest.
 
-## § Unblocked phases *(build agent fills)*
+## § Implementation notes
+
+- **Architecture mirrors Phase 1/2:** all fragile logic in `web/src/lib/comparison.ts` (DOM-free, unit-tested in the node-env vitest harness); the 4 panels are thin renderers (typecheck + build coverage). The 5 registry consts are defined **fresh** here (additive-safe) so `App.tsx` is the only shared frontend edit.
+- **Reconciliation reframed** to an honest cross-source **check** (binds `cross_source_discrepancy` for disagreements + `cross_document_duplicate` for agreements; the latter is an additive const `CROSS_SOURCE_MATCH_CODE`, registered post-hoc). Shows "N verified, X agree, Y disagree" — all-clear when Y = 0, conflict card (largest-`|delta|` first) if any exists.
+- **Backend parser fix** (`detect_metrics.py`, 3 edits, whitespace branch only) reuses the markdown path's `_select_table_value_column`. Golden byte-identical (markdown never hits the changed branch). Latent stale-`whitespace_context` hazard **accepted + documented** (zero corpus impact; a reset would be ambiguous vs an "N/A" data row).
+- **Gate:** frontend **33** vitest + `tsc`+`vite` green (213.8 kB / 66.9 kB gz, ~+8 kB, no chart lib); backend **105**/**97**, golden **15** byte-identical, ruff clean.
+
+## § Unblocked phases
+
+- **Phase 4 (provenance)** can wire click-to-source into these panels' rows additively (each refused row / reconciliation card / exception maps to a `MetricRow`/`IssueRow` with `source_file` + `raw_label` + `source_snippet`). Do not change the Phase 3 acceptances.
+- **Demo narrative unlocked:** flagship #2 = refuse-to-compare (5 LendBridge rows) **+** the cross-source check that *caught a real parser bug on day one* — a strong FDE "instrument → detect → root-cause" story.
