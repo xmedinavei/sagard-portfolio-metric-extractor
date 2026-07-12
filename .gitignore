@@ -23,5 +23,15 @@ outputs/*
 .DS_Store
 .vscode/
 
-# Node / frontend (web/dist is already covered by the depth-agnostic dist/ rule above)
+# Node / frontend
 node_modules/
+
+# Demo-safety (Phase 4): the built cockpit bundle IS committed so `make serve` always has a
+# known-good offline bundle to serve — never a live `npm run build` at demo time. web/dist is
+# otherwise caught by the depth-agnostic `dist/` rule above, so we re-include the directory
+# AND its contents: git cannot re-include a file whose parent directory stays excluded.
+!web/dist/
+!web/dist/**
+# ...but a build's node_modules must never ride along, even though Vite never emits one
+# into dist (defensive: re-exclude it AFTER the wildcard so the last match wins).
+web/dist/node_modules/

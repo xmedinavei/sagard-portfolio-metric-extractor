@@ -35,6 +35,9 @@ export interface TrendPoint {
   rawLabel: string; // the source's own wording for THIS point — drives the honest
   // "one line across N source labels" note, counted from the plotted set so it can never
   // disagree with what's drawn.
+  row: MetricRow; // the backing source row (Phase 4) — lets a click on this point open the
+  // provenance drawer without re-looking-it-up. Populated by buildSeries; the dedupe keeps
+  // the first (winning) row for a period, matching the value that's plotted.
 }
 
 // Build the chronological series for one (company, canonical_metric). Steps, in order:
@@ -63,6 +66,7 @@ export function buildSeries(
       displayValue: row.display_value,
       periodKey,
       rawLabel: row.raw_label,
+      row,
     });
   }
   points.sort((a, b) => a.periodKey - b.periodKey);

@@ -3,13 +3,14 @@ import { useEffect, useState } from "react";
 import { fetchMetrics, fetchReports, runPipeline } from "./api";
 import { BreadthPanel } from "./components/BreadthPanel";
 import { ExceptionsPanel } from "./components/ExceptionsPanel";
+import { ProvenanceDrawer } from "./components/ProvenanceDrawer";
 import { RagGrid } from "./components/RagGrid";
 import { ReconciliationPanel } from "./components/ReconciliationPanel";
 import { RefusePanel } from "./components/RefusePanel";
 import { ReportsList } from "./components/ReportsList";
 import { TrendExplorer } from "./components/TrendExplorer";
 import { initialStatus } from "./lib/appState";
-import type { MetricsExport, ReportsResponse } from "./types";
+import type { MetricRow, MetricsExport, ReportsResponse } from "./types";
 
 // App shell + shared "loaded export" state. The state machine is idle -> loading ->
 // loaded -> error. `data` (the last MetricsExport) IS the shared loaded-export seam
@@ -32,6 +33,9 @@ export function App() {
   const [reports, setReports] = useState<ReportsResponse | null>(null);
   const [reportsError, setReportsError] = useState<string | null>(null);
   const [runMeta, setRunMeta] = useState<RunMeta | null>(null);
+  // Phase 4: the row whose provenance drawer is open (null = closed). Clicking any grid
+  // cell or trend point sets it; the drawer's close button / Esc / backdrop clears it.
+  const [selectedRow, setSelectedRow] = useState<MetricRow | null>(null);
 
   // Cold start: read the last export (if the server already ran this process). This
   // effect OWNS the initial status transition — result.export ? loaded : idle — so a
@@ -144,17 +148,19 @@ export function App() {
             </p>
           )}
 
-          <RagGrid export={data} />
+          <RagGrid export={data} onSelectRow={setSelectedRow} />
 
-          <TrendExplorer export={data} />
+          <TrendExplorer export={data} onSelectRow={setSelectedRow} />
 
-          <RefusePanel export={data} />
+          <RefusePanel export={data} onSelectRow={setSelectedRow} />
 
           <ReconciliationPanel export={data} />
 
           <ExceptionsPanel export={data} />
 
           <BreadthPanel export={data} />
+
+          <ProvenanceDrawer row={selectedRow} onClose={() => setSelectedRow(null)} />
         </>
       )}
     </main>

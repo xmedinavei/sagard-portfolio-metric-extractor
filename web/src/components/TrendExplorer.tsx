@@ -11,7 +11,7 @@
 import type { CSSProperties } from "react";
 import { useState } from "react";
 
-import type { CanonicalMetric, MetricsExport } from "../types";
+import type { CanonicalMetric, MetricRow, MetricsExport } from "../types";
 import { METRIC_LABELS } from "../lib/grid";
 import type { TrendPoint } from "../lib/trend";
 import {
@@ -37,7 +37,15 @@ const INNER_W = W - PAD.left - PAD.right;
 const INNER_H = H - PAD.top - PAD.bottom;
 const LINE_COLOR = "#2b6cb0";
 
-export function TrendExplorer({ export: exp }: { export: MetricsExport }) {
+export function TrendExplorer({
+  export: exp,
+  onSelectRow,
+}: {
+  export: MetricsExport;
+  // Optional (Phase 4): clicking a plotted point reports its source row so App can open
+  // the provenance drawer. Absent = the trend renders exactly as in Phase 2.
+  onSelectRow?: (row: MetricRow) => void;
+}) {
   const metrics = exp.metrics;
   const companies = distinctCompanies(metrics);
 
@@ -122,7 +130,11 @@ export function TrendExplorer({ export: exp }: { export: MetricsExport }) {
       </div>
 
       {sufficient ? (
-        <TrendChart points={points} label={`${company} — ${METRIC_LABELS[metric]}`} />
+        <TrendChart
+          points={points}
+          label={`${company} — ${METRIC_LABELS[metric]}`}
+          onSelectRow={onSelectRow}
+        />
       ) : (
         <p
           role="status"
@@ -159,7 +171,15 @@ export function TrendExplorer({ export: exp }: { export: MetricsExport }) {
 
 // The inline SVG line chart. Only reached when points.length >= MIN_TREND_POINTS (>= 3),
 // so `points.length - 1` is always >= 2 (no divide-by-zero on the x axis).
-function TrendChart({ points, label }: { points: TrendPoint[]; label: string }) {
+function TrendChart({
+  points,
+  label,
+  onSelectRow,
+}: {
+  points: TrendPoint[];
+  label: string;
+  onSelectRow?: (row: MetricRow) => void;
+}) {
   const values = points.map((p) => p.value);
   const minV = Math.min(...values);
   const maxV = Math.max(...values);
@@ -210,7 +230,27 @@ function TrendChart({ points, label }: { points: TrendPoint[]; label: string }) 
       {/* points + per-point value and period labels */}
       {points.map((p, i) => (
         <g key={p.period}>
-          <circle cx={x(i)} cy={y(p.value)} r="4" fill={LINE_COLOR} />
+          {/* A larger transparent hit target makes the point easy to click (Phase 4). */}
+          {onSelectRow && (
+            <circle
+              cx={x(i)}
+              cy={y(p.value)}
+              r="12"
+              fill="transparent"
+              style={{ cursor: "pointer" }}
+              onClick={() => onSelectRow(p.row)}
+            >
+              <title>Click to see the source of this number</title>
+            </circle>
+          )}
+          <circle
+            cx={x(i)}
+            cy={y(p.value)}
+            r="4"
+            fill={LINE_COLOR}
+            style={onSelectRow ? { cursor: "pointer" } : undefined}
+            onClick={onSelectRow ? () => onSelectRow(p.row) : undefined}
+          />
           <text x={x(i)} y={y(p.value) - 10} textAnchor="middle" fontSize="11" fill="#333">
             {p.displayValue}
           </text>

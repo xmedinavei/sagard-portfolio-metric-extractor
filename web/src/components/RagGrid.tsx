@@ -6,7 +6,7 @@
 
 import type { CSSProperties } from "react";
 
-import type { MetricsExport } from "../types";
+import type { MetricRow, MetricsExport } from "../types";
 import {
   CANONICAL_METRIC_ORDER,
   METRIC_LABELS,
@@ -55,7 +55,15 @@ function CellValue({ cell }: { cell: Cell }) {
   return <span>{text}</span>;
 }
 
-export function RagGrid({ export: exp }: { export: MetricsExport }) {
+export function RagGrid({
+  export: exp,
+  onSelectRow,
+}: {
+  export: MetricsExport;
+  // Optional (Phase 4): clicking a value cell reports its source row so App can open the
+  // provenance drawer. Absent = the grid renders and behaves exactly as in Phase 1.
+  onSelectRow?: (row: MetricRow) => void;
+}) {
   const metrics = exp.metrics;
   const groups = groupCompaniesBySector(metrics);
   const latest = latestByCompanyMetric(metrics);
@@ -105,8 +113,34 @@ export function RagGrid({ export: exp }: { export: MetricsExport }) {
                       latest,
                       applicable,
                     );
+                    // Only a real value cell is a provenance target — N/A and gap cells
+                    // have no source row to open.
+                    const openRow = cell.kind === "value" ? cell.row : null;
+                    const clickable = openRow !== null && !!onSelectRow;
+                    const open = () => {
+                      if (openRow && onSelectRow) onSelectRow(openRow);
+                    };
                     return (
-                      <td key={metric} style={cellStyle(cell)}>
+                      <td
+                        key={metric}
+                        style={
+                          clickable ? { ...cellStyle(cell), cursor: "pointer" } : cellStyle(cell)
+                        }
+                        onClick={clickable ? open : undefined}
+                        onKeyDown={
+                          clickable
+                            ? (e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.preventDefault();
+                                  open();
+                                }
+                              }
+                            : undefined
+                        }
+                        role={clickable ? "button" : undefined}
+                        tabIndex={clickable ? 0 : undefined}
+                        title={clickable ? "Click to see the source of this number" : undefined}
+                      >
                         <CellValue cell={cell} />
                       </td>
                     );

@@ -16,7 +16,16 @@ function refusalReason(row: MetricRow): string {
   return "refused: different basis (not comparable to sector peers)";
 }
 
-export function RefusePanel({ export: exp }: { export: MetricsExport }) {
+export function RefusePanel({
+  export: exp,
+  onSelectRow,
+}: {
+  export: MetricsExport;
+  // Optional (Phase 4): make the refused numbers click-to-source too, so the flagship-#2
+  // "we won't rank this" moment is one click from the source that proves the different
+  // basis. Absent = the panel renders exactly as in Phase 3.
+  onSelectRow?: (row: MetricRow) => void;
+}) {
   const refused = refusedRows(exp.metrics);
   const collisions = basisCollisionIssues(exp.issues);
   if (refused.length === 0) return null;
@@ -68,7 +77,33 @@ export function RefusePanel({ export: exp }: { export: MetricsExport }) {
             {rows.map((row, i) => (
               <li key={i} style={{ margin: "0.15rem 0" }}>
                 <strong>{METRIC_LABELS[row.canonical_metric]}</strong>{" "}
-                <span style={{ fontVariantNumeric: "tabular-nums" }}>{row.display_value}</span>{" "}
+                <span
+                  style={
+                    onSelectRow
+                      ? {
+                          fontVariantNumeric: "tabular-nums",
+                          cursor: "pointer",
+                          textDecoration: "underline dotted",
+                        }
+                      : { fontVariantNumeric: "tabular-nums" }
+                  }
+                  role={onSelectRow ? "button" : undefined}
+                  tabIndex={onSelectRow ? 0 : undefined}
+                  title={onSelectRow ? "Click to see the source of this number" : undefined}
+                  onClick={onSelectRow ? () => onSelectRow(row) : undefined}
+                  onKeyDown={
+                    onSelectRow
+                      ? (e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            onSelectRow(row);
+                          }
+                        }
+                      : undefined
+                  }
+                >
+                  {row.display_value}
+                </span>{" "}
                 <span style={{ color: "#888" }}>({row.period})</span> —{" "}
                 <span style={{ color: "#8a4b00" }}>{refusalReason(row)}</span>
               </li>

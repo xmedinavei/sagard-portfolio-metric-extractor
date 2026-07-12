@@ -2,7 +2,7 @@
 
 > **Date:** 2026-07-12
 > **Status:** Build-ready — `5` phases
-> &nbsp;&nbsp;`✅` Phase 0 *(built + audited 2026-07-12)* · `✅` Phase 1 *(built + audited 2026-07-12; fixes in `01-load-and-grid-fixes.md`)* · `✅` Phase 2 *(built + audited 2026-07-12; fixes in `02-trend-explorer-fixes.md`)* · `✅` Phase 3 *(built + audited 2026-07-12; fixes + a user-approved backend parser fix in `03-comparison-safety-fixes.md`)* · `☐` Phase 4 *(flip to `☑` built, `✅` audited as each lands)*
+> &nbsp;&nbsp;`✅` Phase 0 *(built + audited 2026-07-12)* · `✅` Phase 1 *(built + audited 2026-07-12; fixes in `01-load-and-grid-fixes.md`)* · `✅` Phase 2 *(built + audited 2026-07-12; fixes in `02-trend-explorer-fixes.md`)* · `✅` Phase 3 *(built + audited 2026-07-12; fixes + a user-approved backend parser fix in `03-comparison-safety-fixes.md`)* · `✅` Phase 4 *(built + audited 2026-07-12; fixes in `04-provenance-fixes.md` — the graded core P0–P4 is complete)*
 > **Scope:** additive, gated, no migration; non-opted-in users (the CLI + 95-test suite + golden guard) observably unchanged.
 > **Parent plan:** [`../01-plan.md`](../01-plan.md)  ·  **Spec:** [`../00-spec-and-scope.md`](../00-spec-and-scope.md)
 > **Memory key:** `spec_flow_portfolio-cockpit`  ·  **Ground-truthed:** 2026-07-12 (workflows `wf_8cb631c5-2a4` + `wf_638c55b6-dd7`, 5 read-only `code-investigator` agents)
@@ -98,6 +98,7 @@ is parallel; its click-wiring into P2's trend points is a soft feed, not a hard 
 | `web/src/components/BreadthPanel.tsx` | `BreadthPanel` *(kept — all 4 built)* | 3 |
 | `web/src/lib/comparison.ts` | pure comparison logic (`REFUSED_STATUS`, `INTEREST_MARGIN_BASIS`, `RECONCILE_CODE`, `BASIS_COLLISION_CODE`, `MISSING_METRIC_CODE`, `CROSS_SOURCE_MATCH_CODE`, `refusedRows`, `basisCollisionIssues`, `reconciliationSummary`, `missingMetricsByCompany`, `breadthByMetric`) — Phase-3-private, unit-tested | 3 |
 | `web/src/components/ProvenanceDrawer.tsx` | `ProvenanceDrawer` | 4 |
+| `web/src/lib/provenance.ts` | pure provenance logic (`provenanceView`, `formatConfidence`, `PROVENANCE_GRANULARITY_LABEL`, `ProvenanceView`) — Phase-4-private, unit-tested | 4 |
 
 ### Edits to existing symbols (append-only, except the one Phase-3 correctness fix noted)
 
@@ -108,7 +109,10 @@ is parallel; its click-wiring into P2's trend points is a soft feed, not a hard 
 | `[project.optional-dependencies]` | `pyproject.toml:22` | add key `web = ["flask>=3.1,<4.0"]` (alongside existing `dev`) |
 | `.gitignore` | append (after `:24`) | one line: `node_modules/` |
 | `_split_label_and_value` whitespace branch | `detect_metrics.py` | **Phase 3 (user-approved) correctness fix** — period-aware column pick for layout tables (was `columns[-1]`). Golden byte-identical. NOT append-only. See `03-comparison-safety-fixes.md` P1. |
-| `App.tsx` | `web/src/App.tsx` | append 4 panel imports + 4 `<Panel export={data} />` inside the loaded block (Phase 3) |
+| `App.tsx` | `web/src/App.tsx` | append 4 panel imports + 4 `<Panel export={data} />` inside the loaded block (Phase 3); **Phase 4:** `selectedRow` state + `<ProvenanceDrawer>` + `onSelectRow` passed to grid/trend/refuse |
+| `onSelectRow?` prop | `RagGrid.tsx`, `TrendExplorer.tsx`, `RefusePanel.tsx` | **Phase 4** — append-only optional `(row: MetricRow) => void` click-to-source callback; absent = byte-identical render |
+| `TrendPoint.row` | `web/src/lib/trend.ts` | **Phase 4** — additive `row: MetricRow` field (the backing source row for a clicked trend point) |
+| `.gitignore` | append (after `:27`) | **Phase 4** — `!web/dist/` + `!web/dist/**` + defensive `web/dist/node_modules/` (commit the frozen demo bundle) |
 
 ### API routes, query keys, constants
 
