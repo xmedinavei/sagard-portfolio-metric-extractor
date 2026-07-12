@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { fetchMetrics, fetchReports, runPipeline } from "./api";
 import { RagGrid } from "./components/RagGrid";
 import { ReportsList } from "./components/ReportsList";
+import { TrendExplorer } from "./components/TrendExplorer";
 import { initialStatus } from "./lib/appState";
 import type { MetricsExport, ReportsResponse } from "./types";
 
@@ -140,6 +141,8 @@ export function App() {
           )}
 
           <RagGrid export={data} />
+
+          <TrendExplorer export={data} />
         </>
       )}
     </main>
