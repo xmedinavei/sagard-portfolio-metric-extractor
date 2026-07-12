@@ -2,7 +2,7 @@
 
 > **Date:** 2026-07-12
 > **Status:** Build-ready — `5` phases
-> &nbsp;&nbsp;`☐` Phase 0 · `☐` Phase 1 · `☐` Phase 2 · `☐` Phase 3 · `☐` Phase 4 *(flip to `☑` built, `✅` audited as each lands)*
+> &nbsp;&nbsp;`✅` Phase 0 *(built + audited 2026-07-12)* · `☐` Phase 1 · `☐` Phase 2 · `☐` Phase 3 · `☐` Phase 4 *(flip to `☑` built, `✅` audited as each lands)*
 > **Scope:** additive, gated, no migration; non-opted-in users (the CLI + 95-test suite + golden guard) observably unchanged.
 > **Parent plan:** [`../01-plan.md`](../01-plan.md)  ·  **Spec:** [`../00-spec-and-scope.md`](../00-spec-and-scope.md)
 > **Memory key:** `spec_flow_portfolio-cockpit`  ·  **Ground-truthed:** 2026-07-12 (workflows `wf_8cb631c5-2a4` + `wf_638c55b6-dd7`, 5 read-only `code-investigator` agents)
@@ -70,11 +70,12 @@ is parallel; its click-wiring into P2's trend points is a soft feed, not a hard 
 
 | Path | Symbol / export | Phase |
 | --- | --- | --- |
-| `portfolio_metrics/webapp.py` | `create_app() -> Flask` (app factory) | 0 |
+| `portfolio_metrics/webapp.py` | `create_app(intake_dir=INTAKE_DIR) -> Flask` (app factory; optional param defaults, so `create_app()` still holds — tests point it at a temp dir) | 0 |
 | `portfolio_metrics/webapp.py` | `run_pipeline_in_memory(intake_dir: Path, *, recall_mode="enhanced") -> MetricsLongExport` | 0 |
 | `portfolio_metrics/webapp.py` | `list_intake_reports(intake_dir: Path) -> list[str]` | 0 |
 | `portfolio_metrics/webapp.py` | route handlers `api_reports`, `api_run`, `api_metrics`, `spa_index` | 0 |
 | `portfolio_metrics/webapp.py` | module-level cache `_LATEST_EXPORT: MetricsLongExport \| None` | 0 |
+| `portfolio_metrics/webapp.py` | `main()` — `python -m portfolio_metrics.webapp` entry point for `make serve` | 0 |
 
 ### New files — frontend (`web/`, Vite + React + TypeScript)
 

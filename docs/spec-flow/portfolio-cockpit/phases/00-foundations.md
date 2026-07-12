@@ -1,7 +1,7 @@
 # Phase 0: Foundations — API seam + build/serve toolchain (Build Spec)
 
 > **Date:** 2026-07-12
-> **Status:** Not started · target `~3` backend tests (webapp) *(flip to In progress / Built / Audited)*
+> **Status:** ✅ **Built + Audited** (2026-07-12) · **8** webapp tests — **95** without the `web` extra → **103** with · 3 adversarial auditors, **0 Critical/High**, all findings resolved inline
 > **Scope:** additive, gated, no migration; non-opted-in users (CLI + 95-test suite + golden guard) observably unchanged.
 > **Depends-on:** none (this is the **atomic foundations GATE**)  ·  **Blocks:** Phase 1, Phase 2, Phase 3, Phase 4
 > **Feeds:** the `/api` envelope (§A.1–A.3), the 1.1.0 export shape (§A.4), the naming registry, and `make serve`/`make build-web` — everything every later phase consumes.  ·  **Parallelizable-with:** none (must land first)
@@ -179,11 +179,11 @@ IssueRow = {
                                 recall_mode="enhanced")
   return export                                                        # MetricsLongExport (schema.py:222)
   ```
-  Assert `parser_output.parser_name == "local"` on every doc (`parser_local.py:14`) — the offline guard. Catch a per-PDF parse error, skip that PDF, keep going.
+  Assert `parser_output.parser_used == "local"` on every doc — the offline guard. *(Build correction: `ParserOutput` has no `parser_name` field; that is the class attribute on `LocalPdfParser` at `parser_local.py:14`. The output field is `parser_used` at `schema.py:65`.)* Catch a per-PDF parse **or normalize** error, skip that PDF, keep going.
 - `☐` **0.2d** Wire `POST /api/run` handler `api_run` → runs `run_pipeline_in_memory`, stores it in module cache `_LATEST_EXPORT`, returns **§A.2** (`export = _LATEST_EXPORT.model_dump(mode="json")` — `schema.py:222` model, `mode="json"` proven at `cli.py:342`). Wire `GET /api/metrics` handler `api_metrics` → returns **§A.3**. Add `spa_index` + static serving so `GET /` serves `web/dist/index.html` same-origin (no CORS).
 - `☐` **0.2e** Keep `webapp.py` ruff-clean (line-length 100, `pyproject.toml:36`) — it **is** inside `make lint` scope (`Makefile:66` lints `portfolio_metrics tests`). All imported symbols are import-side-effect-free (verified).
 - `☐` **0.2f** Add `tests/test_webapp.py` with **`pytest.importorskip("flask")` as the first executable line** (before any `webapp` import) → new file. This is the H6 guard: without the `web` extra, pytest **skips** these tests and collection stays flask-free, so the 95-test baseline is unchanged; with the extra installed, they run. ~3 tests: offline run returns `1.1.0` + 116 metrics; G1 add/remove-PDF moves `parsed`/`total`; corrupt-PDF → `parsed < total`, no 500. Force `LocalPdfParser` in-process (H2).
-- **Acceptance:** `POST /api/run` returns `schema_version == "1.1.0"`, `metric_count == 116` (current corpus), fully offline (no network); adding/removing a PDF in `intake-pdf/` changes `parsed`/`total` on the next run (**G1 proven**); a deliberately corrupt PDF yields `parsed < total` and a 200 (never a 500). **Without** the `web` extra, `make test` still collects + passes **95** (the 3 webapp tests skip); **with** `.[web]` installed, **98** green.
+- **Acceptance:** `POST /api/run` returns `schema_version == "1.1.0"`, `metric_count == 116` (current corpus), fully offline (no network — verified under a hard network block); adding/removing a PDF in `intake-pdf/` changes `parsed`/`total` on the next run (**G1 proven — 24 not 3**); a deliberately corrupt PDF **and** a normalize failure both yield `parsed < total` and a 200 (never a 500). **Without** the `web` extra, `make test` still collects + passes **95** (the webapp tests skip as one module); **with** `.[web]` installed, **103** green (8 webapp tests). *(Build note: count is 103, not the spec's original estimate of 98 — 8 tests shipped, not ~3.)*
 
 *Template to copy: the per-doc normalize call at `cli.py:319-320`; the export-build call shape at `cli.py:653-655`; the enhanced serialize path at `publish.py:293-298` (`_serialize_export`). Renderer walk reference: `render_summary_markdown` at `publish.py:333`.*
 
@@ -192,7 +192,7 @@ IssueRow = {
 - `☐` **0.3a** Create `web/` with `package.json`, `vite.config.ts` (set `base: "./"` so built assets resolve under Flask same-origin), `tsconfig.json`, `index.html`, `web/src/main.tsx` → new files (no `web/` exists today — greenfield, no stale scaffold to reconcile).
 - `☐` **0.3b** `web/src/App.tsx`: minimal `App` with a state machine `idle → loading → loaded → error`; on mount fetch `/api/metrics`, render "loaded N metrics from M reports" (or an idle prompt if `export` is null).
 - `☐` **0.3c** `web/src/api.ts` (`fetchReports`, `runPipeline`, `fetchMetrics`) + `web/src/types.ts` (`MetricRow`, `IssueRow`, `ExportMetadata`, `MetricsExport`, `ReportsResponse`, `RunResponse`) — the TS types mirror **§A.4 verbatim** (mark `currency` and the `unchecked`/`unrecognized_label` reserved cases with a `// RESERVED — do not bind` comment so no later phase wires them).
-- **Acceptance:** `cd web && npm ci && npm run build` produces `web/dist/` (`index.html` + hashed assets); opening it through Flask renders the "loaded N metrics" line from **live** data.
+- **Acceptance:** `cd web && npm ci && npm run build` produces `web/dist/` (`index.html` + hashed assets, relative `./assets/` URLs); opening it through Flask serves the shell + assets same-origin and renders the "loaded N metrics" line from **live** data **once a run has populated the cache** (a cold-start process shows the idle prompt — the Load trigger arrives in Phase 1 §1.2; §0.3b renders idle when `export` is null by design).
 
 *Template to copy: none in-repo (greenfield). Use a standard `npm create vite@latest -- --template react-ts` layout; keep it minimal.*
 
@@ -224,23 +224,49 @@ IssueRow = {
 
 ## § Definition of done
 
-1. [ ] All `0.M` task groups complete; every **Acceptance** met.
-2. [ ] `make test` → **95** green **without** the `web` extra (webapp tests skip via `importorskip`); **98** with `.[web]`. `make verify-golden` → legacy byte-identical + enhanced baseline; `make lint` clean (incl. `webapp.py`).
-3. [ ] ~3 webapp tests in `tests/test_webapp.py`, guarded by `pytest.importorskip("flask")` so collection stays flask-free (H6) — offline run returns 1.1.0 + 116 metrics; G1 add/remove-PDF changes the count; corrupt-PDF degrades to `parsed < total`, no 500.
-4. [ ] Every change classified in **§ Retrocompat notes**; nothing BREAKING.
-5. [ ] Symbol names match the README naming registry verbatim (`create_app`, `run_pipeline_in_memory`, `list_intake_reports`, `api_reports`/`api_run`/`api_metrics`, the three route paths, the TS type names).
-6. [ ] Every contract in **§A** frozen; consumers (Phases 1–4) reference them by anchor and re-describe nothing.
+1. [x] All `0.M` task groups complete; every **Acceptance** met.
+2. [x] `make test` → **95** green **without** the `web` extra (webapp tests skip via `importorskip`); **103** with `.[web]`. `make verify-golden` → legacy byte-identical + enhanced baseline (15 passed); `make lint` clean (incl. `webapp.py`).
+3. [x] **8** webapp tests in `tests/test_webapp.py`, guarded by `pytest.importorskip("flask")` so collection stays flask-free (H6) — offline run returns 1.1.0 + 116 metrics; G1 add/remove-PDF changes the count (24, not the 3-file cap); corrupt-PDF **and** normalize-failure degrade to `parsed < total`, no 500; the `/api/metrics` null branch is asserted via `monkeypatch`.
+4. [x] Every change classified in **§ Retrocompat notes**; nothing BREAKING (3 adversarial auditors, 0 Critical/High).
+5. [x] Symbol names match the README naming registry verbatim (`create_app`, `run_pipeline_in_memory`, `list_intake_reports`, `api_reports`/`api_run`/`api_metrics`, the three route paths, the TS type names).
+6. [x] Every contract in **§A** frozen; consumers (Phases 1–4) reference them by anchor and re-describe nothing.
 
 ---
 
-## § Live findings *(build agent fills during `/spec-flow:4-build-phase`)*
+## § Live findings
 
-*Drift between this spec and the live tree discovered while building — corrected `file:line`, moved symbols, surprises.*
+Drift between this spec and the live tree, discovered while building (all resolved):
 
-## § Implementation notes *(build agent fills)*
+- **HEAD moved:** the spec ground-truthed at `995965c`; the tree is now at `6ed12d5` on branch `claude-planning-case-study` (clean). Re-investigation re-confirmed every *code* anchor at the same lines — no logic drift, only two build-file append points shifted.
+- **`python` is not on PATH** — only `.venv/bin/python` (Python 3.14.4). The spec's `python -c …` acceptance commands must run through the venv interpreter; `make` recipes already use `$(PYTHON)`.
+- **Makefile append point** is **after line 70 (EOF)**, not the spec's ":67" — `lint` is `:65-66` and a `clean:` target occupies `:68-70`. Recipes appended after `clean`.
+- **`pyproject.toml` insert point** is after the `dev` block's closing `]` at `:26` (table header `:22`, `dev` `:23-26`).
+- **Offline-guard field:** `ParserOutput` has no `parser_name`; the guard uses `parser_output.parser_used == "local"` (`schema.py:65`). `parser_name` is the class attribute on `LocalPdfParser` (`parser_local.py:14`).
+- **`.gitignore` `web/dist` nuance:** `git check-ignore web/dist` (no slash) reports "not ignored", but the real directory `web/dist/` and its files ARE ignored by the depth-agnostic `dist/` rule (`.gitignore:14`), confirmed via `git check-ignore -v web/dist/`. No second dist rule added.
+- **Live corpus reconfirmed offline:** 24 PDFs → `document_count=24`, `metric_count=116`, 10 companies, `schema_version=1.1.0`, `recall_mode=enhanced` — reproduced with the local parser and again under a hard network block. Test assertions hard-code these.
 
-*What was actually done, deviations from the plan, decisions made mid-build.*
+## § Implementation notes
 
-## § Unblocked phases *(build agent fills)*
+Built on the **main thread** (foundational contract — hands-on control of the H1/H2/H3/H6 traps):
 
-*Which phases this one just unblocked (their `Depends-on` now satisfied), and any `00-foundations-fixes.md` sibling opened for audit follow-ups.*
+- **0.1** `web = ["flask>=3.1,<4.0"]` added as a sibling of `dev`; `pip install -e ".[web]"` → flask 3.1.3. Verified `import portfolio_metrics` does **not** load flask.
+- **0.2** `webapp.py`: `create_app` (app factory; `static_url_path=""` serves `web/dist` via Flask's built-in `static` endpoint — no invented asset handler), `run_pipeline_in_memory` (NEW in-memory chain `LocalPdfParser().parse → normalize_parser_output → build_metrics_export`, `recall_mode="enhanced"` passed explicitly to **both** calls — H1), `list_intake_reports`, handlers `api_reports`/`api_run`/`api_metrics`/`spa_index`, `_LATEST_EXPORT` cache, plus `main()` for `python -m portfolio_metrics.webapp`. Export via `model_dump(mode="json")` with **no** `exclude` → the full 23-field 1.1.0 superset for free.
+- **0.3** Hand-written Vite/React/TS shell (not `npm create vite`) for exact registry conformance + a dependency-light bundle. `base:"./"` → relative asset URLs. `types.ts` mirrors §A.4 verbatim with the 3 RESERVED cases commented do-not-bind. 69 packages, bundle ≈196 kB / 61 kB gzip. `package-lock.json` committed so Phase-4 `npm ci` is reproducible.
+- **0.4** Append-only `Makefile` (`serve`/`build-web` + `.PHONY`) and `.gitignore` (`node_modules/`).
+
+**Audit fixes applied inline** (3 auditors, 0 Critical/High, all resolved — no `-fixes.md` sibling needed):
+1. *(MED, test adequacy)* the `/api/metrics` null branch was a false green (the module-level cache was populated by an earlier test). Split into a `monkeypatch`ed null-branch test (`_LATEST_EXPORT → None`, assert `export is None`) + a post-run cached-export test.
+2. *(LOW, robustness)* widened the per-PDF `try/except` to also skip a **normalize** failure — not just a parse failure — keeping the H2 offline-guard **outside** the swallow so a non-local parser still surfaces loudly. Added `test_normalize_failure_degrades_without_500`.
+3. *(LOW, registry)* inlined the `DetectionMethod` union at `detection_method` (removed the extra alias) → strict §A.4 verbatim; bundle hash unchanged (type-only).
+4. *(MED, usability)* `make serve` now self-bootstraps the `web` extra (`$(PIP) install -e ".[web]" --quiet`) so a fresh checkout doesn't `ModuleNotFoundError: flask`. Opt-in target only — CLI/tests untouched.
+
+**Doc reconciliations:** test counts 95/103 (8 tests, not ~3/98); 0.2c `parser_name`→`parser_used`; 0.3 cold-start renders idle (the Load trigger is Phase 1).
+
+## § Unblocked phases
+
+Phase 0 (the atomic gate) has landed — every later phase's `Depends-on: Phase 0` is now satisfied:
+
+- **Phase 1** (load flow + RAG grid) — unblocked; the natural next build (it wires the shared "loaded export" state that P2/P3/P4 all read).
+- **Phases 2, 3, 4** — unblocked at the contract level (they bind §A.4); each also `Depends-on` Phase 1's loaded-export state, so build them after Phase 1 (parallel-track among themselves).
+
+Frozen and available to all consumers: the `/api` envelope (§A.1–A.3), the 1.1.0 export shape (§A.4), the naming registry, and `make serve` / `make build-web`.

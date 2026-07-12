@@ -22,3 +22,6 @@ outputs/*
 # OS/editor noise
 .DS_Store
 .vscode/
+
+# Node / frontend (web/dist is already covered by the depth-agnostic dist/ rule above)
+node_modules/
