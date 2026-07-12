@@ -103,11 +103,32 @@ def detect_metric_candidates(
     for page in parser_output.pages:
         raw_lines = page.text.splitlines()
         table_context: TableContext | None = None
+        # Layout/whitespace tables (LocalPdfParser, extraction_mode="layout") carry no
+        # markdown separator row, so `table_context` above stays None for them. Track the
+        # whitespace period-header row separately so a comparative "Q2 2025 | Q1 2025" table
+        # reads the current-quarter column instead of the trailing prior-quarter one.
+        # SCOPE (accepted, documented): once set, this persists for the rest of the page and
+        # is only replaced by a later period-header. A hypothetical non-period table that
+        # follows a period table on the same page would inherit the stale column index — but
+        # distinguishing a new-table header from a data row with an unparseable value (an
+        # "N/A" cell) is ambiguous, and the live corpus has no such layout (0 nulls, every
+        # changed value verified), so we do not guess. Fallback stays columns[-1] when no
+        # header is tracked. See 03-comparison-safety-fixes.md (accepted latent hazard).
+        whitespace_context: TableContext | None = None
         for index, raw_line in enumerate(raw_lines):
             line_for_table = _preserve_line(raw_line)
             markdown_cells = _parse_markdown_cells(line_for_table)
             if markdown_cells is None:
                 table_context = None
+                whitespace_columns = _split_whitespace_columns(line_for_table.strip())
+                if (
+                    len(whitespace_columns) >= 2
+                    and _select_table_value_column(whitespace_columns, period=period)
+                    is not None
+                ):
+                    whitespace_context = _build_table_context(
+                        whitespace_columns, period=period)
+                    continue
             elif _is_markdown_separator_row(markdown_cells):
                 continue
             else:
@@ -140,7 +161,9 @@ def detect_metric_candidates(
                 continue
 
             split_row = _split_label_and_value(
-                line_for_table, table_context=table_context)
+                line_for_table,
+                table_context=table_context if markdown_cells is not None else whitespace_context,
+            )
             if split_row is not None:
                 raw_label, raw_value = split_row
                 alias = find_alias_for_label(raw_label, enhanced=enhanced)
@@ -366,6 +389,11 @@ def _select_table_value_column(header_cells: list[str], *, period: str | None) -
     return None
 
 
+def _split_whitespace_columns(stripped: str) -> list[str]:
+    return [_clean_line(column) for column in re.split(
+        r"\s{2,}", stripped) if _clean_line(column)]
+
+
 def _split_label_and_value(
     raw_line: str,
     *,
@@ -396,13 +424,21 @@ def _split_label_and_value(
                 return label, value
         return None
 
-    columns = [_clean_line(column) for column in re.split(
-        r"\s{2,}", stripped) if _clean_line(column)]
+    columns = _split_whitespace_columns(stripped)
     if len(columns) < 2:
         return None
 
     label = columns[0]
-    value = columns[-1]
+    # Period-aware pick for layout tables: honour the header-derived target column when the
+    # loop supplied one; otherwise keep the historical last-column default (single-column
+    # tables and tables with no period header are unchanged).
+    if table_context is not None and table_context.value_column_index is not None:
+        target_index = table_context.value_column_index
+        if target_index >= len(columns):
+            return None
+        value = columns[target_index]
+    else:
+        value = columns[-1]
     if not _is_terminal_value(value):
         return None
     return label, value
