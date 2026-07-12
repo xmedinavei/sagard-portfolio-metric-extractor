@@ -1,8 +1,10 @@
 # Sagard Portfolio Metric Extractor
 
-A command-line (CLI) pipeline that extracts a canonical set of financial metrics from quarterly
-portfolio-company PDFs, normalizes them across inconsistent reporting formats, and publishes auditable
-artifacts.
+A local, offline **monitoring cockpit** for portfolio-company metrics: load a folder of quarterly PDFs with
+one click and get a sector-grouped grid, over-time trends, unsafe comparisons visibly flagged, and
+**click-any-number provenance**. Under the hood is a deterministic pipeline that extracts a canonical metric
+set from messy PDFs, normalizes inconsistent reporting formats, and publishes auditable, source-traceable
+artifacts — also usable as a standalone CLI.
 
 **The core idea:** *the same label does not always mean the same metric.* Two companies can both report
 "Gross Margin" and mean different things — a SaaS software margin vs. a lender's interest spread. So the
@@ -16,15 +18,48 @@ metric. Comparability is the product, not extraction.
 
 - **Python 3.12+** — check with `python3 --version`
 - bash or zsh
-- No Node.js, Docker, or database required
+- No Node.js, Docker, or database required to run the demo *(the committed `web/dist` bundle is served as-is; Node.js is only needed if you rebuild it via `make build-web`)*
 
 ---
 
-## Quick start
+## Quick start — the live demo
 
-### Path A — No API keys needed (start here)
+The primary experience is a local, offline **monitoring cockpit** (a Flask API + React single-page app).
 
-Uses checked-in parsed fixtures. Runs in a few seconds.
+```bash
+cd personal/sagard-portfolio-metric-extractor
+make setup     # create the Python venv (.venv), install requirements, seed .env
+make serve     # add the web extra and launch the cockpit
+```
+
+> **First-time setup.** `make setup` creates an isolated **Python virtual environment** in `.venv` and
+> installs the project's requirements; `make serve` then adds the `web` extra (Flask) and starts the app.
+> Prefer to do it by hand? `python3 -m venv .venv && source .venv/bin/activate && pip install -e ".[web]"`,
+> then `python -m portfolio_metrics.webapp`. The first setup needs the network once; after that the demo is
+> **fully offline**.
+
+Open **http://127.0.0.1:5000** and click **Load reports**. It parses the current `intake-pdf/*.pdf` (~1 s)
+and renders the full cockpit: a sector-grouped RAG grid, an over-time trend (NovaCloud ARR across 5
+quarters), refused/unsafe comparisons flagged, a cross-source reconciliation check, sector-aware
+exceptions, and **click-any-number provenance** (source file, the source's own label, confidence, and the
+excerpt).
+
+Fully offline — it forces the local `pypdf` parser, so **no API key is needed and nothing calls the
+network**. `make serve` serves the **committed** `web/dist` bundle (no build step); run `make build-web`
+only if you change frontend source under `web/`. See [Design decisions](#design-decisions) for why the demo
+uses deterministic local parsing.
+
+---
+
+## Running from the command line
+
+The backend is also a standalone CLI pipeline — the cockpit is a thin layer over it. Both options below
+assume you have run `make setup` first (which creates the Python venv and installs requirements). Two ways
+to run without the web app:
+
+### Option A — from checked-in fixtures (no API key)
+
+Uses parsed fixtures already in the repo. Runs in a few seconds, no network.
 
 ```bash
 cd personal/sagard-portfolio-metric-extractor
@@ -32,7 +67,7 @@ make setup
 make demo
 ```
 
-### Path B — Full pipeline from raw PDFs (needs a Firecrawl key)
+### Option B — full pipeline from raw PDFs (needs a Firecrawl key)
 
 Parses all 24 PDFs from scratch, then publishes.
 
@@ -48,7 +83,13 @@ Parses all 24 PDFs from scratch, then publishes.
 
 > `FORCE_COLOR=1 make full-demo` gives nicer terminal output.
 
-Both paths run in **enhanced** mode by default — see [Recall mode](#recall-mode-legacy-vs-enhanced) below.
+> **Why the key is required here:** `make full-demo` runs `extract --no-fallback`, so a missing key **errors
+> out** instead of silently falling back to the local parser. The key is not inherently mandatory — the bare
+> `make extract` target keeps the fallback on and uses the local `pypdf` parser when no key is set; only
+> `--no-fallback` enforces Firecrawl. (The cockpit demo above always uses the local parser regardless.)
+
+Both CLI options run in **enhanced** mode by default — see [Recall mode](#recall-mode-legacy-vs-enhanced)
+below.
 
 ---
 
@@ -178,6 +219,36 @@ intake-pdf/*.pdf
 
 ---
 
+## Design decisions
+
+### Deterministic parsing for the live demo
+
+For the frontend cockpit demo (`make serve` — the Quick start above) we **deliberately choose the deterministic
+path**: it forces the local `pypdf` parser (`LocalPdfParser`) for every PDF rather than the configurable
+cloud parser. This is a design choice, not a limitation — it follows the project's governing principle of
+automating what is **"deterministic, traceable, and internal"** (`case-study/00-foundations-and-decisions.md`,
+§10–11) and keeps the demo on the surface that _"leads with the moat (provenance), not BI chrome."_
+
+- **Reproducibility.** The same PDF yields the **same numbers on every run** — no cloud-model drift between
+  runs. This is the foundation of the "trust the numbers" thesis: a metric is only as trustworthy as it is
+  _reproducible_, and every number carries its provenance (source file, original label, snippet, confidence)
+  so it can be re-derived and audited.
+- **Offline reliability.** The demo makes **no network call**, so nothing can fail live — no API outage,
+  timeout, or rate limit can interrupt a screen-share. Together with the committed `web/dist` bundle, the whole
+  cockpit runs with the wifi off.
+- **Data privacy.** Sensitive portfolio financials **never leave the machine** — no document or figure is sent
+  to a third-party service. For confidential holdings the data path stays fully internal.
+- **Cost & independence.** No per-PDF API cost, no rate limits, and no dependency on an external vendor's
+  uptime — _"right-sized AI: plain rules for the bulk … cheap, predictable, auditable."_
+
+The choice is enforced **in code, not by configuration**: `portfolio_metrics/webapp.py` builds
+`LocalPdfParser()` directly and asserts `parser_used == "local"` for every document (invariant _H2_), so the
+demo is offline **by construction** — even on a machine that has a cloud API key configured. A configurable
+cloud parser (`PDF_PARSER`, used by the CLI Firecrawl path — Option B above) remains available for non-demo use; the live demo
+deliberately does not use it, and both paths feed the identical downstream normalization + provenance pipeline.
+
+---
+
 ## Metrics extracted
 
 Eight canonical metrics form the universal core; the sector classifier decides which of them actually apply
@@ -216,6 +287,8 @@ Sectors recognized by the classifier: `saas`, `credit`, `marketplace`, `payments
 | `make preflight`    | Print local readiness report                                       |
 | `make extract`      | Parse PDFs from `intake-pdf/` into `outputs/parsed/`               |
 | `make clean`        | Delete generated outputs (keeps `.gitkeep`)                        |
+| `make serve`        | Serve the offline **cockpit web app** at http://127.0.0.1:5000 (installs the `web` extra) |
+| `make build-web`    | Rebuild the frontend bundle into `web/dist` (only if you change `web/` source)     |
 
 > Add `--recall-mode legacy` (or `RECALL_MODE=legacy`) to any `publish` / `normalize` invocation to run the
 > original 1.0.0 behavior. Without it, the default is `enhanced`.
