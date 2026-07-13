@@ -1,0 +1,24 @@
+{
+  "file_name": "Portfolio_Snapshot_Q2_2025.pdf",
+  "source_path": "/home/xavierand_/Desktop/SWE/personal/sagard-portfolio-metric-extractor/intake-pdf/Portfolio_Snapshot_Q2_2025.pdf",
+  "requested_parser": "firecrawl",
+  "parser_used": "firecrawl",
+  "raw_format": "markdown",
+  "page_count": 2,
+  "pages": [
+    {
+      "page_number": null,
+      "text": "Sagard Portfolio – Q2 2025 Snapshot\n\nInternal Monitoring Document \\| Selected Companies \\| Not for Distribution\n\nThis document summarises key operating and financial metrics for four portfolio companies as of and for the quarter ended June\n30, 2025. Metrics are as reported by management and have not been independently verified. Terminology reflects each company's\nown reporting conventions.\n\nNovaCloud Analytics Inc. \\| B2B SaaS – Observability\n\n| Metric | Q2 2025 |\n| --- | --- |\n| Recognized Revenue | $8.4M |\n| Annual Recurring Revenue | $34.2M |\n| Gross Margin | 78% |\n| Net Dollar Retention | 123% |\n| Logo Churn (LTM) | 5.8% |\n| Cash | $19.6M |\n| FTE | 142 |\n\nMediSight Data Platform Inc. \\| Healthcare SaaS\n\nMediSight reported Recognized Revenue of 6.8M for the quarter ended June 30, 2025, with Gross Margin of 77% and Total\nHeadcount of 121 at period end. The company does not separately disclose ARR in this summary format; refer to the standalone\nquarterly report for contracted ARR detail.\n\n| Metric | Q2 2025 |\n| --- | --- |\n| Contracted ARR | $22.4M |\n| Quarterly Revenue | $5.5M |\n| Gross Margin | 76% |\n| Net Revenue Retention(LTM) | 119% |\n| Gross Revenue Retention(LTM) | 91% |\n| Enterprise Logos(>$100kARR) | 48 |\n\nTalentVault Inc. \\| Talent Intelligence Platform\n\n- Contracted ARR as of June 30, 2025 was 27.9M per the standalone Q2 2025 report.\n\n* * *\n\nCarbonTrack \\| ESG & Carbon Accounting\n\nCarbonTrack (formally CarbonTrack Analytics Corp.) continued to add net new paying entities in Q2 2025, with 78 additions in the\nquarter versus 62 in the prior period. Revenue retention remains structurally strong given the high switching cost once multi-year\nemissions histories are established on the platform.\n\n| Metric | Q2 2025 |\n| --- | --- |\n| ARR | $16.9M |\n| Revenue | $4.1M |\n| Gross Margin | 73% |\n| Net Revenue Retention | 121% |\n| Paying Entities | 1,042 |\n| Headcount | 78 |\n| Net Burn(monthly) | ($0.55M) |\n\n(1) Metrics in this document are sourced from individual company management reports and reflect each company's own definitions and reporting\nconventions. Terminology has not been standardised.\n\n(2) MediSight Contracted ARR of 27.9M is sourced from the standalone Q2 2025 quarterly report and is not separately presented in the summary\ntable above.\n\n(3) TalentVault headcount is not included in this summary; refer to standalone reporting.\n\n(4) 'CarbonTrack' refers to CarbonTrack Analytics Corp. throughout this document.\n\n(5) NovaCloud revenue of $8.4M reflects Recognized Revenue; not to be confused with MediSight Recognized Revenue of 6.8M reported in the\nsame period.\n\n(6) This document is for internal monitoring purposes only and does not represent audited financials.",
+      "char_count": 2714
+    }
+  ],
+  "provenance": {
+    "file_level": true,
+    "page_level": false,
+    "snippet_level": false,
+    "description": "File-level provenance is guaranteed in v1; Firecrawl page count metadata is retained when available, but the extracted content is document-level markdown."
+  },
+  "notes": [
+    "Firecrawl PDF mode: auto."
+  ]
+}

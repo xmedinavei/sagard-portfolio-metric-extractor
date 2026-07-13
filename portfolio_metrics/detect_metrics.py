@@ -4,9 +4,16 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from .metric_aliases import NARRATIVE_ALIASES, find_alias_for_label, normalize_label_text
+from .metric_aliases import (
+    NARRATIVE_ALIASES,
+    MetricAlias,
+    find_alias_for_label,
+    find_label_equivalences,
+    normalize_label_text,
+    strip_unit_suffix,
+)
 from .parse_values import find_value_token, parse_value_text
-from .schema import DocumentKind, MetricCandidate, ParserOutput
+from .schema import DocumentKind, MetricCandidate, ParserOutput, SectorKind
 
 _QUARTER_RE = re.compile(r"\b(Q[1-4]\s+20\d{2})\b", re.IGNORECASE)
 _DATE_RE = re.compile(
@@ -74,8 +81,16 @@ class TableContext:
     value_column_index: int | None = None
 
 
-def detect_metric_candidates(parser_output: ParserOutput) -> DetectionResult:
+def detect_metric_candidates(
+    parser_output: ParserOutput,
+    *,
+    recall_mode: str = "legacy",
+) -> DetectionResult:
     """Detect candidate metric/value pairs from Phase 2 parser output."""
+
+    enhanced = recall_mode == "enhanced"
+    footnote_equivalences = _build_footnote_equivalence_map(
+        parser_output, enhanced=enhanced)
 
     document_type = classify_document(parser_output)
     period = infer_period(parser_output.combined_text())
@@ -88,11 +103,32 @@ def detect_metric_candidates(parser_output: ParserOutput) -> DetectionResult:
     for page in parser_output.pages:
         raw_lines = page.text.splitlines()
         table_context: TableContext | None = None
+        # Layout/whitespace tables (LocalPdfParser, extraction_mode="layout") carry no
+        # markdown separator row, so `table_context` above stays None for them. Track the
+        # whitespace period-header row separately so a comparative "Q2 2025 | Q1 2025" table
+        # reads the current-quarter column instead of the trailing prior-quarter one.
+        # SCOPE (accepted, documented): once set, this persists for the rest of the page and
+        # is only replaced by a later period-header. A hypothetical non-period table that
+        # follows a period table on the same page would inherit the stale column index — but
+        # distinguishing a new-table header from a data row with an unparseable value (an
+        # "N/A" cell) is ambiguous, and the live corpus has no such layout (0 nulls, every
+        # changed value verified), so we do not guess. Fallback stays columns[-1] when no
+        # header is tracked. See 03-comparison-safety-fixes.md (accepted latent hazard).
+        whitespace_context: TableContext | None = None
         for index, raw_line in enumerate(raw_lines):
             line_for_table = _preserve_line(raw_line)
             markdown_cells = _parse_markdown_cells(line_for_table)
             if markdown_cells is None:
                 table_context = None
+                whitespace_columns = _split_whitespace_columns(line_for_table.strip())
+                if (
+                    len(whitespace_columns) >= 2
+                    and _select_table_value_column(whitespace_columns, period=period)
+                    is not None
+                ):
+                    whitespace_context = _build_table_context(
+                        whitespace_columns, period=period)
+                    continue
             elif _is_markdown_separator_row(markdown_cells):
                 continue
             else:
@@ -125,10 +161,15 @@ def detect_metric_candidates(parser_output: ParserOutput) -> DetectionResult:
                 continue
 
             split_row = _split_label_and_value(
-                line_for_table, table_context=table_context)
+                line_for_table,
+                table_context=table_context if markdown_cells is not None else whitespace_context,
+            )
             if split_row is not None:
                 raw_label, raw_value = split_row
-                alias = find_alias_for_label(raw_label)
+                alias = find_alias_for_label(raw_label, enhanced=enhanced)
+                if alias is None and enhanced:
+                    alias = _lookup_footnote_equivalence(
+                        footnote_equivalences, raw_label)
                 if alias is not None:
                     candidate = MetricCandidate(
                         source_file=parser_output.file_name,
@@ -216,6 +257,29 @@ def classify_document(parser_output: ParserOutput) -> DocumentKind:
     if "portfolio_snapshot" in file_name or _PORTFOLIO_SUMMARY_RE.search(combined):
         return "portfolio_summary"
     return "company_report"
+
+
+# Recall-fix (Phase 2): sector vocabulary anchors, ordered most-specific-first. A sector
+# is chosen by the first family whose distinctive vocabulary appears in the document; a
+# document with no distinctive anchor is SaaS (the portfolio default). Sector is read from
+# whole-document text upstream because it cannot be fingerprinted from captured metrics
+# (a lender's credit anchors are not aliases, so its captured set looks like SaaS).
+_SECTOR_ANCHORS: tuple[tuple[SectorKind, tuple[str, ...]], ...] = (
+    ("credit", ("loan book", "net interest margin", "charge-off", "charge off",
+                "covenant headroom", "provision coverage")),
+    ("payments", ("tpv", "total payment volume", "client float")),
+    ("marketplace", ("gmv", "gross merchandise", "take rate", "take-rate")),
+)
+
+
+def classify_sector(parser_output: ParserOutput) -> SectorKind:
+    """Classify a document's business sector from unique vocabulary anchors (default SaaS)."""
+
+    combined = parser_output.combined_text().lower()
+    for sector, anchors in _SECTOR_ANCHORS:
+        if any(anchor in combined for anchor in anchors):
+            return sector
+    return "saas"
 
 
 def infer_period(text: str) -> str | None:
@@ -325,6 +389,11 @@ def _select_table_value_column(header_cells: list[str], *, period: str | None) -
     return None
 
 
+def _split_whitespace_columns(stripped: str) -> list[str]:
+    return [_clean_line(column) for column in re.split(
+        r"\s{2,}", stripped) if _clean_line(column)]
+
+
 def _split_label_and_value(
     raw_line: str,
     *,
@@ -355,13 +424,21 @@ def _split_label_and_value(
                 return label, value
         return None
 
-    columns = [_clean_line(column) for column in re.split(
-        r"\s{2,}", stripped) if _clean_line(column)]
+    columns = _split_whitespace_columns(stripped)
     if len(columns) < 2:
         return None
 
     label = columns[0]
-    value = columns[-1]
+    # Period-aware pick for layout tables: honour the header-derived target column when the
+    # loop supplied one; otherwise keep the historical last-column default (single-column
+    # tables and tables with no period header are unchanged).
+    if table_context is not None and table_context.value_column_index is not None:
+        target_index = table_context.value_column_index
+        if target_index >= len(columns):
+            return None
+        value = columns[target_index]
+    else:
+        value = columns[-1]
     if not _is_terminal_value(value):
         return None
     return label, value
@@ -418,3 +495,49 @@ def _overlaps(span: tuple[int, int], occupied_spans: list[tuple[int, int]]) -> b
 
 def _is_numbered_note_line(line: str) -> bool:
     return bool(_NUMBERED_NOTE_RE.match(line))
+
+
+def _build_footnote_equivalence_map(
+    parser_output: ParserOutput, *, enhanced: bool = False
+) -> dict[str, MetricAlias]:
+    """Map a drifted label to a known alias when a footnote declares them equivalent.
+
+    Whole-document scan (equivalence footnotes are stripped before the per-line detector
+    runs, and may reference a label on another page). Only pairs where exactly one side
+    resolves to a known alias are registered, so undeclared or mutually-unknown
+    equivalences (e.g. LendBridge's credit-metric note) are safely ignored. Enhanced only.
+    """
+
+    mapping: dict[str, MetricAlias] = {}
+    if not enhanced:
+        return mapping
+
+    for left, right in find_label_equivalences(parser_output.combined_text()):
+        left_alias = find_alias_for_label(left, enhanced=True)
+        right_alias = find_alias_for_label(right, enhanced=True)
+        if right_alias is not None and left_alias is None:
+            _register_equivalence(mapping, left, right_alias)
+        elif left_alias is not None and right_alias is None:
+            _register_equivalence(mapping, right, left_alias)
+    return mapping
+
+
+def _register_equivalence(
+    mapping: dict[str, MetricAlias], drifted_label: str, alias: MetricAlias
+) -> None:
+    key = normalize_label_text(drifted_label)
+    if not key:
+        return
+    mapping.setdefault(key, alias)
+    stripped = strip_unit_suffix(key)
+    if stripped and stripped != key:
+        mapping.setdefault(stripped, alias)
+
+
+def _lookup_footnote_equivalence(
+    mapping: dict[str, MetricAlias], raw_label: str
+) -> MetricAlias | None:
+    if not mapping or not raw_label:
+        return None
+    normalized = normalize_label_text(raw_label)
+    return mapping.get(normalized) or mapping.get(strip_unit_suffix(normalized))

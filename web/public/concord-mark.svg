@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="232" height="72" viewBox="0 0 232 72" role="img" aria-label="Concord">
+  <!-- Self-contained tile so the mark reads on both light and dark README themes. -->
+  <rect x="0.5" y="0.5" width="231" height="71" rx="14" fill="#ffffff" stroke="#e2e8f0"/>
+  <!-- Concord's mark: two overlapping rings = convergence / agreement / comparability. Original artwork. -->
+  <g transform="translate(22,19)">
+    <circle cx="13" cy="17" r="8.5" fill="none" stroke="#2b6cb0" stroke-width="2.4"/>
+    <circle cx="21" cy="17" r="8.5" fill="none" stroke="#16233d" stroke-width="2.4"/>
+  </g>
+  <text x="70" y="45" font-family="Georgia, 'Times New Roman', serif" font-size="30" font-weight="700" fill="#16233d">Concord</text>
+</svg>

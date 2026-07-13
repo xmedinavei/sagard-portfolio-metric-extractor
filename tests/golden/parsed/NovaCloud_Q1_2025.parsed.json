@@ -1,0 +1,24 @@
+{
+  "file_name": "NovaCloud_Q1_2025.pdf",
+  "source_path": "/home/xavierand_/Desktop/SWE/personal/sagard-portfolio-metric-extractor/intake-pdf/NovaCloud_Q1_2025.pdf",
+  "requested_parser": "firecrawl",
+  "parser_used": "firecrawl",
+  "raw_format": "markdown",
+  "page_count": 1,
+  "pages": [
+    {
+      "page_number": null,
+      "text": "NovaCloud Analytics Inc.\n\nPeriod: Q1 2025\n\nNovaCloud Analytics Inc. provides cloud-native analytics and observability tools to mid-market and enterprise digital businesses\nacross North America and Western Europe.\n\nKey Financial & Operating Metrics\n\n| Metric | Q1 2025 |\n| --- | --- |\n| Recognized Revenue(USD) | $7.9M |\n| End-of-Period ARR | $31.6M |\n| Gross Margin | 77% |\n| NRR(LTM) | 121% |\n| Logo Churn(LTM) | 6.1% |\n| ARR per Full-Time Employee | $234k |\n| Cash Balance | $21.3M |\n| Monthly Net Burn | ($0.82M) |\n| Total Headcount | 135 |\n\nRecognized Revenue of $7.9M in Q1 2025 reflects continued momentum in both new logo additions (13 in the quarter) and\nexpansion. Expansion revenue of $1.7M represented 22% of total recognized revenue. ARR per full-time employee reached $234k\nat period end, a metric management has introduced as a capital efficiency benchmark. Infrastructure costs declined to\napproximately 24% of revenue.\n\nPipeline Summary\n\n| Pipeline Stage | Count | Total ACV | Commit ACV |\n| --- | --- | --- | --- |\n| Qualified | 33 | $9.1M | $3.8M |\n| Proposal / Negotiation | 17 | $6.8M | $3.4M |\n| Verbal Commit | 5 | $2.6M | $1.9M |\n\n(1) NRR (Net Revenue Retention) is equivalent to Net Dollar Retention in prior reporting periods.\n\n• Western Europe pipeline expanding but local sales capacity remains thin.\n\n(2) ARR per Full-Time Employee is a new efficiency metric introduced in Q1 2025 board reporting.\n\n(3) Commit ACV in pipeline table reflects management's probability-weighted view; not a contractual commitment.\n\n(4) Logo Churn is presented on a last-twelve-months (LTM) basis.",
+      "char_count": 1604
+    }
+  ],
+  "provenance": {
+    "file_level": true,
+    "page_level": false,
+    "snippet_level": false,
+    "description": "File-level provenance is guaranteed in v1; Firecrawl page count metadata is retained when available, but the extracted content is document-level markdown."
+  },
+  "notes": [
+    "Firecrawl PDF mode: auto."
+  ]
+}

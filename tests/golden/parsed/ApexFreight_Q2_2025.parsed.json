@@ -1,0 +1,24 @@
+{
+  "file_name": "ApexFreight_Q2_2025.pdf",
+  "source_path": "/home/xavierand_/Desktop/SWE/personal/sagard-portfolio-metric-extractor/intake-pdf/ApexFreight_Q2_2025.pdf",
+  "requested_parser": "firecrawl",
+  "parser_used": "firecrawl",
+  "raw_format": "markdown",
+  "page_count": 2,
+  "pages": [
+    {
+      "page_number": null,
+      "text": "Apex Freight Solutions Inc.\nOperating Review \\| Digital Freight & Last-Mile Marketplace\n\nPeriod: Q2 2025\n\nApex Freight Solutions Inc. (\"Apex Freight\") operates a digital freight and last-mile logistics marketplace connecting shippers with a\ndistributed network of carriers. Transaction-based revenue is supplemented by SaaS tool fees charged to enterprise shipper\naccounts. This report is the first issued under the Apex Freight Solutions Inc. corporate name, following the completion of our\nrebrand from FleetLink Logistics Network, effective 1 April 2025.\n\nNetwork & Volume Metrics\n\n| Metric | Q2 2025 |\n| --- | --- |\n| Completed Shipments | 1.28M |\n| Active Shippers | 3460 |\n| Active Carriers | 7900 |\n| On-Time Delivery Rate | 96.1% |\n| Average Take Rate | 11.2% |\n\nFinancial Summary\n\n| Metric | Q2 2025 |\n| --- | --- |\n| Recognized Revenue (transaction) | 8.6M |\n| SaaS Tool Fee Revenue | 0.7M |\n| Total Recognized Revenue | 9.3M |\n| Gross Margin | 54% |\n| Marketing Spend as % of Revenue | 16% |\n| Support Tickets / 1,000 Shipments | 14.3 |\n| Total Headcount | 204 |\n\nNon-Recurring Items\n\n• One-time warehouse exit cost: 0.6M (Q2 2025 only)\n\nTotal Recognized Revenue reached 9.3M in Q2 2025, supported by a 9% increase in completed shipments and the first material\nquarter of SaaS tool fee revenue (0.7M) from enterprise shipper accounts. Contribution margin per shipment improved to $2.30 as\nApex Freight reduced promotional incentives and improved carrier-side pricing discipline. Gross Margin expanded to 54%.\n\n• Rebrand-related legal and design costs of 0.2M are included in Q2 2025 operating expenses and are not separately excluded\nfrom Gross Margin.\n\n* * *\n\n_(2) Recognized Revenue (transaction) and SaaS Tool Fee Revenue are disclosed separately for the first time in Q2 2025._ _(3) Contribution Margin per Shipment of $2.30 is discussed in commentary; not separately tabled._ _(4) On-Time Delivery Rate is carrier-reported with a 48-hour grace window per service agreement._",
+      "char_count": 1990
+    }
+  ],
+  "provenance": {
+    "file_level": true,
+    "page_level": false,
+    "snippet_level": false,
+    "description": "File-level provenance is guaranteed in v1; Firecrawl page count metadata is retained when available, but the extracted content is document-level markdown."
+  },
+  "notes": [
+    "Firecrawl PDF mode: auto."
+  ]
+}

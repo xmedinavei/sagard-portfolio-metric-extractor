@@ -1,0 +1,24 @@
+{
+  "file_name": "PeopleFlow_Q1_2025.pdf",
+  "source_path": "/home/xavierand_/Desktop/SWE/personal/sagard-portfolio-metric-extractor/intake-pdf/PeopleFlow_Q1_2025.pdf",
+  "requested_parser": "firecrawl",
+  "parser_used": "firecrawl",
+  "raw_format": "markdown",
+  "page_count": 1,
+  "pages": [
+    {
+      "page_number": null,
+      "text": "PeopleFlow HR Systems Ltd.\n\nQuarter Ended: Q1 2025\n\nPeopleFlow provides human capital management tools to professional services firms in the UK and Ireland, spanning core HR,\nperformance management, and analytics.\n\nKey Metrics – Q1 2025\n\n| Metric | Q1 2025 |\n| --- | --- |\n| Quarterly Revenue | 4.7M |\n| Subscription ARR (end of period) | 19.8M |\n| Gross Margin | 74% |\n| Net Pound Retention-NPR(LTM) | 117% |\n| Annual Logo Churn | 4.3% |\n| Active Subscriptions | 395 |\n| Avg.Seats per Customer | 144 |\n| Total Headcount | 92 |\n\nCommentary\n\nIn the quarter ended Q1 2025, PeopleFlow delivered Quarterly Revenue of 4.7M, up from 4.4M in Q4 2024. End-of-period\nSubscription ARR reached 19.8M. Gross Margin held at 74% despite the ongoing cloud provider migration, which management\nexpects to conclude in H1 2025. Active Subscriptions reached 395, with growth concentrated in mid-market professional services\nfirms.\n\nNon-Core Financial Items\n\n• Share-based compensation expense: 0.36M\n\n• No material FX or restructuring charges in Q1 2025.\n\n(1) All figures are denominated in GBP unless otherwise noted.\n\n(2) Net Pound Retention (NPR) is equivalent to 'Net Dollar Retention' reported in Q4 2024; relabelled to reflect GBP reporting currency.\n\n(3) 'Active Subscriptions' is equivalent to 'Paying Customer Logos' in prior periods; terminology updated in Q1 2025.\n\n(4) Logo Churn is annualised on a last-twelve-months basis.",
+      "char_count": 1417
+    }
+  ],
+  "provenance": {
+    "file_level": true,
+    "page_level": false,
+    "snippet_level": false,
+    "description": "File-level provenance is guaranteed in v1; Firecrawl page count metadata is retained when available, but the extracted content is document-level markdown."
+  },
+  "notes": [
+    "Firecrawl PDF mode: auto."
+  ]
+}

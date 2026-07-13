@@ -1,0 +1,24 @@
+{
+  "file_name": "FleetLink_Q1_2025.pdf",
+  "source_path": "/home/xavierand_/Desktop/SWE/personal/sagard-portfolio-metric-extractor/intake-pdf/FleetLink_Q1_2025.pdf",
+  "requested_parser": "firecrawl",
+  "parser_used": "firecrawl",
+  "raw_format": "markdown",
+  "page_count": 1,
+  "pages": [
+    {
+      "page_number": null,
+      "text": "FleetLink Logistics Network\nQ1 2025 Shipper & Carrier Network Update \\| Freight Marketplace\n\nPeriod: Q1 2025\n\nFleetLink connects shippers and carriers through a technology-enabled freight marketplace. Transaction revenue is the primary\nrevenue driver.\n\nNetwork & Volume Metrics\n\n| Metric | Q1 2025 |\n| --- | --- |\n| Completed Shipments | 1.17M |\n| Active Shippers | 3310 |\n| Active Carriers | 7550 |\n| Average Take Rate | 11.0% |\n\nFinancial Summary\n\n| Metric | Q1 2025 |\n| --- | --- |\n| Gross Transaction Revenue | 8.9M |\n| Gross Margin | 52% |\n| Contribution Margin/Shipment | $2.19 |\n| Marketing Spend as % of Revenue | 17% |\n| Support Tickets/1,000 Shipments | 14.9 |\n\nGross Transaction Revenue of 8.9M in Q1 2025 was broadly consistent with Q4 2024 despite a 9% increase in completed\nshipments relative to the approximately 1.1M shipments completed in Q4 2024, reflecting tighter promotional spend and improved\ncarrier pricing discipline. Gross Margin improved to 52%. The team ended the quarter at 199 employees, with additions focused on\ncarrier operations and data engineering.\n\n(1) On-Time Delivery Rate for Q1 2025 was 95.4%; disclosed here rather than in the metrics table pending a format review.\n\n(2) Gross Transaction Revenue reflects all fees earned on completed shipments; may differ from prior 'Platform Revenue' label.\n\n(3) Contribution Margin per Shipment is post-carrier-cost, pre-overhead allocation.\n\n(4) Headcount of 199 at Q1 2025 period end is disclosed in commentary; not tabled this quarter.",
+      "char_count": 1517
+    }
+  ],
+  "provenance": {
+    "file_level": true,
+    "page_level": false,
+    "snippet_level": false,
+    "description": "File-level provenance is guaranteed in v1; Firecrawl page count metadata is retained when available, but the extracted content is document-level markdown."
+  },
+  "notes": [
+    "Firecrawl PDF mode: auto."
+  ]
+}

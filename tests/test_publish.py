@@ -177,12 +177,20 @@ def test_publish_command_dedupes_snapshot_metrics_against_company_reports(tmp_pa
 
 
 def test_publish_command_can_emit_json_report(tmp_path: Path, capsys) -> None:
+    # Legacy guard (Phase 5 cutover): this test proves the --format json report *shape*
+    # (counts + ready + artifacts). Its `issue_count > 0` assertion relies on the
+    # sector-blind "missing metric" alarms a lone LendBridge doc raises in legacy — which
+    # enhanced (now the default) correctly suppresses (LendBridge is credit, routed out).
+    # Pin to legacy so the shape check stays deterministic; the enhanced suppression is
+    # covered by test_sector_profiles / test_cli_normalize's enhanced cases.
     exit_code = main(
         [
             "publish",
             str(FIXTURE_DIR / "LendBridge_Q2_2025.parsed.json"),
             "--output-dir",
             str(tmp_path),
+            "--recall-mode",
+            "legacy",
             "--format",
             "json",
         ]

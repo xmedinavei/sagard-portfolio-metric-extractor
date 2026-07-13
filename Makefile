@@ -9,7 +9,7 @@ OUTPUT_DIR ?= outputs
 PARSED_OUTPUT_DIR ?= outputs/parsed
 FIXTURE_DIR ?= tests/fixtures/parsed
 
-.PHONY: setup install run demo full-demo preflight extract extract-fixtures normalize publish check test lint clean
+.PHONY: setup install run demo full-demo preflight extract extract-fixtures normalize publish check test verify-golden lint clean serve build-web
 
 $(PYTHON):
 	$(SYSTEM_PYTHON) -m venv $(VENV_DIR)
@@ -59,9 +59,20 @@ check: setup
 test: setup
 	$(PYTHON) -m pytest
 
+verify-golden: setup
+	$(PYTHON) -m pytest tests/test_golden.py -q
+
 lint: setup
 	$(PYTHON) -m ruff check portfolio_metrics tests
 
 clean:
 	if [ -d outputs ]; then find outputs -mindepth 1 ! -name '.gitkeep' -delete; fi
 	rm -rf .pytest_cache .ruff_cache .mypy_cache
+
+# --- Local cockpit web app (offline demo; additive, never used by the CLI) ---
+build-web:
+	cd web && npm ci && npm run build
+
+serve: setup
+	$(PIP) install -e ".[web]" --quiet
+	$(PYTHON) -m portfolio_metrics.webapp

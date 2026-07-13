@@ -1,0 +1,24 @@
+{
+  "file_name": "ConstructIQ_Q2_2025.pdf",
+  "source_path": "/home/xavierand_/Desktop/SWE/personal/sagard-portfolio-metric-extractor/intake-pdf/ConstructIQ_Q2_2025.pdf",
+  "requested_parser": "firecrawl",
+  "parser_used": "firecrawl",
+  "raw_format": "markdown",
+  "page_count": 2,
+  "pages": [
+    {
+      "page_number": null,
+      "text": "ConstructIQ Solutions Inc.\n\nPeriod: Q2 2025\n\nConstructIQ provides cloud-based project management and compliance tracking software to general contractors and\nsubcontractors across North America. Pricing is per-seat with add-on modules for safety compliance, bid management, and\nsubcontractor portals.\n\nHeadline Metrics\n\n| Metric | Q2 2025 | Q1 2025 |\n| --- | --- | --- |\n| Annual Recurring Revenue | $18.6M | $17.1M |\n| Quarterly Recognized Revenue | $4.5M | $4.2M |\n| Gross Margin | 71% | 70% |\n| Net Revenue Retention (LTM) | 112% | 110% |\n| Logo Churn(LTM) | 6.3% | 6.8% |\n| Total Paying Accounts | 834 | 798 |\n| Avg.Modules per Account | 2.4 | 2.1 |\n| Total Headcount | 89 | 84 |\n| Cash&Equivalents | $11.2M | $12.1M |\n| Quarterly Net Burn | ($0.91M) | ($0.97M) |\n\nPlatform Usage Metrics – Q2 2025\n\nPipeline & Business Update\n\n| Usage Metric | Q2 2025 |\n| --- | --- |\n| Monthly Active Projects(avg.) | 12400 |\n| Daily Active Users/Licensed Seats | 58% |\n| Documents Processed(QTD) | 2.1M |\n| Safety Inspection Completions(QTD) | 94000 |\n| Subcontractor Portal Connections | 3810 |\n\nDuring Q2 2025, ConstructIQ completed the migration of 47 legacy on-premise customers to the cloud platform. Three enterprise\naccounts (each >$200k ARR) are in late-stage negotiation; one has issued a verbal commitment. Weighted pipeline stands at\n$6.4M. Cash runway is approximately 12 months at current burn; management is evaluating a Series B process.\n\n* * *\n\n_(2) Net Revenue Retention computed on a last-twelve-months basis._ _(3) Daily Active User rate is a 30-day trailing average at period end._ _(4) Cash runway does not account for potential proceeds from the Series B process under evaluation._",
+      "char_count": 1691
+    }
+  ],
+  "provenance": {
+    "file_level": true,
+    "page_level": false,
+    "snippet_level": false,
+    "description": "File-level provenance is guaranteed in v1; Firecrawl page count metadata is retained when available, but the extracted content is document-level markdown."
+  },
+  "notes": [
+    "Firecrawl PDF mode: auto."
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "file_name": "NovaCloud_Q3_2024.pdf",
+  "source_path": "/home/xavierand_/Desktop/SWE/personal/sagard-portfolio-metric-extractor/intake-pdf/NovaCloud_Q3_2024.pdf",
+  "requested_parser": "firecrawl",
+  "parser_used": "firecrawl",
+  "raw_format": "markdown",
+  "page_count": 1,
+  "pages": [
+    {
+      "page_number": null,
+      "text": "NovaCloud Analytics Inc.\n\nPeriod: Q3 2024\n\nNovaCloud Analytics Inc. (\"NovaCloud\") provides cloud-native analytics and observability tooling to mid-market and enterprise\ndigital businesses.\n\nFinancial & Operating Summary\n\n| Metric | Q3 2024 |\n| --- | --- |\n| Recognized Revenue(USD) | $6.5M |\n| End-of-Period ARR | $26.8M |\n| Gross Margin | 75% |\n| Net Dollar Retention(LTM) | 117% |\n| Logo Churn Rate(LTM) | 7.2% |\n| Cash Balance | $26.6M |\n| Monthly Net Burn | ($0.95M) |\n| Cash Runway | ~28 months |\n| Total Headcount | 120 |\n\nRecognized Revenue of $6.5M in Q3 2024 was up 12% quarter-over-quarter, driven by a combination of new logo additions (10 in\nthe quarter) and expansion within the existing customer base. Expansion revenue totalled $1.1M. Cloud infrastructure costs\nimproved to approximately 26% of revenue as workload optimisation efforts continued.\n\nBusiness Commentary\n\nNovaCloud's go-to-market team maintained a selective approach to new logo pursuit, focusing sales capacity on accounts with\nACV potential above $80k. The company continued to see healthy inbound demand from the e-commerce vertical. Management\ndid not provide a formal pipeline update for Q3 2024 given the mid-year sales restructuring; a refreshed pipeline review is expected\nto resume with Q4 reporting.\n\nKey Risks\n\n• Sales restructuring may delay Q4 pipeline build and near-term new logo additions.\n\n• Customer concentration risk persists; top 10 accounts ~30% of ARR.\n\n• Macro headwinds in digital commerce sector affecting some customer budget cycles.\n\n(1) Recognized Revenue is reported under ASC 606 on a ratable basis.\n\n(3) Pipeline data not included this quarter; see commentary above.\n\n(2) Net Dollar Retention and Logo Churn are on a last-twelve-months (LTM) basis.",
+      "char_count": 1759
+    }
+  ],
+  "provenance": {
+    "file_level": true,
+    "page_level": false,
+    "snippet_level": false,
+    "description": "File-level provenance is guaranteed in v1; Firecrawl page count metadata is retained when available, but the extracted content is document-level markdown."
+  },
+  "notes": [
+    "Firecrawl PDF mode: auto."
+  ]
+}

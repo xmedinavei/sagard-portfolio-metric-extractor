@@ -1,0 +1,24 @@
+{
+  "file_name": "NovaCloud_Q2_2024.pdf",
+  "source_path": "/home/xavierand_/Desktop/SWE/personal/sagard-portfolio-metric-extractor/intake-pdf/NovaCloud_Q2_2024.pdf",
+  "requested_parser": "firecrawl",
+  "parser_used": "firecrawl",
+  "raw_format": "markdown",
+  "page_count": 1,
+  "pages": [
+    {
+      "page_number": null,
+      "text": "NovaCloud Analytics Inc.\n\nPeriod: Q2 2024\n\nNovaCloud Analytics Inc. (\"NovaCloud\") is a B2B SaaS platform providing cloud-based analytics and observability tools to\nmid-market e-commerce and digital businesses across North America and Western Europe.\n\nKey Financial & Operating Metrics\n\n| Metric | Q2 2024 |\n| --- | --- |\n| Total Billings(USD) | $5.8M |\n| End-of-Period ARR | $24.1M |\n| Gross Margin | 74% |\n| Net Dollar Retention(LTM) | 115% |\n| Logo Churn Rate(LTM) | 7.8% |\n| Cash Balance | $29.5M |\n| Monthly Net Burn | ($0.98M) |\n| Cash Runway | ~30 months |\n| Total Headcount | 112 |\n\nGo-to-Market & Pipeline\n\n| Stage | \\# Opportunities | Total Pipeline | Weighted Value |\n| --- | --- | --- | --- |\n| Qualified | 28 | 7.4M | 3.1M |\n| Proposal / Negotiation | 14 | 5.6M | 2.8M |\n| Verbal Commit | 4 | 2.1M | 1.5M |\n\nKey Risks\n\nTotal Billings of $5.8M in Q2 2024 reflects the transaction-based revenue model. New logo additions in the quarter totalled 8.\nExpansion revenue contributed $0.8M to Total Billings, consistent with the land-and-expand motion across mid-market accounts.\nCloud infrastructure costs represented approximately 28% of Total Billings, with ongoing optimisation expected to improve this ratio\nthrough the year.\n\n(1) Total Billings includes all revenue recognized in the period under ASC 606.\n\n• Geographic expansion into Western Europe adding execution complexity.\n\n(2) Net Dollar Retention and Logo Churn are presented on a last-twelve-months (LTM) basis.\n\n(3) Monthly Net Burn reflects operating cash outflows only; excludes one-time items.\n\n(4) Pipeline figures reflect management estimates; Weighted Value applies stage-level probability haircuts.",
+      "char_count": 1675
+    }
+  ],
+  "provenance": {
+    "file_level": true,
+    "page_level": false,
+    "snippet_level": false,
+    "description": "File-level provenance is guaranteed in v1; Firecrawl page count metadata is retained when available, but the extracted content is document-level markdown."
+  },
+  "notes": [
+    "Firecrawl PDF mode: auto."
+  ]
+}

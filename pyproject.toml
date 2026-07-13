@@ -24,6 +24,9 @@ dev = [
   "pytest>=8.3,<9.0",
   "ruff>=0.6,<1.0",
 ]
+web = [
+  "flask>=3.1,<4.0",
+]
 
 [project.scripts]
 portfolio-metrics = "portfolio_metrics.cli:run"

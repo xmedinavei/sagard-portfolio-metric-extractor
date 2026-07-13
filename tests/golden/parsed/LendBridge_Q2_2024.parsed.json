@@ -1,0 +1,24 @@
+{
+  "file_name": "LendBridge_Q2_2024.pdf",
+  "source_path": "/home/xavierand_/Desktop/SWE/personal/sagard-portfolio-metric-extractor/intake-pdf/LendBridge_Q2_2024.pdf",
+  "requested_parser": "firecrawl",
+  "parser_used": "firecrawl",
+  "raw_format": "markdown",
+  "page_count": 2,
+  "pages": [
+    {
+      "page_number": null,
+      "text": "LendBridge Capital Corp.\nQuarterly Credit & Operating Review\n\nPeriod Ended: Q2 2024\n\nLendBridge Capital Corp. (\"LendBridge\") is a specialty finance platform providing working capital lines to SMEs across North\nAmerica. Revenue is generated through interest income, origination fees, and ancillary treasury services.\n\nCondensed Income Summary\n\n| Item | Q2 2024 |\n| --- | --- |\n| Recognized Revenue | $10.1M |\n| Interest Expense | ($2.9M) |\n| Net Interest Margin | 8.6% |\n| Fee&Other Income | $0.7M |\n| Gross Margin | 58% |\n| Pre-Provision Operating Margin | 29% |\n\nCredit Portfolio Indicators\n\n| Sector | Outstanding Balance | Share of Book |\n| --- | --- | --- |\n| Services | $95M | 37% |\n| Manufacturing | $62M | 24% |\n| Retail | $48M | 19% |\n| Hospitality | $34M | 13% |\n| Other | $19M | 7% |\n\n• Non-cash fair value adjustment on warrant portfolio: +$0.4M\n\n* * *\n\n- No material one-time items in the quarter.\n  _(1) Net Charge-off Rate is on a last-twelve-months (LTM) basis; includes write-offs net of recoveries._ _(2) Pre-Provision Operating Margin excludes loan loss provisions and non-recurring items._ _(3) Gross Margin reflects interest income net of cost of funds only._ _(4) Senior covenant headroom measured relative to minimum NIM covenant of 7.5%._",
+      "char_count": 1261
+    }
+  ],
+  "provenance": {
+    "file_level": true,
+    "page_level": false,
+    "snippet_level": false,
+    "description": "File-level provenance is guaranteed in v1; Firecrawl page count metadata is retained when available, but the extracted content is document-level markdown."
+  },
+  "notes": [
+    "Firecrawl PDF mode: auto."
+  ]
+}

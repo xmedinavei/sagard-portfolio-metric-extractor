@@ -1,0 +1,89 @@
+/* Global app polish (Phase 5 — V1). Deliberately small and fully self-contained: NO web
+   fonts, NO @import, NO external URLs, so the offline bundle stays sealed. Component-level
+   styling still lives inline in the .tsx files (the established pattern); this file only sets
+   the page shell + a few affordances that are awkward to express inline (hover, focus). */
+
+:root {
+  color-scheme: light;
+  --ink: #1a202c;
+  --muted: #667085;
+  --line: #e5e7eb;
+  --bg: #f7f8fa;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Smooth "Back to start" scroll at the CSS level, so window.scrollTo animates reliably. */
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+h1 {
+  font-size: 1.6rem;
+  letter-spacing: -0.01em;
+  margin: 0.2rem 0 0.1rem;
+}
+
+h2 {
+  letter-spacing: -0.01em;
+}
+
+/* Data tables render as clean cards: a subtle lift + smooth heat transitions. border-radius
+   is intentionally NOT set — it is a no-op under the cells' border-collapse:collapse, so the
+   tables are square-cornered by design rather than falsely claiming rounding. */
+table {
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+td {
+  transition: background 160ms ease;
+}
+
+tbody tr:hover td {
+  filter: brightness(0.985);
+}
+
+/* Buttons: consistent, keyboard-visible focus (accessibility). */
+button {
+  font-family: inherit;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease;
+}
+
+button:not(:disabled):hover {
+  border-color: #94a3b8;
+}
+
+:focus-visible {
+  outline: 2px solid #2b6cb0;
+  outline-offset: 2px;
+}
+
+/* The sticky nav always carries a soft shadow so it separates from the scrolling content. */
+.cockpit-nav {
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
+}

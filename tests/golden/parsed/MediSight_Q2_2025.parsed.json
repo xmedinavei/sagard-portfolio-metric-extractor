@@ -1,0 +1,24 @@
+{
+  "file_name": "MediSight_Q2_2025.pdf",
+  "source_path": "/home/xavierand_/Desktop/SWE/personal/sagard-portfolio-metric-extractor/intake-pdf/MediSight_Q2_2025.pdf",
+  "requested_parser": "firecrawl",
+  "parser_used": "firecrawl",
+  "raw_format": "markdown",
+  "page_count": 1,
+  "pages": [
+    {
+      "page_number": null,
+      "text": "MediSight Data Platform Inc.\n\nPeriod: Q2 2025\n\nMediSight Data Platform Inc. (\"MediSight\") operates a cloud-based data platform for hospital systems, aggregating clinical, claims,\nand operational data.\n\nKey Metrics – Q2 2025\n\n| Metric | Q2 2025 |\n| --- | --- |\n| Recognized Revenue | 6.8M |\n| Gross Margin | 77% |\n| Contracted ARR (end of period) | 27.9M |\n| ARR Growth (YoY) | 31% |\n| Expansion ARR as % of Total ARR | 87% |\n| Total Headcount | 121 |\n\nSelected Operating Observations\n\n• No material customer churn was observed during the quarter.\n\n• During Q2 2025, MediSight continued deploying its platform across two new hospital networks, requiring incremental hiring in\nimplementation and customer success.\n\n• Several late-stage opportunities remain active with European hospital groups; management did not share probability-weighted\npipeline figures.\n\n• Management continues to target Gross Margin in the mid- to high-70s.\n\nOther Financial Information\n\nCapitalized development costs in Q2 2025 amounted to 0.5M. No material write-downs of previously capitalized software were\nrecorded. Management is evaluating a second data centre region to support international expansion; no firm capital commitments\nhave been made.\n\n(1) Contracted ARR represents annualized value of signed, active contracts; excludes renewals under negotiation.\n\n(2) Expansion ARR % is equivalent to 'ARR from Existing Accounts' metric used in prior quarters.\n\n(3) Average remaining contract term is not reported this quarter; last disclosed as 3.2 years in Q1 2025.\n\n(4) Gross Margin excludes implementation and customer success costs.",
+      "char_count": 1613
+    }
+  ],
+  "provenance": {
+    "file_level": true,
+    "page_level": false,
+    "snippet_level": false,
+    "description": "File-level provenance is guaranteed in v1; Firecrawl page count metadata is retained when available, but the extracted content is document-level markdown."
+  },
+  "notes": [
+    "Firecrawl PDF mode: auto."
+  ]
+}
