@@ -16,11 +16,16 @@ export function ExceptionsPanel({ export: exp }: { export: MetricsExport }) {
   return (
     <section style={{ marginTop: "2rem" }}>
       <h2 style={{ fontSize: "1.15rem" }}>Exceptions — expected metrics not reported</h2>
-      <p style={{ color: "#666", fontSize: "0.85rem", marginTop: 0 }}>
-        <strong>{total}</strong> sector-appropriate gaps across <strong>{groups.length}</strong>{" "}
-        {groups.length === 1 ? "company" : "companies"}. Only metrics that a company&apos;s
-        sector is expected to report are flagged — a lender is never marked &quot;missing&quot;
-        for a SaaS metric it was never asked for.
+      <p style={{ color: "#666", fontSize: "0.85rem", marginTop: 0, maxWidth: 900 }}>
+        <strong>Your &quot;chase this up&quot; list — what a company should have reported this
+        quarter but didn&apos;t.</strong>
+      </p>
+      <p style={{ color: "#666", fontSize: "0.85rem", margin: "0.4rem 0 0", maxWidth: 900 }}>
+        Each company is only checked for the metrics its <em>business type</em> is expected to
+        report, so these <strong>{total}</strong> gaps across <strong>{groups.length}</strong>{" "}
+        {groups.length === 1 ? "company" : "companies"} are <em>real</em> ones worth a follow-up —
+        not noise. It is sector-smart: a lender is never flagged for &quot;missing ARR&quot;, because
+        lenders don&apos;t have ARR — so you never waste time chasing a metric that never existed.
       </p>
 
       <ul style={{ margin: 0, paddingLeft: "1.1rem", fontSize: "0.85rem" }}>

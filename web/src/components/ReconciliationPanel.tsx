@@ -62,11 +62,12 @@ export function ReconciliationPanel({ export: exp }: { export: MetricsExport }) 
   return (
     <section style={{ marginTop: "2rem" }}>
       <h2 style={{ fontSize: "1.15rem" }}>Cross-source check</h2>
-      <p style={{ color: "#666", fontSize: "0.85rem", marginTop: 0 }}>
-        <strong>{checkedCount}</strong> numbers appear in <em>both</em> a company&apos;s own
-        report and the portfolio summary. We keep the company&apos;s own figure and flag any
-        disagreement — <strong>{matchCount}</strong> agree,{" "}
-        <strong>{conflicts.length}</strong> disagree.
+      <p style={{ color: "#666", fontSize: "0.85rem", marginTop: 0, maxWidth: 820 }}>
+        <strong>Do the two documents agree?</strong> Some numbers show up in <em>both</em> a
+        company&apos;s own report <em>and</em> the portfolio-wide summary. We check they match — and
+        if they disagree, we trust the company&apos;s own report and flag the mismatch.{" "}
+        <strong>{checkedCount}</strong> numbers appeared in both: <strong>{matchCount}</strong>{" "}
+        agree, <strong>{conflicts.length}</strong> disagree.
       </p>
 
       {conflicts.length === 0 ? (

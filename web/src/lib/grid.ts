@@ -18,19 +18,24 @@ const MISSING_METRIC_CODE = "missing_metric";
 // still renders, appended after these, so an unexpected sector is never dropped.
 export const SECTOR_ORDER: SectorKind[] = ["saas", "credit", "marketplace", "payments"];
 
-// The grid's fixed column set = every canonical metric, in the schema-declared order
-// (schema.py:8-17). Every sector table shows all 8 columns so the honesty affordance
-// is visible: metrics a sector never reports render as N/A rather than being hidden.
-export const CANONICAL_METRIC_ORDER: CanonicalMetric[] = [
-  "revenue_qtr",
-  "arr_eop",
-  "gross_margin_pct",
-  "cash_balance",
-  "monthly_burn",
-  "headcount",
-  "net_revenue_retention_pct",
-  "logo_churn_pct",
+// The metric column GROUPS — dependent metrics sit together and read left → right as a story of
+// company health. Rendered as a banner row above the columns so the grouping is obvious; the
+// flattened order below is the grid's canonical column order (a display choice, independent of
+// the export's field order).
+export interface MetricGroup {
+  label: string;
+  metrics: CanonicalMetric[];
+}
+export const METRIC_GROUPS: MetricGroup[] = [
+  { label: "Grow · Profit", metrics: ["revenue_qtr", "arr_eop", "gross_margin_pct"] },
+  { label: "Keep", metrics: ["net_revenue_retention_pct", "logo_churn_pct"] },
+  { label: "Fund", metrics: ["cash_balance", "monthly_burn"] },
+  { label: "Scale", metrics: ["headcount"] },
 ];
+
+// Flattened column order (single source of truth = METRIC_GROUPS). Every sector table shows all
+// 8 columns so the honesty affordance stays visible: metrics a sector never reports render as N/A.
+export const CANONICAL_METRIC_ORDER: CanonicalMetric[] = METRIC_GROUPS.flatMap((g) => g.metrics);
 
 // Short human labels for the metric columns (display only — not a data contract).
 export const METRIC_LABELS: Record<CanonicalMetric, string> = {
@@ -191,6 +196,27 @@ export function cellKey(company: string, metric: CanonicalMetric): string {
   return JSON.stringify([company, metric]);
 }
 
+// Every distinct reported period, newest first — drives the grid's "as of quarter" selector.
+export function distinctPeriods(metrics: MetricRow[]): string[] {
+  const set = new Set<string>();
+  for (const m of metrics) if (m.period) set.add(m.period);
+  return [...set].sort((a, b) => parsePeriodKey(b) - parsePeriodKey(a));
+}
+
+// For each (company, canonical_metric), the row reported IN a specific period (or absent). Lets
+// the grid show a chosen historical quarter instead of only the latest snapshot.
+export function valuesForPeriod(
+  metrics: MetricRow[],
+  period: string,
+): Map<string, MetricRow> {
+  const map = new Map<string, MetricRow>();
+  for (const row of metrics) {
+    if (row.period !== period) continue;
+    map.set(cellKey(row.company_name, row.canonical_metric), row);
+  }
+  return map;
+}
+
 // For each (company, canonical_metric) keep only the latest-period row (year-aware).
 export function latestByCompanyMetric(metrics: MetricRow[]): Map<string, MetricRow> {
   const latest = new Map<string, MetricRow>();
@@ -274,6 +300,80 @@ export function groupCompaniesBySector(metrics: MetricRow[]): SectorGroup[] {
     }
   }
   return groups;
+}
+
+// ── Display grouping (Phase 5) ────────────────────────────────────────────────────────────
+// The grid groups companies two ways: by MARKET (SaaS / Credit / Marketplace / Payments) or by
+// investment STRATEGY (Private Equity vs Private Credit). Grouping is display-only — heat is
+// always ranked within a company's actual MARKET, never across it, so comparability holds in
+// both views (a marketplace margin is never ranked against a SaaS one, even when shown together).
+export type Strategy = "private_equity" | "private_credit";
+export const STRATEGY_OF: Record<SectorKind, Strategy> = {
+  saas: "private_equity",
+  marketplace: "private_equity",
+  payments: "private_equity",
+  credit: "private_credit",
+};
+const STRATEGY_ORDER: Strategy[] = ["private_equity", "private_credit"];
+export const STRATEGY_LABELS: Record<Strategy, string> = {
+  private_equity: "Private Equity",
+  private_credit: "Private Credit",
+};
+const STRATEGY_DESCRIPTION: Record<Strategy, string> = {
+  private_equity:
+    "Equity-held operating companies (software, marketplace, payments) — monitored on growth & profitability.",
+  private_credit:
+    "Private lender — monitored on its own credit / yield basis, never mixed into the equity book.",
+};
+
+// A display group of companies (one table): a market sector or an investment strategy.
+export interface DisplayGroup {
+  key: string;
+  label: string; // "SaaS" or "Private Equity"
+  description: string;
+  companies: string[]; // sorted
+}
+
+// Company → its market sector (each company has exactly one).
+export function companySectors(metrics: MetricRow[]): Map<string, SectorKind> {
+  const map = new Map<string, SectorKind>();
+  for (const m of metrics) map.set(m.company_name, m.sector);
+  return map;
+}
+
+export function groupByMarket(metrics: MetricRow[]): DisplayGroup[] {
+  return groupCompaniesBySector(metrics).map((g) => ({
+    key: g.sector,
+    label: SECTOR_LABELS[g.sector],
+    description: SECTOR_DESCRIPTION[g.sector],
+    companies: g.companies,
+  }));
+}
+
+export function groupByStrategy(metrics: MetricRow[]): DisplayGroup[] {
+  const byStrat = new Map<Strategy, Set<string>>();
+  for (const [company, sector] of companySectors(metrics)) {
+    const strat = STRATEGY_OF[sector];
+    let set = byStrat.get(strat);
+    if (!set) {
+      set = new Set<string>();
+      byStrat.set(strat, set);
+    }
+    set.add(company);
+  }
+  const out: DisplayGroup[] = [];
+  for (const strat of STRATEGY_ORDER) {
+    const set = byStrat.get(strat);
+    if (set && set.size) {
+      out.push({
+        key: strat,
+        label: STRATEGY_LABELS[strat],
+        description: STRATEGY_DESCRIPTION[strat],
+        companies: [...set].sort(),
+      });
+    }
+  }
+  return out;
 }
 
 // A grid cell has exactly one of three honest states:

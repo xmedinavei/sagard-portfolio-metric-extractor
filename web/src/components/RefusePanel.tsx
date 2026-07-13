@@ -29,6 +29,9 @@ export function RefusePanel({
   const refused = refusedRows(exp.metrics);
   const collisions = basisCollisionIssues(exp.issues);
   if (refused.length === 0) return null;
+  // Plain-language summary derived from the data (replaces the backend's technical message).
+  const refusedCompanies = [...new Set(refused.map((r) => r.company_name))];
+  const refusedMetricLabels = [...new Set(refused.map((r) => METRIC_LABELS[r.canonical_metric]))];
 
   // Group the refused rows by company (the basis_collision issue leaves company_name null,
   // so the company must come from these rows, not the issue).
@@ -42,15 +45,25 @@ export function RefusePanel({
   return (
     <section style={{ marginTop: "2rem" }}>
       <h2 style={{ fontSize: "1.15rem" }}>Refused comparisons</h2>
-      <p style={{ color: "#666", fontSize: "0.85rem", marginTop: 0 }}>
-        Numbers we <strong>will not rank</strong> against sector peers because they are
-        measured on a different basis. Showing them — but honestly flagged — beats silently
+      <p style={{ color: "#666", fontSize: "0.85rem", marginTop: 0, maxWidth: 900 }}>
+        <strong>Numbers the tool refuses to rank against the others — because they only{" "}
+        <em>look</em> comparable.</strong>
+      </p>
+      <p style={{ color: "#666", fontSize: "0.85rem", margin: "0.4rem 0 0", maxWidth: 900 }}>
+        <strong>The example below:</strong> a lender&apos;s &quot;gross margin&quot; is really an{" "}
+        <em>interest margin</em> — interest it earns minus its cost of borrowing. That is a totally
+        different calculation from a software company&apos;s gross margin (sales minus the cost to
+        deliver the product). Same words, different math — so ranking them side by side would be
         comparing apples to oranges.
       </p>
+      <p style={{ color: "#666", fontSize: "0.85rem", margin: "0.4rem 0 0.2rem", maxWidth: 900 }}>
+        <strong>Why it matters:</strong> an ordinary spreadsheet would rank them anyway and quietly
+        mislead you. Here the tool shows the number but marks it <strong>&quot;refused&quot;</strong>{" "}
+        — proving it knows what it must <em>not</em> compare.
+      </p>
 
-      {collisions.map((issue, i) => (
+      {collisions.length > 0 && (
         <p
-          key={i}
           role="status"
           style={{
             color: "#8a4b00",
@@ -61,9 +74,13 @@ export function RefusePanel({
             fontSize: "0.85rem",
           }}
         >
-          {issue.message}
+          <strong>{refused.length}</strong> number{refused.length === 1 ? "" : "s"} set aside as
+          not-comparable: <strong>{refusedCompanies.join(", ")}</strong>{" "}
+          {refusedCompanies.length === 1 ? "reports" : "report"} {refusedMetricLabels.join(" / ")} on
+          a different basis than that column. Shown below, honestly flagged — never dropped, never
+          ranked.
         </p>
-      ))}
+      )}
 
       {[...byCompany.entries()].map(([company, rows]) => (
         <div key={company} style={{ margin: "0.75rem 0" }}>

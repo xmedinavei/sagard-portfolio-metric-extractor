@@ -17,10 +17,14 @@ export function BreadthPanel({ export: exp }: { export: MetricsExport }) {
   return (
     <section style={{ marginTop: "2rem" }}>
       <h2 style={{ fontSize: "1.15rem" }}>Source-terminology breadth</h2>
-      <p style={{ color: "#666", fontSize: "0.85rem", marginTop: 0 }}>
-        The portfolio uses <strong>{total}</strong> different source labels for{" "}
-        <strong>{entries.length}</strong> canonical metrics. Each metric&apos;s varied wording
-        is collapsed into one comparable ID — that is what makes the grid and trends line up.
+      <p style={{ color: "#666", fontSize: "0.85rem", marginTop: 0, maxWidth: 950 }}>
+        <strong>This is where &quot;label drift&quot; is handled — different names, one meaning.</strong>{" "}
+        Every company names things its own way: &quot;ARR&quot;, &quot;Annual Recurring Revenue&quot;,
+        &quot;Contracted ARR&quot; and &quot;End-of-Period ARR&quot; are all the <em>same</em> metric.
+        Across the portfolio, <strong>{total}</strong> different source labels are unified into{" "}
+        <strong>{entries.length}</strong> canonical metrics — and that unification is exactly what
+        lets the grid and the trends line up. Without it, a company that renamed a line would look
+        like a different, broken metric (the table below shows every wording that maps to each one).
       </p>
 
       <div style={{ overflowX: "auto" }}>
