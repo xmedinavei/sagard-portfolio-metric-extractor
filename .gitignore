@@ -26,6 +26,11 @@ outputs/*
 # Node / frontend
 node_modules/
 
+# Local scratch assets: the Sagard logo the app actually serves is committed under web/public/
+# (and bundled into web/dist/). The repo-root static/ is just where the original download was
+# saved — the app never reads it, so keep it out of version control.
+/static/
+
 # Demo-safety (Phase 4): the built cockpit bundle IS committed so `make serve` always has a
 # known-good offline bundle to serve — never a live `npm run build` at demo time. web/dist is
 # otherwise caught by the depth-agnostic `dist/` rule above, so we re-include the directory

@@ -5,10 +5,12 @@ import {
   buildAllCompaniesSeries,
   buildSeries,
   distinctCompanies,
+  formatAxisTick,
   hasSufficientHistory,
   metricsForCompany,
   metricsPresent,
   seriesBreakdown,
+  yDomain,
 } from "./trend";
 
 // A MetricRow factory: fills the 23 §A.4 fields with harmless defaults so each test only
@@ -248,5 +250,35 @@ describe("metricsPresent", () => {
       "gross_margin_pct",
       "net_revenue_retention_pct",
     ]);
+  });
+});
+
+describe("yDomain — standardized axes", () => {
+  it("anchors money & counts at 0 (honest magnitude)", () => {
+    expect(yDomain([24_100_000, 34_200_000], "arr_eop")).toEqual({ min: 0, max: 34_200_000 });
+    expect(yDomain([78, 142], "headcount")).toEqual({ min: 0, max: 142 });
+  });
+
+  it("includes 0 as the ceiling for all-negative money (burn)", () => {
+    expect(yDomain([-550_000, -980_000], "monthly_burn")).toEqual({ min: -980_000, max: 0 });
+  });
+
+  it("fits percentages to the nearest 5 (never squashed into a flat 0-based line)", () => {
+    expect(yDomain([112, 123], "net_revenue_retention_pct")).toEqual({ min: 110, max: 125 });
+    expect(yDomain([52, 78], "gross_margin_pct")).toEqual({ min: 50, max: 80 });
+  });
+
+  it("guards a degenerate (single-value / empty) domain", () => {
+    expect(yDomain([100], "net_revenue_retention_pct")).toEqual({ min: 100, max: 105 });
+    expect(yDomain([], "arr_eop")).toEqual({ min: 0, max: 1 });
+  });
+});
+
+describe("formatAxisTick", () => {
+  it("formats each axis endpoint by metric kind", () => {
+    expect(formatAxisTick(0, "arr_eop")).toBe("$0");
+    expect(formatAxisTick(34_200_000, "revenue_qtr")).toBe("$34.2M");
+    expect(formatAxisTick(110, "net_revenue_retention_pct")).toBe("110%");
+    expect(formatAxisTick(142, "headcount")).toBe("142");
   });
 });

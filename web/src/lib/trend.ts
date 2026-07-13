@@ -203,6 +203,39 @@ export function buildAllCompaniesSeries(
   return { series, excluded };
 }
 
+// ── Chart y-axis standardization (Phase 5) ────────────────────────────────────────────────
+// Make charts read consistently across metrics. MONEY & COUNTS are anchored at 0 (honest
+// magnitude — a line rising from 0, not a zoomed-in slice); PERCENTAGES get a fitted axis
+// rounded to the nearest 5 (a 0-based axis would squash NRR's 112–123% into a flat line).
+const PERCENT_METRICS: Set<CanonicalMetric> = new Set([
+  "gross_margin_pct",
+  "net_revenue_retention_pct",
+  "logo_churn_pct",
+]);
+
+export function yDomain(values: number[], metric: CanonicalMetric): { min: number; max: number } {
+  if (values.length === 0) return { min: 0, max: 1 };
+  const dataMin = Math.min(...values);
+  const dataMax = Math.max(...values);
+  if (!PERCENT_METRICS.has(metric)) {
+    // money & counts: include 0 so magnitudes are honest.
+    const min = Math.min(0, dataMin);
+    const max = Math.max(0, dataMax);
+    return { min, max: max === min ? min + 1 : max };
+  }
+  // percentages: a fitted axis rounded outward to the nearest 5.
+  const min = Math.floor(dataMin / 5) * 5;
+  const max = Math.ceil(dataMax / 5) * 5;
+  return { min, max: max === min ? min + 5 : max };
+}
+
+// Format a y-axis endpoint for its metric (the endpoints are domain numbers, not data points).
+export function formatAxisTick(value: number, metric: CanonicalMetric): string {
+  if (PERCENT_METRICS.has(metric)) return `${Math.round(value)}%`;
+  if (metric === "headcount") return `${Math.round(value)}`;
+  return value === 0 ? "$0" : `$${(value / 1_000_000).toFixed(1)}M`;
+}
+
 // Convenience counts for the panel's honest caption ("N companies · M trends · K snapshots").
 export function seriesBreakdown(series: CompanySeries[]): {
   total: number;

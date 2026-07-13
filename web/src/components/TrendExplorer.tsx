@@ -1,32 +1,32 @@
-// Over-time trend explorer (Phase 2 — flagship insight #1; Phase 5 V3 — all-companies
-// overlay). Two modes:
-//   * "One company" (the demo default): NovaCloud ARR as a single continuous 5-quarter line
-//     even though the source PDFs renamed the label — the backend collapsed those renames
-//     into one canonical_metric, so we simply plot period vs value.
-//   * "All companies" (V3): one line PER company for a single metric — the "league over
-//     time". Comparability is guarded exactly like the grid: a refused-basis company (lender
-//     interest margin) and a non-USD money series (PeopleFlow GBP) are EXCLUDED and named,
-//     never silently overlaid on a shared axis.
-// When a series has fewer than MIN_TREND_POINTS distinct quarters we show "insufficient
-// history" instead of fabricating a trend. All ordering/guarding logic lives in ../lib/trend
-// so it stays unit-testable without a DOM; this file is a thin renderer (dependency-light
-// inline SVG — no chart library, to keep the offline bundle small).
+// Over-time trend explorer. Three modes:
+//   * "All companies" (DEFAULT) — every company on ONE metric (lines for >=3 quarters, snapshot
+//     dots for fewer). Incomparable series (lender interest-margin, non-USD money) are excluded
+//     and named, never silently overlaid.
+//   * "One company" — one company across its metrics (the label-drift flagship).
+//   * "All metrics" — small multiples: one compact chart per metric, all companies at once.
+// Y-axes are STANDARDIZED per metric (money & counts anchored at 0; percentages fitted to the
+// nearest 5). Company COLOURS are consistent across every chart. All ordering/axis logic lives
+// in ../lib/trend so it stays unit-testable; this file is a thin, dependency-light inline-SVG
+// renderer (no chart library, to keep the offline bundle small).
 
 import type { CSSProperties } from "react";
 import { useState } from "react";
 
 import type { CanonicalMetric, MetricRow, MetricsExport } from "../types";
-import { METRIC_LABELS } from "../lib/grid";
+import { METRIC_FULL_NAME, METRIC_LABELS } from "../lib/grid";
 import type { CompanySeries, TrendPoint } from "../lib/trend";
 import {
   MIN_TREND_POINTS,
+  SERIES_PALETTE,
   buildAllCompaniesSeries,
   buildSeries,
   distinctCompanies,
+  formatAxisTick,
   hasSufficientHistory,
   metricsForCompany,
   metricsPresent,
   seriesBreakdown,
+  yDomain,
 } from "../lib/trend";
 
 const selectStyle: CSSProperties = {
@@ -35,8 +35,7 @@ const selectStyle: CSSProperties = {
   marginRight: "0.75rem",
 };
 
-// SVG canvas geometry — plain constants (no chart library) so the offline bundle stays
-// small; a dependency-light inline <polyline> is all the flagship needs.
+// Full-size chart geometry (single-company + one-metric overlay).
 const W = 680;
 const H = 280;
 const PAD = { top: 28, right: 32, bottom: 46, left: 72 };
@@ -44,45 +43,59 @@ const INNER_W = W - PAD.left - PAD.right;
 const INNER_H = H - PAD.top - PAD.bottom;
 const LINE_COLOR = "#2b6cb0";
 
-type TrendMode = "single" | "all";
+// Compact geometry for the "All metrics" small multiples.
+const MW = 340;
+const MH = 176;
+const MPAD = { top: 20, right: 14, bottom: 30, left: 54 };
+const MINNER_W = MW - MPAD.left - MPAD.right;
+const MINNER_H = MH - MPAD.top - MPAD.bottom;
+
+type TrendMode = "all" | "single" | "grid";
+
+const MODE_LABELS: Record<TrendMode, string> = {
+  all: "All companies",
+  single: "One company",
+  grid: "All metrics",
+};
+
+// Give a series its consistent per-company colour (so a company is the same colour everywhere).
+function recolor(series: CompanySeries[], colorOf: Map<string, string>): CompanySeries[] {
+  return series.map((s) => ({ ...s, color: colorOf.get(s.company) ?? s.color }));
+}
+
+// "Q2 2025" -> "Q2'25" for the cramped small-multiple x axis.
+const abbrevPeriod = (p: string) => p.replace(/ 20(\d\d)$/, "'$1");
 
 export function TrendExplorer({
   export: exp,
   onSelectRow,
 }: {
   export: MetricsExport;
-  // Optional (Phase 4): clicking a plotted point reports its source row so App can open the
-  // provenance drawer. Absent = the trend renders exactly as in Phase 2.
   onSelectRow?: (row: MetricRow) => void;
 }) {
   const metrics = exp.metrics;
   const companies = distinctCompanies(metrics);
-  const [mode, setMode] = useState<TrendMode>("single");
+  // Default to the all-companies league view (the flagship cross-company story).
+  const [mode, setMode] = useState<TrendMode>("all");
+  // One consistent colour per company, used across every chart (all-companies + all-metrics).
+  const colorOf = new Map(companies.map((c, i) => [c, SERIES_PALETTE[i % SERIES_PALETTE.length]]));
 
   // ── One-company mode state ───────────────────────────────────────────────────────────
-  // Demo default is NovaCloud; fall back to the first company if it is absent.
   const defaultCompany = companies.includes("NovaCloud") ? "NovaCloud" : (companies[0] ?? "");
   const [companyChoice, setCompanyChoice] = useState(defaultCompany);
-  // The *effective* company: the user's choice if still valid, else the default. Deriving it
-  // each render (instead of an effect) keeps the panel correct if the loaded export changes.
   const company = companies.includes(companyChoice) ? companyChoice : defaultCompany;
-
   const metricOptions = metricsForCompany(metrics, company);
   const [metricChoice, setMetricChoice] = useState<CanonicalMetric | null>(null);
-  // Effective metric: the user's choice if it exists for this company, else ARR (the
-  // flagship) if present, else the company's first reported metric.
-  const metric: CanonicalMetric | null =
+  const singleMetric: CanonicalMetric | null =
     metricChoice && metricOptions.includes(metricChoice)
       ? metricChoice
       : metricOptions.includes("arr_eop")
         ? "arr_eop"
         : (metricOptions[0] ?? null);
 
-  // ── All-companies mode state (V3) ────────────────────────────────────────────────────
+  // ── All-companies mode state ─────────────────────────────────────────────────────────
   const allMetrics = metricsPresent(metrics);
   const [allMetricChoice, setAllMetricChoice] = useState<CanonicalMetric | null>(null);
-  // Default the overlay to the NRR league (the flagship cross-company story), else ARR, else
-  // the first metric present anywhere.
   const allMetric: CanonicalMetric | null =
     allMetricChoice && allMetrics.includes(allMetricChoice)
       ? allMetricChoice
@@ -92,22 +105,22 @@ export function TrendExplorer({
           ? "arr_eop"
           : (allMetrics[0] ?? null);
 
-  // Defensive: App only renders this panel when an export is loaded; an empty export has
-  // nothing to trend. (This return is after ALL hooks, so hook order is stable.)
   if (companies.length === 0) return null;
 
   return (
     <section style={{ marginTop: "2rem" }}>
       <h2 style={{ fontSize: "1.15rem" }}>Trend over time</h2>
-      <p style={{ color: "#666", fontSize: "0.85rem", marginTop: 0 }}>
-        Quarter-over-quarter. Switch between <em>one company</em> across its metrics and{" "}
-        <em>all companies</em> on a single metric. A trend needs at least {MIN_TREND_POINTS}{" "}
-        quarters — below that we show <em>insufficient history</em> rather than guess.
+      <p style={{ color: "#666", fontSize: "0.85rem", marginTop: 0, maxWidth: 950 }}>
+        Quarter-over-quarter. See <em>all companies</em> on one metric, <em>one company</em> across
+        its metrics, or <em>every metric</em> at once. Y-axes are standardized per metric — money
+        &amp; headcount start at <strong>0</strong>, percentages fit their own range — and each
+        company keeps one colour throughout. A trend needs {MIN_TREND_POINTS}+ quarters; fewer shows
+        as a snapshot dot.
       </p>
 
-      {/* Mode toggle (V3). */}
-      <div style={{ margin: "0.75rem 0", display: "flex", gap: "0.4rem" }}>
-        {(["single", "all"] as TrendMode[]).map((m) => (
+      {/* Mode toggle. */}
+      <div style={{ margin: "0.75rem 0", display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
+        {(["all", "single", "grid"] as TrendMode[]).map((m) => (
           <button
             key={m}
             type="button"
@@ -123,31 +136,41 @@ export function TrendExplorer({
               color: mode === m ? "#fff" : "#333",
             }}
           >
-            {m === "single" ? "One company" : "All companies"}
+            {MODE_LABELS[m]}
           </button>
         ))}
       </div>
 
-      {mode === "single" ? (
+      {mode === "single" && (
         <SingleCompanyView
           metrics={metrics}
           companies={companies}
           company={company}
-          metric={metric}
+          metric={singleMetric}
           metricOptions={metricOptions}
           onCompanyChange={(c) => {
             setCompanyChoice(c);
-            setMetricChoice(null); // reset the metric to the new company's default
+            setMetricChoice(null);
           }}
           onMetricChange={(m) => setMetricChoice(m)}
           onSelectRow={onSelectRow}
         />
-      ) : (
+      )}
+      {mode === "all" && (
         <AllCompaniesView
           metrics={metrics}
           metric={allMetric}
           metrics_options={allMetrics}
+          colorOf={colorOf}
           onMetricChange={(m) => setAllMetricChoice(m)}
+          onSelectRow={onSelectRow}
+        />
+      )}
+      {mode === "grid" && (
+        <AllMetricsView
+          metrics={metrics}
+          allMetrics={allMetrics}
+          colorOf={colorOf}
           onSelectRow={onSelectRow}
         />
       )}
@@ -155,7 +178,7 @@ export function TrendExplorer({
   );
 }
 
-// ── One-company view (the original Phase 2 flagship, unchanged behaviour) ────────────────
+// ── One-company view (the label-drift flagship) ─────────────────────────────────────────
 function SingleCompanyView({
   metrics,
   companies,
@@ -177,23 +200,14 @@ function SingleCompanyView({
 }) {
   const points = metric ? buildSeries(metrics, company, metric) : [];
   const sufficient = hasSufficientHistory(points);
-  // How many DISTINCT source labels collapsed into this one series — the flagship's "one
-  // line despite renames" story. Derived from the PLOTTED points so the count can never
-  // disagree with what's on the line; only shown when there is real drift (> 1 label).
   const rawLabels = new Set(points.map((p) => p.rawLabel));
 
   return (
     <>
       <div style={{ margin: "0.75rem 0" }}>
         <label>
-          <span style={{ fontSize: "0.8rem", color: "#666", marginRight: "0.4rem" }}>
-            Company
-          </span>
-          <select
-            style={selectStyle}
-            value={company}
-            onChange={(e) => onCompanyChange(e.target.value)}
-          >
+          <span style={{ fontSize: "0.8rem", color: "#666", marginRight: "0.4rem" }}>Company</span>
+          <select style={selectStyle} value={company} onChange={(e) => onCompanyChange(e.target.value)}>
             {companies.map((c) => (
               <option key={c} value={c}>
                 {c}
@@ -203,9 +217,7 @@ function SingleCompanyView({
         </label>
         {metric !== null && (
           <label>
-            <span style={{ fontSize: "0.8rem", color: "#666", marginRight: "0.4rem" }}>
-              Metric
-            </span>
+            <span style={{ fontSize: "0.8rem", color: "#666", marginRight: "0.4rem" }}>Metric</span>
             <select
               style={selectStyle}
               value={metric}
@@ -228,6 +240,7 @@ function SingleCompanyView({
       ) : sufficient ? (
         <TrendChart
           points={points}
+          metric={metric}
           label={`${company} — ${METRIC_LABELS[metric]}`}
           onSelectRow={onSelectRow}
         />
@@ -245,47 +258,41 @@ function SingleCompanyView({
         >
           <strong>Insufficient history.</strong> {company} has{" "}
           {points.length === 1 ? "only one quarter" : `only ${points.length} quarters`} of{" "}
-          {METRIC_LABELS[metric]} data — at least {MIN_TREND_POINTS} are needed to show a
-          trend. We do not draw a line from fewer points.
+          {METRIC_LABELS[metric]} data — at least {MIN_TREND_POINTS} are needed to show a trend.
         </p>
       )}
 
       {metric !== null && sufficient && rawLabels.size > 1 && (
         <p style={{ color: "#666", fontSize: "0.8rem", maxWidth: W }}>
-          Plotted as one metric across <strong>{rawLabels.size}</strong> different source
-          labels (e.g.{" "}
-          {[...rawLabels]
-            .slice(0, 2)
-            .map((l) => `"${l}"`)
-            .join(", ")}
-          ) — the backend collapsed the label drift into a single series.
+          Plotted as one metric across <strong>{rawLabels.size}</strong> different source labels (e.g.{" "}
+          {[...rawLabels].slice(0, 2).map((l) => `"${l}"`).join(", ")}) — the backend collapsed the
+          label drift into a single series.
         </p>
       )}
     </>
   );
 }
 
-// ── All-companies overlay view (V3) ─────────────────────────────────────────────────────
+// ── All-companies overlay view (one metric) ─────────────────────────────────────────────
 function AllCompaniesView({
   metrics,
   metric,
   metrics_options,
+  colorOf,
   onMetricChange,
   onSelectRow,
 }: {
   metrics: MetricRow[];
   metric: CanonicalMetric | null;
   metrics_options: CanonicalMetric[];
+  colorOf: Map<string, string>;
   onMetricChange: (metric: CanonicalMetric) => void;
   onSelectRow?: (row: MetricRow) => void;
 }) {
-  const { series, excluded } = metric
-    ? buildAllCompaniesSeries(metrics, metric)
-    : { series: [], excluded: [] };
+  const built = metric ? buildAllCompaniesSeries(metrics, metric) : { series: [], excluded: [] };
+  const series = recolor(built.series, colorOf);
+  const excluded = built.excluded;
 
-  // How many sectors the plotted lines span. A money metric (revenue/ARR/cash) can overlay
-  // companies from different sectors on one axis — comparable as USD LEVELS, but not a
-  // within-sector ranking (unlike the grid's per-sector heat). We say so honestly.
   const companySector = new Map(metrics.map((m) => [m.company_name, m.sector]));
   const sectorsShown = new Set(series.map((s) => companySector.get(s.company)));
 
@@ -294,9 +301,7 @@ function AllCompaniesView({
       <div style={{ margin: "0.75rem 0" }}>
         {metric !== null && (
           <label>
-            <span style={{ fontSize: "0.8rem", color: "#666", marginRight: "0.4rem" }}>
-              Metric
-            </span>
+            <span style={{ fontSize: "0.8rem", color: "#666", marginRight: "0.4rem" }}>Metric</span>
             <select
               style={selectStyle}
               value={metric}
@@ -331,13 +336,12 @@ function AllCompaniesView({
         <>
           <AllCompaniesChart
             series={series}
-            label={metric ? METRIC_LABELS[metric] : ""}
+            metric={metric}
+            label={METRIC_LABELS[metric]}
             onSelectRow={onSelectRow}
           />
           <Legend series={series} />
           {(() => {
-            // Honest breakdown: this corpus is mostly single-quarter, so most companies plot
-            // as snapshot dots, not trend lines. Say exactly what's on screen.
             const b = seriesBreakdown(series);
             return (
               <p style={{ color: "#5b6472", fontSize: "0.8rem", maxWidth: W, marginTop: "0.4rem" }}>
@@ -351,9 +355,9 @@ function AllCompaniesView({
           })()}
           {sectorsShown.size > 1 && (
             <p style={{ color: "#666", fontSize: "0.8rem", maxWidth: W, marginTop: "0.4rem" }}>
-              Showing levels across <strong>{sectorsShown.size}</strong> sectors — a cross-sector
-              view of trends, not a within-sector ranking. Ratios (NRR, margin) are like-for-like;
-              money levels are shown as reported.
+              Showing levels across <strong>{sectorsShown.size}</strong> sectors — a cross-sector view
+              of trends, not a within-sector ranking. Ratios (NRR, margin) are like-for-like; money
+              levels are shown as reported.
             </p>
           )}
         </>
@@ -375,9 +379,71 @@ function AllCompaniesView({
   );
 }
 
-// A small colour-swatch legend under the overlay chart (one entry per plotted company). The
-// swatch shape encodes the series kind: a bar for a trend line, a dot for a single-quarter
-// snapshot — so the line/dot distinction is legible in the legend, not just on the chart.
+// ── All-metrics view (small multiples) ──────────────────────────────────────────────────
+function AllMetricsView({
+  metrics,
+  allMetrics,
+  colorOf,
+  onSelectRow,
+}: {
+  metrics: MetricRow[];
+  allMetrics: CanonicalMetric[];
+  colorOf: Map<string, string>;
+  onSelectRow?: (row: MetricRow) => void;
+}) {
+  // Build every metric's overlay once; recolour to the shared company map.
+  const perMetric = allMetrics.map((m) => ({
+    metric: m,
+    series: recolor(buildAllCompaniesSeries(metrics, m).series, colorOf),
+  }));
+  // A shared legend = every company that appears in any mini-chart (consistent colours).
+  const legendCompanies = [...new Set(perMetric.flatMap((pm) => pm.series.map((s) => s.company)))].sort();
+
+  return (
+    <>
+      {legendCompanies.length > 0 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem 1rem", margin: "0.25rem 0 0.75rem" }}>
+          {legendCompanies.map((c) => (
+            <span key={c} style={{ display: "inline-flex", alignItems: "center", fontSize: "0.8rem", color: "#444" }}>
+              <span
+                style={{
+                  display: "inline-block",
+                  width: 14,
+                  height: 3,
+                  borderRadius: 2,
+                  background: colorOf.get(c),
+                  marginRight: "0.35rem",
+                }}
+              />
+              {c}
+            </span>
+          ))}
+        </div>
+      )}
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+          gap: "1rem",
+        }}
+      >
+        {perMetric.map(({ metric, series }) => (
+          <MiniChart key={metric} metric={metric} series={series} onSelectRow={onSelectRow} />
+        ))}
+      </div>
+
+      <p style={{ color: "#666", fontSize: "0.8rem", marginTop: "0.6rem", maxWidth: 950 }}>
+        Every metric at a glance. Each chart&apos;s y-axis is standardized for its own type, and a
+        series is hidden from a metric only where it is not comparable (a lender&apos;s interest
+        margin, or non-USD money) — the same honesty rule as the single-metric view.
+      </p>
+    </>
+  );
+}
+
+// A colour-swatch legend under the overlay chart. Swatch shape encodes the kind: a bar for a
+// trend line, a dot for a single-quarter snapshot.
 function Legend({ series }: { series: CompanySeries[] }) {
   return (
     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem 1rem", maxWidth: W, marginTop: "0.4rem" }}>
@@ -391,37 +457,30 @@ function Legend({ series }: { series: CompanySeries[] }) {
             }
           />
           {s.company}
-          {s.kind === "point" && (
-            <span style={{ color: "#5b6472", marginLeft: "0.25rem" }}>(snapshot)</span>
-          )}
+          {s.kind === "point" && <span style={{ color: "#5b6472", marginLeft: "0.25rem" }}>(snapshot)</span>}
         </span>
       ))}
     </div>
   );
 }
 
-// The inline SVG line chart (one company). Only reached when points.length >= MIN_TREND_POINTS
-// (>= 3), so `points.length - 1` is always >= 2 (no divide-by-zero on the x axis).
+// Full-size single-company line chart. Only reached when points.length >= MIN_TREND_POINTS.
 function TrendChart({
   points,
+  metric,
   label,
   onSelectRow,
 }: {
   points: TrendPoint[];
+  metric: CanonicalMetric;
   label: string;
   onSelectRow?: (row: MetricRow) => void;
 }) {
-  const values = points.map((p) => p.value);
-  const minV = Math.min(...values);
-  const maxV = Math.max(...values);
-  const span = maxV - minV || 1; // a perfectly flat series → avoid divide-by-zero
-
+  const { min: minV, max: maxV } = yDomain(points.map((p) => p.value), metric);
+  const span = maxV - minV || 1;
   const x = (i: number) => PAD.left + (i / (points.length - 1)) * INNER_W;
   const y = (v: number) => PAD.top + INNER_H - ((v - minV) / span) * INNER_H;
-
   const polyline = points.map((p, i) => `${x(i)},${y(p.value)}`).join(" ");
-  const maxPoint = points.find((p) => p.value === maxV);
-  const minPoint = points.find((p) => p.value === minV);
 
   return (
     <svg
@@ -431,24 +490,20 @@ function TrendChart({
       role="img"
       aria-label={`${label} over ${points.length} quarters`}
     >
-      {/* min / max reference lines + their value labels on the y axis */}
+      {/* standardized y-axis: domain endpoints (not data points) */}
       <line x1={PAD.left} y1={y(maxV)} x2={W - PAD.right} y2={y(maxV)} stroke="#eee" />
       <line x1={PAD.left} y1={y(minV)} x2={W - PAD.right} y2={y(minV)} stroke="#eee" />
       <text x={PAD.left - 8} y={y(maxV)} textAnchor="end" dominantBaseline="middle" fontSize="11" fill="#5f6672">
-        {maxPoint?.displayValue}
+        {formatAxisTick(maxV, metric)}
       </text>
       <text x={PAD.left - 8} y={y(minV)} textAnchor="end" dominantBaseline="middle" fontSize="11" fill="#5f6672">
-        {minPoint?.displayValue}
+        {formatAxisTick(minV, metric)}
       </text>
 
-      {/* the trend line */}
       <polyline points={polyline} fill="none" stroke={LINE_COLOR} strokeWidth="2" />
 
-      {/* points + per-point value and period labels */}
       {points.map((p, i) => (
         <g key={p.period}>
-          {/* A larger transparent hit target makes the point easy to click (Phase 4) and
-              keyboard-operable (a11y): Tab to it, Enter/Space opens its source. */}
           {onSelectRow && (
             <circle
               cx={x(i)}
@@ -490,38 +545,29 @@ function TrendChart({
   );
 }
 
-// The inline SVG overlay chart (V3): one polyline per company on a SHARED axis. The x axis
-// is the union of every plotted period (chronological); the y axis is the global min/max
-// across all series, so lines are directly comparable — which is exactly why the incomparable
-// companies were already excluded upstream (buildAllCompaniesSeries).
+// Full-size all-companies overlay chart: one polyline (or dots) per company on a shared,
+// standardized axis.
 function AllCompaniesChart({
   series,
+  metric,
   label,
   onSelectRow,
 }: {
   series: CompanySeries[];
+  metric: CanonicalMetric;
   label: string;
   onSelectRow?: (row: MetricRow) => void;
 }) {
-  // Shared, chronological x axis = every distinct period across all series.
-  const periodKeys = [
-    ...new Set(series.flatMap((s) => s.points.map((p) => p.periodKey))),
-  ].sort((a, b) => a - b);
+  const periodKeys = [...new Set(series.flatMap((s) => s.points.map((p) => p.periodKey)))].sort((a, b) => a - b);
   const xIndex = new Map(periodKeys.map((k, i) => [k, i]));
   const keyToPeriod = new Map<number, string>();
   for (const s of series) for (const p of s.points) keyToPeriod.set(p.periodKey, p.period);
 
-  const allValues = series.flatMap((s) => s.points.map((p) => p.value));
-  const minV = Math.min(...allValues);
-  const maxV = Math.max(...allValues);
+  const { min: minV, max: maxV } = yDomain(series.flatMap((s) => s.points.map((p) => p.value)), metric);
   const span = maxV - minV || 1;
-
   const denom = Math.max(1, periodKeys.length - 1);
   const x = (periodKey: number) => PAD.left + ((xIndex.get(periodKey) ?? 0) / denom) * INNER_W;
   const y = (v: number) => PAD.top + INNER_H - ((v - minV) / span) * INNER_H;
-
-  const maxPoint = series.flatMap((s) => s.points).find((p) => p.value === maxV);
-  const minPoint = series.flatMap((s) => s.points).find((p) => p.value === minV);
 
   return (
     <svg
@@ -531,24 +577,21 @@ function AllCompaniesChart({
       role="img"
       aria-label={`${label} across ${series.length} companies`}
     >
-      {/* min / max reference lines + their value labels */}
       <line x1={PAD.left} y1={y(maxV)} x2={W - PAD.right} y2={y(maxV)} stroke="#eee" />
       <line x1={PAD.left} y1={y(minV)} x2={W - PAD.right} y2={y(minV)} stroke="#eee" />
       <text x={PAD.left - 8} y={y(maxV)} textAnchor="end" dominantBaseline="middle" fontSize="11" fill="#5f6672">
-        {maxPoint?.displayValue}
+        {formatAxisTick(maxV, metric)}
       </text>
       <text x={PAD.left - 8} y={y(minV)} textAnchor="end" dominantBaseline="middle" fontSize="11" fill="#5f6672">
-        {minPoint?.displayValue}
+        {formatAxisTick(minV, metric)}
       </text>
 
-      {/* period labels along the x axis (shared) */}
       {periodKeys.map((k) => (
         <text key={k} x={x(k)} y={H - PAD.bottom + 20} textAnchor="middle" fontSize="11" fill="#666">
           {keyToPeriod.get(k)}
         </text>
       ))}
 
-      {/* one series per company: a trend LINE when it has >=3 quarters, else snapshot DOT(s) */}
       {series.map((s) => (
         <g key={s.company}>
           {s.kind === "line" && (
@@ -571,9 +614,7 @@ function AllCompaniesChart({
               style={onSelectRow ? { cursor: "pointer" } : undefined}
               role={onSelectRow ? "button" : undefined}
               tabIndex={onSelectRow ? 0 : undefined}
-              aria-label={
-                onSelectRow ? `${s.company} ${p.period} ${p.displayValue} — view source` : undefined
-              }
+              aria-label={onSelectRow ? `${s.company} ${p.period} ${p.displayValue} — view source` : undefined}
               onClick={onSelectRow ? () => onSelectRow(p.row) : undefined}
               onKeyDown={
                 onSelectRow
@@ -595,5 +636,103 @@ function AllCompaniesChart({
         </g>
       ))}
     </svg>
+  );
+}
+
+// Compact all-companies chart for the "All metrics" small multiples: one per metric, acronym
+// title, standardized axis, no per-point value labels (kept clean at small size).
+function MiniChart({
+  metric,
+  series,
+  onSelectRow,
+}: {
+  metric: CanonicalMetric;
+  series: CompanySeries[];
+  onSelectRow?: (row: MetricRow) => void;
+}) {
+  const periodKeys = [...new Set(series.flatMap((s) => s.points.map((p) => p.periodKey)))].sort((a, b) => a - b);
+  const xIndex = new Map(periodKeys.map((k, i) => [k, i]));
+  const keyToPeriod = new Map<number, string>();
+  for (const s of series) for (const p of s.points) keyToPeriod.set(p.periodKey, p.period);
+
+  const { min: minV, max: maxV } = yDomain(series.flatMap((s) => s.points.map((p) => p.value)), metric);
+  const span = maxV - minV || 1;
+  const denom = Math.max(1, periodKeys.length - 1);
+  const x = (periodKey: number) => MPAD.left + ((xIndex.get(periodKey) ?? 0) / denom) * MINNER_W;
+  const y = (v: number) => MPAD.top + MINNER_H - ((v - minV) / span) * MINNER_H;
+
+  return (
+    <div style={{ border: "1px solid #eee", borderRadius: 6, padding: "0.5rem 0.6rem", background: "#fff" }}>
+      <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "#1a202c" }}>
+        {METRIC_LABELS[metric]}{" "}
+        <span style={{ fontWeight: 400, fontSize: "0.72em", color: "#858b94" }}>
+          · {METRIC_FULL_NAME[metric]}
+        </span>
+      </div>
+      {series.length === 0 ? (
+        <div style={{ color: "#858b94", fontSize: "0.8rem", padding: "1.5rem 0", textAlign: "center" }}>
+          No comparable series
+        </div>
+      ) : (
+        <svg viewBox={`0 0 ${MW} ${MH}`} width="100%" style={{ height: "auto" }} role="img" aria-label={`${METRIC_LABELS[metric]} across ${series.length} companies`}>
+          <line x1={MPAD.left} y1={y(maxV)} x2={MW - MPAD.right} y2={y(maxV)} stroke="#eee" />
+          <line x1={MPAD.left} y1={y(minV)} x2={MW - MPAD.right} y2={y(minV)} stroke="#eee" />
+          <text x={MPAD.left - 6} y={y(maxV)} textAnchor="end" dominantBaseline="middle" fontSize="9" fill="#858b94">
+            {formatAxisTick(maxV, metric)}
+          </text>
+          <text x={MPAD.left - 6} y={y(minV)} textAnchor="end" dominantBaseline="middle" fontSize="9" fill="#858b94">
+            {formatAxisTick(minV, metric)}
+          </text>
+          {periodKeys.map((k) => (
+            <text key={k} x={x(k)} y={MH - MPAD.bottom + 14} textAnchor="middle" fontSize="9" fill="#858b94">
+              {abbrevPeriod(keyToPeriod.get(k) ?? "")}
+            </text>
+          ))}
+          {series.map((s) => (
+            <g key={s.company}>
+              {s.kind === "line" && (
+                <polyline
+                  points={s.points.map((p) => `${x(p.periodKey)},${y(p.value)}`).join(" ")}
+                  fill="none"
+                  stroke={s.color}
+                  strokeWidth="1.8"
+                />
+              )}
+              {s.points.map((p) => (
+                <circle
+                  key={p.period}
+                  cx={x(p.periodKey)}
+                  cy={y(p.value)}
+                  r={s.kind === "line" ? 2.5 : 4}
+                  fill={s.color}
+                  stroke={s.kind === "point" ? "#fff" : undefined}
+                  strokeWidth={s.kind === "point" ? 1.2 : undefined}
+                  style={onSelectRow ? { cursor: "pointer" } : undefined}
+                  role={onSelectRow ? "button" : undefined}
+                  tabIndex={onSelectRow ? 0 : undefined}
+                  aria-label={onSelectRow ? `${s.company} ${p.period} ${p.displayValue} — view source` : undefined}
+                  onClick={onSelectRow ? () => onSelectRow(p.row) : undefined}
+                  onKeyDown={
+                    onSelectRow
+                      ? (e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            onSelectRow(p.row);
+                          }
+                        }
+                      : undefined
+                  }
+                >
+                  <title>
+                    {s.company} · {p.period} · {p.displayValue}
+                    {s.kind === "point" ? " (snapshot)" : ""}
+                  </title>
+                </circle>
+              ))}
+            </g>
+          ))}
+        </svg>
+      )}
+    </div>
   );
 }
