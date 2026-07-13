@@ -27,6 +27,24 @@ interface RunMeta {
   elapsed_s: number;
 }
 
+// A small "Sagard" attribution wordmark (inline SVG + text — offline, self-contained). This is
+// a case-study demo PREPARED FOR Sagard, not an official Sagard product; the "Prepared for"
+// label and the "case study" framing keep that unambiguous.
+function SagardWordmark() {
+  return (
+    <span
+      aria-label="Sagard"
+      style={{ display: "inline-flex", alignItems: "center", gap: "0.45rem", color: "#16233d" }}
+    >
+      <svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M8 0.5 L15.5 8 L8 15.5 L0.5 8 Z" fill="#16233d" />
+        <path d="M8 4.2 L11.8 8 L8 11.8 L4.2 8 Z" fill="#ffffff" />
+      </svg>
+      <span style={{ fontWeight: 700, letterSpacing: "0.18em", fontSize: "0.95rem" }}>SAGARD</span>
+    </span>
+  );
+}
+
 // Nav-bar button styling (V2). Disabled = the in-flight re-run (muted, no pointer).
 function navButtonStyle(disabled: boolean): CSSProperties {
   return {
@@ -166,7 +184,7 @@ export function App() {
       >
         <div
           style={{
-            maxWidth: 1100,
+            maxWidth: 1400,
             margin: "0 auto",
             padding: "0.6rem 2rem",
             display: "flex",
@@ -190,7 +208,7 @@ export function App() {
               aria-hidden="true"
               style={{ display: "inline-block", width: 14, height: 14, borderRadius: 3, background: "#2b6cb0" }}
             />
-            Portfolio Cockpit
+            Concord
           </span>
           {status === "loaded" && (
             <span style={{ display: "flex", gap: "0.5rem" }}>
@@ -213,15 +231,45 @@ export function App() {
       <main
         style={{
           fontFamily: "system-ui, sans-serif",
-          maxWidth: 1100,
+          maxWidth: 1400,
           margin: "0 auto",
           padding: "2rem",
         }}
       >
-        <h1>Portfolio Cockpit</h1>
-      <p style={{ color: "#666" }}>
-        Local, offline monitoring cockpit — Sagard case study.
-      </p>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: "1rem",
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <h1 style={{ marginBottom: "0.15rem" }}>Concord</h1>
+            <p style={{ color: "#16233d", fontSize: "1.05rem", fontWeight: 500, margin: "0 0 0.35rem" }}>
+              One comparable, source-traced view of every portfolio company.
+            </p>
+            <p style={{ color: "#666", margin: 0, maxWidth: 760 }}>
+              Same label ≠ same metric — so every number is normalized to be comparable and
+              traceable to its source. Local &amp; offline · Sagard case study.
+            </p>
+          </div>
+          <div style={{ textAlign: "right", flexShrink: 0 }}>
+            <div
+              style={{
+                fontSize: "0.68rem",
+                color: "#8a8f99",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                marginBottom: "0.2rem",
+              }}
+            >
+              Prepared for
+            </div>
+            <SagardWordmark />
+          </div>
+        </div>
 
       {status === "error" && (
         <p role="alert" style={{ color: "#b00020" }}>

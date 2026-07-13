@@ -10,7 +10,10 @@ import type { MetricRow, MetricsExport } from "../types";
 import {
   CANONICAL_METRIC_ORDER,
   CURRENCY_SYMBOL,
+  METRIC_DESCRIPTION,
+  METRIC_FULL_NAME,
   METRIC_LABELS,
+  SECTOR_DESCRIPTION,
   SECTOR_LABELS,
   cellKey,
   classifyCell,
@@ -25,7 +28,7 @@ import {
   type Cell,
   type OperatingValueView,
 } from "../lib/grid";
-import { laggardKey, sectorHeat } from "../lib/heat";
+import { heatColor, laggardKey, sectorHeat } from "../lib/heat";
 
 // The newest period anywhere in the export (year-aware). A value cell whose own period is
 // older than this is a STALE figure (the company reported nothing newer) — the grid shows it
@@ -88,7 +91,9 @@ function CellValue({
     const shown = symbol && !/^[£$€]/.test(text) ? `${symbol}${text}` : text;
     return (
       <span title={`Reported in ${currency} — not comparable to the USD column`}>
-        {shown} <span style={subLabel}>· not comparable ({currency})</span>
+        {shown}
+        {/* stacked (block) so the long note doesn't widen the column */}
+        <span style={{ ...subLabel, display: "block" }}>· not comparable ({currency})</span>
       </span>
     );
   }
@@ -173,6 +178,34 @@ export function RagGrid({
         months), not quarterly.
       </p>
 
+      {/* Heat legend — explains the green→red scale that shades the value cells. */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "0.5rem",
+          margin: "0.2rem 0 0.8rem",
+          fontSize: "0.8rem",
+          color: "#5b6472",
+          flexWrap: "wrap",
+        }}
+      >
+        <span style={{ fontWeight: 600 }}>Heat:</span>
+        <span>worst</span>
+        <span
+          aria-hidden="true"
+          style={{ display: "inline-flex", borderRadius: 3, overflow: "hidden", border: "1px solid #e2e2e2" }}
+        >
+          {[0, 0.25, 0.5, 0.75, 1].map((f) => (
+            <span key={f} style={{ display: "inline-block", width: 22, height: 12, background: heatColor(f) }} />
+          ))}
+        </span>
+        <span>best</span>
+        <span style={{ color: "#858b94" }}>
+          — ranked within a sector, same-quarter peers only. ▼ = the sector laggard.
+        </span>
+      </div>
+
       {groups.map((group) => {
         // Heat + laggard are computed PER SECTOR — never across sectors — so a company is
         // only ever ranked against genuine peers (comparability, the whole thesis).
@@ -196,6 +229,9 @@ export function RagGrid({
               {group.companies.length === 1 ? "company" : "companies"})
             </span>
           </h3>
+          <p style={{ color: "#5b6472", fontSize: "0.82rem", margin: "0 0 0.4rem", maxWidth: 900 }}>
+            {SECTOR_DESCRIPTION[group.sector]}
+          </p>
           {noHeatNote && (
             <p style={{ color: "#5b6472", fontSize: "0.8rem", margin: "0 0 0.4rem" }}>
               {noHeatNote}
@@ -208,12 +244,28 @@ export function RagGrid({
                   Company
                 </th>
                 {CANONICAL_METRIC_ORDER.map((metric) => (
-                  <th key={metric} scope="col" style={cellBase}>
-                    {METRIC_LABELS[metric]}
-                    {(metric === "net_revenue_retention_pct" ||
-                      metric === "logo_churn_pct") && (
-                      <span style={{ fontWeight: 400, color: "#5b6472" }}> · LTM</span>
-                    )}
+                  <th key={metric} scope="col" style={cellBase} title={METRIC_DESCRIPTION[metric]}>
+                    <div>
+                      {METRIC_LABELS[metric]}
+                      {(metric === "net_revenue_retention_pct" ||
+                        metric === "logo_churn_pct") && (
+                        <span style={{ fontWeight: 400, color: "#5b6472" }}> · LTM</span>
+                      )}
+                    </div>
+                    {/* the full metric name, small — visual support under the acronym (wraps, so
+                        it never widens the column); hover the header for the plain definition. */}
+                    <div
+                      style={{
+                        fontWeight: 400,
+                        fontSize: "0.68em",
+                        color: "#858b94",
+                        whiteSpace: "normal",
+                        lineHeight: 1.15,
+                        marginTop: "0.1rem",
+                      }}
+                    >
+                      {METRIC_FULL_NAME[metric]}
+                    </div>
                   </th>
                 ))}
               </tr>

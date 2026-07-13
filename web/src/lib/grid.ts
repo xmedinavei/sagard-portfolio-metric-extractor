@@ -52,6 +52,39 @@ export const SECTOR_LABELS: Record<SectorKind, string> = {
   payments: "Payments",
 };
 
+// One-line "what this sector is" subtitle under each sector table (visual support only).
+export const SECTOR_DESCRIPTION: Record<SectorKind, string> = {
+  saas: "Software companies — subscription economics: recurring revenue, retention, churn.",
+  credit: "Private lender — yield & credit metrics; its margin is interest-based, not SaaS-comparable.",
+  marketplace: "Two-sided marketplaces — transaction-volume revenue, thin margins.",
+  payments: "Payments processor — transaction-volume revenue; note the restricted client cash.",
+};
+
+// The full name behind each column acronym (small visual support in the header).
+export const METRIC_FULL_NAME: Record<CanonicalMetric, string> = {
+  revenue_qtr: "Quarterly revenue",
+  arr_eop: "Annual Recurring Revenue",
+  gross_margin_pct: "Gross profit margin",
+  cash_balance: "Cash & equivalents",
+  monthly_burn: "Monthly net burn",
+  headcount: "Total headcount",
+  net_revenue_retention_pct: "Net Revenue Retention",
+  logo_churn_pct: "Logo churn rate",
+};
+
+// A plain-language "what it means" for each metric — shown as the column header's tooltip.
+export const METRIC_DESCRIPTION: Record<CanonicalMetric, string> = {
+  revenue_qtr: "Recognized revenue for the quarter.",
+  arr_eop: "Annualized value of active subscriptions at the end of the period.",
+  gross_margin_pct: "Revenue minus cost of goods sold, as a % of revenue.",
+  cash_balance: "Cash on hand at the end of the period.",
+  monthly_burn: "Net cash consumed per month (shown negative — money going out).",
+  headcount: "Full-time employees at the end of the period.",
+  net_revenue_retention_pct:
+    "Revenue kept and expanded from existing customers over the last twelve months (>100% = net expansion).",
+  logo_churn_pct: "Share of customers lost over the last twelve months.",
+};
+
 // ── Reporting-currency rulebook (Trap C — currency). Human-owned data: which companies
 // report their pack in a non-USD currency. In production this comes from the backend
 // `currency` field (RESERVED / null in v1), so we keep a small explicit map here — exactly
