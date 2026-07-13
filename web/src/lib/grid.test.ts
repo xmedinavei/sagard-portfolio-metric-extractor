@@ -6,6 +6,7 @@ import {
   cellText,
   classifyCell,
   formatUsdShort,
+  groupByStrategy,
   groupCompaniesBySector,
   latestByCompanyMetric,
   nonUsdCurrency,
@@ -114,6 +115,24 @@ describe("groupCompaniesBySector", () => {
       "PeopleFlow",
     ]);
     expect(groups.find((g) => g.sector === "credit")?.companies).toEqual(["LendBridge"]);
+  });
+});
+
+describe("groupByStrategy", () => {
+  it("orders the Private Equity table by market (SaaS first), then by name", () => {
+    const groups = groupByStrategy(FIXTURE);
+    // Two strategy tables, the equity book first.
+    expect(groups.map((g) => g.key)).toEqual(["private_equity", "private_credit"]);
+    // PE spans saas (NovaCloud, PeopleFlow), marketplace (ApexFreight), payments (ClearPay).
+    // Market-first ordering (SECTOR_ORDER) — NOT a flat A→Z, which would start with "ApexFreight".
+    expect(groups.find((g) => g.key === "private_equity")?.companies).toEqual([
+      "NovaCloud",
+      "PeopleFlow",
+      "ApexFreight",
+      "ClearPay",
+    ]);
+    // Private Credit holds the lender only.
+    expect(groups.find((g) => g.key === "private_credit")?.companies).toEqual(["LendBridge"]);
   });
 });
 

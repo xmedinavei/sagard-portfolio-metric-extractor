@@ -189,7 +189,9 @@ export function RagGrid({
     : latestByCompanyMetric(metrics);
 
   // Group companies by MARKET (sector) or by investment STRATEGY (PE vs credit). Display-only.
-  const [groupMode, setGroupMode] = useState<GroupMode>("market");
+  // Default to STRATEGY — the portfolio's own lens (equity book vs credit book) — with the
+  // Private Equity table ordered SaaS-first by market (see groupByStrategy).
+  const [groupMode, setGroupMode] = useState<GroupMode>("strategy");
   const displayGroups =
     groupMode === "strategy" ? groupByStrategy(metrics) : groupByMarket(metrics);
   const sectorOf = companySectors(metrics);
@@ -214,7 +216,7 @@ export function RagGrid({
 
   return (
     <section style={{ marginTop: "2rem" }}>
-      <h2 style={{ fontSize: "1.15rem" }}>
+      <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#16233d", borderBottom: "2px solid #e8ecf2", paddingBottom: "0.3rem", marginBottom: "0.6rem" }}>
         Metrics by {groupMode === "strategy" ? "strategy" : "sector"}
       </h2>
       <p style={{ color: "#666", fontSize: "0.85rem", marginTop: 0 }}>

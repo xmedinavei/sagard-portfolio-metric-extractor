@@ -148,18 +148,23 @@ export interface AllCompaniesSeries {
 
 // A fixed, offline colour ramp (no external palette dependency — keeps the bundle self
 // contained). Assigned by the sorted order of the included companies, so colours are stable
-// across renders. ~10 distinct, reasonably colour-blind-distinguishable hues.
+// across renders. This is the D3/Tableau "category-10" set, ORDERED STRONGEST-FIRST (blue, red,
+// green, orange, purple …): companies are coloured by index, so the first ~9 hues are what
+// actually get used, and these are the ones that stay legible against white. Earlier the ramp
+// mixed several desaturated mid-value hues (slate, two near-identical teals) that blurred into
+// one another on the busy all-companies overlay — this set keeps each line distinguishable, and
+// the chart's hover-to-identify (a native SVG <title> per line) does the rest.
 export const SERIES_PALETTE: string[] = [
-  "#2b6cb0", // blue
-  "#c05621", // orange
-  "#2f855a", // green
-  "#b83280", // magenta
-  "#6b46c1", // purple
-  "#b7791f", // gold
-  "#319795", // teal
-  "#9b2c2c", // dark red
-  "#4a5568", // slate
-  "#00707a", // deep teal
+  "#1f77b4", // blue
+  "#d62728", // red
+  "#2ca02c", // green
+  "#ff7f0e", // orange
+  "#9467bd", // purple
+  "#17a2b8", // teal
+  "#e377c2", // pink
+  "#8c564b", // brown
+  "#bcbd22", // olive
+  "#7f7f7f", // gray
 ];
 
 export function buildAllCompaniesSeries(

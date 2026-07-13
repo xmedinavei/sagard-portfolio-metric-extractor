@@ -1,29 +1,31 @@
-// Over-time trend explorer. Three modes:
-//   * "All companies" (DEFAULT) — every company on ONE metric (lines for >=3 quarters, snapshot
-//     dots for fewer). Incomparable series (lender interest-margin, non-USD money) are excluded
-//     and named, never silently overlaid.
-//   * "One company" — one company across its metrics (the label-drift flagship).
-//   * "All metrics" — small multiples: one compact chart per metric, all companies at once.
+// Over-time trend explorer.
+//
+// ONE primary surface — "every metric at a glance" small multiples — plus one scope knob:
+//   * "All companies" (DEFAULT) — each mini-chart overlays every comparable company;
+//   * "One company"            — each mini-chart shows just the chosen company's own trend.
+// The mini-charts are GROUPED exactly like the tables (Grow · Profit / Keep / Fund / Scale) so
+// the two sections tell the same story in the same order. Three charts per row so each is legible;
+// click any chart to ENLARGE it in a modal (where you can trace a point back to its source doc).
+//
 // Y-axes are STANDARDIZED per metric (money & counts anchored at 0; percentages fitted to the
-// nearest 5). Company COLOURS are consistent across every chart. All ordering/axis logic lives
-// in ../lib/trend so it stays unit-testable; this file is a thin, dependency-light inline-SVG
-// renderer (no chart library, to keep the offline bundle small).
+// nearest 5) and each company keeps ONE colour across every chart. All ordering/axis/series logic
+// lives in ../lib/trend so it stays unit-testable; this file is a thin, dependency-light inline-SVG
+// renderer (no chart library, to keep the offline bundle small). Comparability is still enforced:
+// a lender's interest-margin (a different basis) and non-USD money (PeopleFlow's GBP) are excluded
+// from a metric and NAMED, never silently overlaid on a shared axis.
 
 import type { CSSProperties } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { CanonicalMetric, MetricRow, MetricsExport } from "../types";
-import { METRIC_FULL_NAME, METRIC_LABELS } from "../lib/grid";
-import type { CompanySeries, TrendPoint } from "../lib/trend";
+import { METRIC_FULL_NAME, METRIC_GROUPS, METRIC_LABELS } from "../lib/grid";
+import type { CompanySeries, ExcludedSeries } from "../lib/trend";
 import {
   MIN_TREND_POINTS,
   SERIES_PALETTE,
   buildAllCompaniesSeries,
-  buildSeries,
   distinctCompanies,
   formatAxisTick,
-  hasSufficientHistory,
-  metricsForCompany,
   metricsPresent,
   seriesBreakdown,
   yDomain,
@@ -32,30 +34,48 @@ import {
 const selectStyle: CSSProperties = {
   padding: "0.3rem 0.5rem",
   fontSize: "0.9rem",
-  marginRight: "0.75rem",
+  marginLeft: "0.4rem",
 };
 
-// Full-size chart geometry (single-company + one-metric overlay).
-const W = 680;
-const H = 280;
-const PAD = { top: 28, right: 32, bottom: 46, left: 72 };
+// Full-size chart geometry (the enlarge-modal chart).
+const W = 720;
+const H = 300;
+const PAD = { top: 30, right: 34, bottom: 48, left: 74 };
 const INNER_W = W - PAD.left - PAD.right;
 const INNER_H = H - PAD.top - PAD.bottom;
-const LINE_COLOR = "#2b6cb0";
 
-// Compact geometry for the "All metrics" small multiples.
+// Compact geometry for the small multiples.
 const MW = 340;
 const MH = 176;
 const MPAD = { top: 20, right: 14, bottom: 30, left: 54 };
 const MINNER_W = MW - MPAD.left - MPAD.right;
 const MINNER_H = MH - MPAD.top - MPAD.bottom;
 
-type TrendMode = "all" | "single" | "grid";
+type Scope = "all" | "one";
 
-const MODE_LABELS: Record<TrendMode, string> = {
-  all: "All companies",
-  single: "One company",
-  grid: "All metrics",
+// A pill toggle button style shared by the scope control.
+const pillStyle = (active: boolean): CSSProperties => ({
+  padding: "0.3rem 0.75rem",
+  fontSize: "0.85rem",
+  cursor: "pointer",
+  border: "1px solid #cbd5e0",
+  borderRadius: 6,
+  background: active ? "#2b6cb0" : "#fff",
+  color: active ? "#fff" : "#333",
+});
+
+// The Grow/Keep/Fund/Scale banner above each block of mini-charts — mirrors the grid's group banner.
+const groupBanner: CSSProperties = {
+  fontSize: "0.72rem",
+  fontWeight: 700,
+  letterSpacing: "0.04em",
+  textTransform: "uppercase",
+  color: "#4a5568",
+  background: "#f2f5f9",
+  border: "1px solid #e2e8f0",
+  borderRadius: 6,
+  padding: "0.35rem 0.65rem",
+  margin: "1.2rem 0 0.65rem",
 };
 
 // Give a series its consistent per-company colour (so a company is the same colour everywhere).
@@ -66,6 +86,14 @@ function recolor(series: CompanySeries[], colorOf: Map<string, string>): Company
 // "Q2 2025" -> "Q2'25" for the cramped small-multiple x axis.
 const abbrevPeriod = (p: string) => p.replace(/ 20(\d\d)$/, "'$1");
 
+// A metric's series + exclusions, already recoloured and (in one-company scope) filtered to the
+// chosen company. Built from the SAME buildAllCompaniesSeries used cross-company, so one-company
+// scope inherits the identical comparability rules (refused basis / non-USD money → excluded).
+interface ScopedMetric {
+  series: CompanySeries[];
+  excluded: ExcludedSeries[];
+}
+
 export function TrendExplorer({
   export: exp,
   onSelectRow,
@@ -75,157 +103,85 @@ export function TrendExplorer({
 }) {
   const metrics = exp.metrics;
   const companies = distinctCompanies(metrics);
-  // Default to the all-companies league view (the flagship cross-company story).
-  const [mode, setMode] = useState<TrendMode>("all");
-  // One consistent colour per company, used across every chart (all-companies + all-metrics).
+  // One consistent colour per company, used across every chart.
   const colorOf = new Map(companies.map((c, i) => [c, SERIES_PALETTE[i % SERIES_PALETTE.length]]));
 
-  // ── One-company mode state ───────────────────────────────────────────────────────────
+  // Scope: all companies (default) or one company. `expanded` drives the enlarge modal.
+  const [scope, setScope] = useState<Scope>("all");
   const defaultCompany = companies.includes("NovaCloud") ? "NovaCloud" : (companies[0] ?? "");
   const [companyChoice, setCompanyChoice] = useState(defaultCompany);
   const company = companies.includes(companyChoice) ? companyChoice : defaultCompany;
-  const metricOptions = metricsForCompany(metrics, company);
-  const [metricChoice, setMetricChoice] = useState<CanonicalMetric | null>(null);
-  const singleMetric: CanonicalMetric | null =
-    metricChoice && metricOptions.includes(metricChoice)
-      ? metricChoice
-      : metricOptions.includes("arr_eop")
-        ? "arr_eop"
-        : (metricOptions[0] ?? null);
-
-  // ── All-companies mode state ─────────────────────────────────────────────────────────
-  const allMetrics = metricsPresent(metrics);
-  const [allMetricChoice, setAllMetricChoice] = useState<CanonicalMetric | null>(null);
-  const allMetric: CanonicalMetric | null =
-    allMetricChoice && allMetrics.includes(allMetricChoice)
-      ? allMetricChoice
-      : allMetrics.includes("net_revenue_retention_pct")
-        ? "net_revenue_retention_pct"
-        : allMetrics.includes("arr_eop")
-          ? "arr_eop"
-          : (allMetrics[0] ?? null);
+  const [expanded, setExpanded] = useState<CanonicalMetric | null>(null);
 
   if (companies.length === 0) return null;
 
+  // Build every present metric's scoped result once (canonical/grouped order preserved downstream).
+  const present = new Set(metricsPresent(metrics));
+  const scoped = new Map<CanonicalMetric, ScopedMetric>();
+  for (const m of metricsPresent(metrics)) {
+    const built = buildAllCompaniesSeries(metrics, m);
+    let series = recolor(built.series, colorOf);
+    let excluded = built.excluded;
+    if (scope === "one") {
+      series = series.filter((s) => s.company === company);
+      excluded = excluded.filter((e) => e.company === company);
+    }
+    scoped.set(m, { series, excluded });
+  }
+
+  // A metric earns a card when there is something to show for the current scope (a series, or an
+  // honest "excluded" note). In one-company scope this naturally hides metrics the company omits.
+  const hasCard = (m: CanonicalMetric) => {
+    const r = scoped.get(m);
+    return !!r && (r.series.length > 0 || r.excluded.length > 0);
+  };
+
+  // The company colour legend (all-companies scope only — one-company scope is self-evident).
+  const companiesShown = [
+    ...new Set(
+      [...scoped.values()].flatMap((r) => r.series.map((s) => s.company)),
+    ),
+  ].sort();
+
+  // Reset the modal whenever scope/company changes so it never points at a now-absent metric.
+  const changeScope = (s: Scope) => {
+    setScope(s);
+    setExpanded(null);
+  };
+  const changeCompany = (c: string) => {
+    setCompanyChoice(c);
+    setExpanded(null);
+  };
+
   return (
     <section style={{ marginTop: "2rem" }}>
-      <h2 style={{ fontSize: "1.15rem" }}>Trend over time</h2>
+      <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#16233d", borderBottom: "2px solid #e8ecf2", paddingBottom: "0.3rem", marginBottom: "0.6rem" }}>Trend over time</h2>
       <p style={{ color: "#666", fontSize: "0.85rem", marginTop: 0, maxWidth: 950 }}>
-        Quarter-over-quarter. See <em>all companies</em> on one metric, <em>one company</em> across
-        its metrics, or <em>every metric</em> at once. Y-axes are standardized per metric — money
-        &amp; headcount start at <strong>0</strong>, percentages fit their own range — and each
-        company keeps one colour throughout. A trend needs {MIN_TREND_POINTS}+ quarters; fewer shows
-        as a snapshot dot.
+        Every metric at a glance, quarter over quarter — for <em>all companies</em> at once, or drill
+        into <em>one</em>. Charts are grouped like the tables (Grow · Profit / Keep / Fund / Scale).
+        Y-axes are
+        standardized per metric — money &amp; headcount start at <strong>0</strong>, percentages fit
+        their own range — and each company keeps one colour throughout. A trend needs{" "}
+        {MIN_TREND_POINTS}+ quarters; fewer shows as a snapshot dot. <strong>Click any chart</strong>{" "}
+        to enlarge it and trace a number to its source.
       </p>
 
-      {/* Mode toggle. */}
-      <div style={{ margin: "0.75rem 0", display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
-        {(["all", "single", "grid"] as TrendMode[]).map((m) => (
-          <button
-            key={m}
-            type="button"
-            onClick={() => setMode(m)}
-            aria-pressed={mode === m}
-            style={{
-              padding: "0.3rem 0.75rem",
-              fontSize: "0.85rem",
-              cursor: "pointer",
-              border: "1px solid #cbd5e0",
-              borderRadius: 6,
-              background: mode === m ? "#2b6cb0" : "#fff",
-              color: mode === m ? "#fff" : "#333",
-            }}
-          >
-            {MODE_LABELS[m]}
-          </button>
-        ))}
-      </div>
-
-      {mode === "single" && (
-        <SingleCompanyView
-          metrics={metrics}
-          companies={companies}
-          company={company}
-          metric={singleMetric}
-          metricOptions={metricOptions}
-          onCompanyChange={(c) => {
-            setCompanyChoice(c);
-            setMetricChoice(null);
-          }}
-          onMetricChange={(m) => setMetricChoice(m)}
-          onSelectRow={onSelectRow}
-        />
-      )}
-      {mode === "all" && (
-        <AllCompaniesView
-          metrics={metrics}
-          metric={allMetric}
-          metrics_options={allMetrics}
-          colorOf={colorOf}
-          onMetricChange={(m) => setAllMetricChoice(m)}
-          onSelectRow={onSelectRow}
-        />
-      )}
-      {mode === "grid" && (
-        <AllMetricsView
-          metrics={metrics}
-          allMetrics={allMetrics}
-          colorOf={colorOf}
-          onSelectRow={onSelectRow}
-        />
-      )}
-    </section>
-  );
-}
-
-// ── One-company view (the label-drift flagship) ─────────────────────────────────────────
-function SingleCompanyView({
-  metrics,
-  companies,
-  company,
-  metric,
-  metricOptions,
-  onCompanyChange,
-  onMetricChange,
-  onSelectRow,
-}: {
-  metrics: MetricRow[];
-  companies: string[];
-  company: string;
-  metric: CanonicalMetric | null;
-  metricOptions: CanonicalMetric[];
-  onCompanyChange: (company: string) => void;
-  onMetricChange: (metric: CanonicalMetric) => void;
-  onSelectRow?: (row: MetricRow) => void;
-}) {
-  const points = metric ? buildSeries(metrics, company, metric) : [];
-  const sufficient = hasSufficientHistory(points);
-  const rawLabels = new Set(points.map((p) => p.rawLabel));
-
-  return (
-    <>
-      <div style={{ margin: "0.75rem 0" }}>
-        <label>
-          <span style={{ fontSize: "0.8rem", color: "#666", marginRight: "0.4rem" }}>Company</span>
-          <select style={selectStyle} value={company} onChange={(e) => onCompanyChange(e.target.value)}>
-            {companies.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </label>
-        {metric !== null && (
-          <label>
-            <span style={{ fontSize: "0.8rem", color: "#666", marginRight: "0.4rem" }}>Metric</span>
-            <select
-              style={selectStyle}
-              value={metric}
-              onChange={(e) => onMetricChange(e.target.value as CanonicalMetric)}
-            >
-              {metricOptions.map((m) => (
-                <option key={m} value={m}>
-                  {METRIC_LABELS[m]}
+      {/* Scope control: all companies vs one company. */}
+      <div style={{ margin: "0.75rem 0", display: "flex", gap: "0.4rem", alignItems: "center", flexWrap: "wrap" }}>
+        <span style={{ fontSize: "0.8rem", color: "#666", marginRight: "0.2rem" }}>Show:</span>
+        <button type="button" onClick={() => changeScope("all")} aria-pressed={scope === "all"} style={pillStyle(scope === "all")}>
+          All companies
+        </button>
+        <button type="button" onClick={() => changeScope("one")} aria-pressed={scope === "one"} style={pillStyle(scope === "one")}>
+          One company
+        </button>
+        {scope === "one" && (
+          <label style={{ fontSize: "0.8rem", color: "#666", marginLeft: "0.3rem" }}>
+            Company
+            <select style={selectStyle} value={company} onChange={(e) => changeCompany(e.target.value)}>
+              {companies.map((c) => (
+                <option key={c} value={c}>
+                  {c}
                 </option>
               ))}
             </select>
@@ -233,186 +189,19 @@ function SingleCompanyView({
         )}
       </div>
 
-      {metric === null ? (
-        <p role="status" style={{ color: "#666" }}>
-          {company} has no trendable metric.
-        </p>
-      ) : sufficient ? (
-        <TrendChart
-          points={points}
-          metric={metric}
-          label={`${company} — ${METRIC_LABELS[metric]}`}
-          onSelectRow={onSelectRow}
-        />
-      ) : (
-        <p
-          role="status"
-          style={{
-            color: "#c77700",
-            background: "#fff8ec",
-            border: "1px solid #f0dcae",
-            borderRadius: 6,
-            padding: "0.75rem 1rem",
-            maxWidth: W,
-          }}
-        >
-          <strong>Insufficient history.</strong> {company} has{" "}
-          {points.length === 1 ? "only one quarter" : `only ${points.length} quarters`} of{" "}
-          {METRIC_LABELS[metric]} data — at least {MIN_TREND_POINTS} are needed to show a trend.
-        </p>
-      )}
-
-      {metric !== null && sufficient && rawLabels.size > 1 && (
-        <p style={{ color: "#666", fontSize: "0.8rem", maxWidth: W }}>
-          Plotted as one metric across <strong>{rawLabels.size}</strong> different source labels (e.g.{" "}
-          {[...rawLabels].slice(0, 2).map((l) => `"${l}"`).join(", ")}) — the backend collapsed the
-          label drift into a single series.
-        </p>
-      )}
-    </>
-  );
-}
-
-// ── All-companies overlay view (one metric) ─────────────────────────────────────────────
-function AllCompaniesView({
-  metrics,
-  metric,
-  metrics_options,
-  colorOf,
-  onMetricChange,
-  onSelectRow,
-}: {
-  metrics: MetricRow[];
-  metric: CanonicalMetric | null;
-  metrics_options: CanonicalMetric[];
-  colorOf: Map<string, string>;
-  onMetricChange: (metric: CanonicalMetric) => void;
-  onSelectRow?: (row: MetricRow) => void;
-}) {
-  const built = metric ? buildAllCompaniesSeries(metrics, metric) : { series: [], excluded: [] };
-  const series = recolor(built.series, colorOf);
-  const excluded = built.excluded;
-
-  const companySector = new Map(metrics.map((m) => [m.company_name, m.sector]));
-  const sectorsShown = new Set(series.map((s) => companySector.get(s.company)));
-
-  return (
-    <>
-      <div style={{ margin: "0.75rem 0" }}>
-        {metric !== null && (
-          <label>
-            <span style={{ fontSize: "0.8rem", color: "#666", marginRight: "0.4rem" }}>Metric</span>
-            <select
-              style={selectStyle}
-              value={metric}
-              onChange={(e) => onMetricChange(e.target.value as CanonicalMetric)}
-            >
-              {metrics_options.map((m) => (
-                <option key={m} value={m}>
-                  {METRIC_LABELS[m]}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-      </div>
-
-      {metric === null || series.length === 0 ? (
-        <p
-          role="status"
-          style={{
-            color: "#c77700",
-            background: "#fff8ec",
-            border: "1px solid #f0dcae",
-            borderRadius: 6,
-            padding: "0.75rem 1rem",
-            maxWidth: W,
-          }}
-        >
-          <strong>No comparable series.</strong> No company reports{" "}
-          {metric ? METRIC_LABELS[metric] : "this metric"} with a comparable, dated value.
-        </p>
-      ) : (
-        <>
-          <AllCompaniesChart
-            series={series}
-            metric={metric}
-            label={METRIC_LABELS[metric]}
-            onSelectRow={onSelectRow}
-          />
-          <Legend series={series} />
-          {(() => {
-            const b = seriesBreakdown(series);
-            return (
-              <p style={{ color: "#5b6472", fontSize: "0.8rem", maxWidth: W, marginTop: "0.4rem" }}>
-                <strong>{b.total}</strong> {b.total === 1 ? "company" : "companies"} shown
-                {b.lines > 0 && ` · ${b.lines} as trend ${b.lines === 1 ? "line" : "lines"} (3+ quarters)`}
-                {b.points > 0 &&
-                  ` · ${b.points} as single-quarter ${b.points === 1 ? "snapshot dot" : "snapshot dots"}`}
-                . A company with one reported quarter is drawn as a dot, never a fabricated line.
-              </p>
-            );
-          })()}
-          {sectorsShown.size > 1 && (
-            <p style={{ color: "#666", fontSize: "0.8rem", maxWidth: W, marginTop: "0.4rem" }}>
-              Showing levels across <strong>{sectorsShown.size}</strong> sectors — a cross-sector view
-              of trends, not a within-sector ranking. Ratios (NRR, margin) are like-for-like; money
-              levels are shown as reported.
-            </p>
-          )}
-        </>
-      )}
-
-      {excluded.length > 0 && (
-        <p style={{ color: "#666", fontSize: "0.8rem", maxWidth: W, marginTop: "0.5rem" }}>
-          Hidden from this overlay (kept honest, not silently dropped):{" "}
-          {excluded.map((e, i) => (
-            <span key={e.company}>
-              {i > 0 ? "; " : ""}
-              <strong>{e.company}</strong> ({e.reason})
-            </span>
-          ))}
-          .
-        </p>
-      )}
-    </>
-  );
-}
-
-// ── All-metrics view (small multiples) ──────────────────────────────────────────────────
-function AllMetricsView({
-  metrics,
-  allMetrics,
-  colorOf,
-  onSelectRow,
-}: {
-  metrics: MetricRow[];
-  allMetrics: CanonicalMetric[];
-  colorOf: Map<string, string>;
-  onSelectRow?: (row: MetricRow) => void;
-}) {
-  // Build every metric's overlay once; recolour to the shared company map.
-  const perMetric = allMetrics.map((m) => ({
-    metric: m,
-    series: recolor(buildAllCompaniesSeries(metrics, m).series, colorOf),
-  }));
-  // A shared legend = every company that appears in any mini-chart (consistent colours).
-  const legendCompanies = [...new Set(perMetric.flatMap((pm) => pm.series.map((s) => s.company)))].sort();
-
-  return (
-    <>
-      {legendCompanies.length > 0 && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem 1rem", margin: "0.25rem 0 0.75rem" }}>
-          {legendCompanies.map((c) => (
+      {/* Shared company-colour legend (all-companies scope). */}
+      {scope === "all" && companiesShown.length > 0 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem 1rem", margin: "0.25rem 0 0.5rem" }}>
+          {companiesShown.map((c) => (
             <span key={c} style={{ display: "inline-flex", alignItems: "center", fontSize: "0.8rem", color: "#444" }}>
               <span
                 style={{
                   display: "inline-block",
-                  width: 14,
-                  height: 3,
+                  width: 20,
+                  height: 5,
                   borderRadius: 2,
                   background: colorOf.get(c),
-                  marginRight: "0.35rem",
+                  marginRight: "0.4rem",
                 }}
               />
               {c}
@@ -421,38 +210,79 @@ function AllMetricsView({
         </div>
       )}
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-          gap: "1rem",
-        }}
-      >
-        {perMetric.map(({ metric, series }) => (
-          <MiniChart key={metric} metric={metric} series={series} onSelectRow={onSelectRow} />
-        ))}
-      </div>
+      {/* Grouped small multiples — one block per metric group, three charts per row. */}
+      {METRIC_GROUPS.map((group) => {
+        const cards = group.metrics.filter((m) => present.has(m) && hasCard(m));
+        if (cards.length === 0) return null; // e.g. one-company scope where the company omits the whole group
+        return (
+          <div key={group.label}>
+            <div style={groupBanner}>{group.label}</div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                gap: "1rem",
+                alignItems: "start",
+              }}
+            >
+              {cards.map((m) => {
+                const r = scoped.get(m)!;
+                if (r.series.length === 0) return <ExcludedCard key={m} metric={m} excluded={r.excluded} />;
+                return <MiniChart key={m} metric={m} series={r.series} onExpand={() => setExpanded(m)} />;
+              })}
+            </div>
+          </div>
+        );
+      })}
 
-      <p style={{ color: "#666", fontSize: "0.8rem", marginTop: "0.6rem", maxWidth: 950 }}>
-        Every metric at a glance. Each chart&apos;s y-axis is standardized for its own type, and a
-        series is hidden from a metric only where it is not comparable (a lender&apos;s interest
-        margin, or non-USD money) — the same honesty rule as the single-metric view.
+      <p style={{ color: "#666", fontSize: "0.8rem", marginTop: "0.9rem", maxWidth: 950 }}>
+        A series is hidden from a metric only where it is not comparable — a lender&apos;s interest
+        margin (a different basis) or non-USD money (kept off a shared&nbsp;$ axis) — never silently
+        dropped. Click a chart to see which, and to trace any point to its source document.
       </p>
-    </>
+
+      {expanded !== null && scoped.get(expanded) && (
+        <ChartModal
+          metric={expanded}
+          scope={scope}
+          company={company}
+          series={scoped.get(expanded)!.series}
+          excluded={scoped.get(expanded)!.excluded}
+          onClose={() => setExpanded(null)}
+          onSelectRow={onSelectRow}
+        />
+      )}
+    </section>
   );
 }
 
-// A colour-swatch legend under the overlay chart. Swatch shape encodes the kind: a bar for a
-// trend line, a dot for a single-quarter snapshot.
+// A muted card for a metric that exists for this scope but is not comparable here (one-company
+// scope, e.g. PeopleFlow revenue reported in GBP). Honest placeholder, not a blank.
+function ExcludedCard({ metric, excluded }: { metric: CanonicalMetric; excluded: ExcludedSeries[] }) {
+  return (
+    <div style={{ border: "1px dashed #d7dde5", borderRadius: 6, padding: "0.5rem 0.6rem", background: "#fafbfc" }}>
+      <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "#1a202c" }}>
+        {METRIC_LABELS[metric]}{" "}
+        <span style={{ fontWeight: 400, fontSize: "0.72em", color: "#858b94" }}>· {METRIC_FULL_NAME[metric]}</span>
+      </div>
+      <div style={{ color: "#858b94", fontSize: "0.78rem", padding: "1.2rem 0", textAlign: "center" }}>
+        Not shown — {excluded.map((e) => e.reason).join("; ")}.
+      </div>
+    </div>
+  );
+}
+
+// A colour-swatch legend. Swatch shape encodes the kind: a bar for a trend line, a dot for a
+// single-quarter snapshot.
 function Legend({ series }: { series: CompanySeries[] }) {
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem 1rem", maxWidth: W, marginTop: "0.4rem" }}>
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem 1rem", marginTop: "0.4rem" }}>
       {series.map((s) => (
         <span key={s.company} style={{ display: "inline-flex", alignItems: "center", fontSize: "0.8rem", color: "#444" }}>
           <span
             style={
               s.kind === "line"
-                ? { display: "inline-block", width: 16, height: 3, borderRadius: 2, background: s.color, marginRight: "0.35rem" }
+                ? { display: "inline-block", width: 22, height: 5, borderRadius: 2, background: s.color, marginRight: "0.4rem" }
                 : { display: "inline-block", width: 9, height: 9, borderRadius: "50%", background: s.color, border: "1.5px solid #fff", boxShadow: "0 0 0 1px " + s.color, marginRight: "0.4rem" }
             }
           />
@@ -464,98 +294,20 @@ function Legend({ series }: { series: CompanySeries[] }) {
   );
 }
 
-// Full-size single-company line chart. Only reached when points.length >= MIN_TREND_POINTS.
-function TrendChart({
-  points,
-  metric,
-  label,
-  onSelectRow,
-}: {
-  points: TrendPoint[];
-  metric: CanonicalMetric;
-  label: string;
-  onSelectRow?: (row: MetricRow) => void;
-}) {
-  const { min: minV, max: maxV } = yDomain(points.map((p) => p.value), metric);
-  const span = maxV - minV || 1;
-  const x = (i: number) => PAD.left + (i / (points.length - 1)) * INNER_W;
-  const y = (v: number) => PAD.top + INNER_H - ((v - minV) / span) * INNER_H;
-  const polyline = points.map((p, i) => `${x(i)},${y(p.value)}`).join(" ");
-
-  return (
-    <svg
-      viewBox={`0 0 ${W} ${H}`}
-      width="100%"
-      style={{ maxWidth: W, height: "auto", border: "1px solid #eee", borderRadius: 6 }}
-      role="img"
-      aria-label={`${label} over ${points.length} quarters`}
-    >
-      {/* standardized y-axis: domain endpoints (not data points) */}
-      <line x1={PAD.left} y1={y(maxV)} x2={W - PAD.right} y2={y(maxV)} stroke="#eee" />
-      <line x1={PAD.left} y1={y(minV)} x2={W - PAD.right} y2={y(minV)} stroke="#eee" />
-      <text x={PAD.left - 8} y={y(maxV)} textAnchor="end" dominantBaseline="middle" fontSize="11" fill="#5f6672">
-        {formatAxisTick(maxV, metric)}
-      </text>
-      <text x={PAD.left - 8} y={y(minV)} textAnchor="end" dominantBaseline="middle" fontSize="11" fill="#5f6672">
-        {formatAxisTick(minV, metric)}
-      </text>
-
-      <polyline points={polyline} fill="none" stroke={LINE_COLOR} strokeWidth="2" />
-
-      {points.map((p, i) => (
-        <g key={p.period}>
-          {onSelectRow && (
-            <circle
-              cx={x(i)}
-              cy={y(p.value)}
-              r="12"
-              fill="transparent"
-              style={{ cursor: "pointer" }}
-              role="button"
-              tabIndex={0}
-              aria-label={`${p.period} ${p.displayValue} — view source`}
-              onClick={() => onSelectRow(p.row)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  onSelectRow(p.row);
-                }
-              }}
-            >
-              <title>Click to see the source of this number</title>
-            </circle>
-          )}
-          <circle
-            cx={x(i)}
-            cy={y(p.value)}
-            r="4"
-            fill={LINE_COLOR}
-            style={onSelectRow ? { cursor: "pointer" } : undefined}
-            onClick={onSelectRow ? () => onSelectRow(p.row) : undefined}
-          />
-          <text x={x(i)} y={y(p.value) - 10} textAnchor="middle" fontSize="11" fill="#333">
-            {p.displayValue}
-          </text>
-          <text x={x(i)} y={H - PAD.bottom + 20} textAnchor="middle" fontSize="11" fill="#666">
-            {p.period}
-          </text>
-        </g>
-      ))}
-    </svg>
-  );
-}
-
-// Full-size all-companies overlay chart: one polyline (or dots) per company on a shared,
-// standardized axis.
-function AllCompaniesChart({
+// The full-size overlay chart used inside the enlarge modal: one polyline (or dots) per company on
+// a shared, standardized axis. `showValues` prints per-point value labels — clean when it is a
+// single company's own trend, too busy for a multi-company overlay, so the caller sets it.
+function BigChart({
   series,
   metric,
   label,
+  showValues,
   onSelectRow,
 }: {
   series: CompanySeries[];
   metric: CanonicalMetric;
   label: string;
+  showValues: boolean;
   onSelectRow?: (row: MetricRow) => void;
 }) {
   const periodKeys = [...new Set(series.flatMap((s) => s.points.map((p) => p.periodKey)))].sort((a, b) => a - b);
@@ -566,16 +318,21 @@ function AllCompaniesChart({
   const { min: minV, max: maxV } = yDomain(series.flatMap((s) => s.points.map((p) => p.value)), metric);
   const span = maxV - minV || 1;
   const denom = Math.max(1, periodKeys.length - 1);
-  const x = (periodKey: number) => PAD.left + ((xIndex.get(periodKey) ?? 0) / denom) * INNER_W;
+  // A lone quarter (all shown companies report the same single period — common in this corpus)
+  // centers instead of pinning to the far-left edge.
+  const x = (periodKey: number) =>
+    periodKeys.length === 1
+      ? PAD.left + INNER_W / 2
+      : PAD.left + ((xIndex.get(periodKey) ?? 0) / denom) * INNER_W;
   const y = (v: number) => PAD.top + INNER_H - ((v - minV) / span) * INNER_H;
 
   return (
     <svg
       viewBox={`0 0 ${W} ${H}`}
       width="100%"
-      style={{ maxWidth: W, height: "auto", border: "1px solid #eee", borderRadius: 6 }}
+      style={{ height: "auto", border: "1px solid #eee", borderRadius: 6 }}
       role="img"
-      aria-label={`${label} across ${series.length} companies`}
+      aria-label={`${label} across ${series.length} ${series.length === 1 ? "company" : "companies"}`}
     >
       <line x1={PAD.left} y1={y(maxV)} x2={W - PAD.right} y2={y(maxV)} stroke="#eee" />
       <line x1={PAD.left} y1={y(minV)} x2={W - PAD.right} y2={y(minV)} stroke="#eee" />
@@ -595,43 +352,64 @@ function AllCompaniesChart({
       {series.map((s) => (
         <g key={s.company}>
           {s.kind === "line" && (
-            <polyline
-              points={s.points.map((p) => `${x(p.periodKey)},${y(p.value)}`).join(" ")}
-              fill="none"
-              stroke={s.color}
-              strokeWidth="2"
-            />
+            <>
+              {/* Wide invisible "hit line" makes the thin line easy to hover; the native <title>
+                  names the company so you never have to colour-match against the legend. */}
+              <polyline
+                points={s.points.map((p) => `${x(p.periodKey)},${y(p.value)}`).join(" ")}
+                fill="none"
+                stroke="transparent"
+                strokeWidth="14"
+              >
+                <title>{s.company}</title>
+              </polyline>
+              <polyline
+                points={s.points.map((p) => `${x(p.periodKey)},${y(p.value)}`).join(" ")}
+                fill="none"
+                stroke={s.color}
+                strokeWidth="2.5"
+              >
+                <title>{s.company}</title>
+              </polyline>
+            </>
           )}
           {s.points.map((p) => (
-            <circle
-              key={p.period}
-              cx={x(p.periodKey)}
-              cy={y(p.value)}
-              r={s.kind === "line" ? 3.5 : 5}
-              fill={s.color}
-              stroke={s.kind === "point" ? "#fff" : undefined}
-              strokeWidth={s.kind === "point" ? 1.5 : undefined}
-              style={onSelectRow ? { cursor: "pointer" } : undefined}
-              role={onSelectRow ? "button" : undefined}
-              tabIndex={onSelectRow ? 0 : undefined}
-              aria-label={onSelectRow ? `${s.company} ${p.period} ${p.displayValue} — view source` : undefined}
-              onClick={onSelectRow ? () => onSelectRow(p.row) : undefined}
-              onKeyDown={
-                onSelectRow
-                  ? (e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        onSelectRow(p.row);
+            <g key={p.period}>
+              {showValues && (
+                <text x={x(p.periodKey)} y={y(p.value) - 10} textAnchor="middle" fontSize="11" fill="#333">
+                  {p.displayValue}
+                </text>
+              )}
+              <circle
+                cx={x(p.periodKey)}
+                cy={y(p.value)}
+                r={s.kind === "line" ? 4 : 5.5}
+                fill={s.color}
+                stroke={s.kind === "point" ? "#fff" : undefined}
+                strokeWidth={s.kind === "point" ? 1.5 : undefined}
+                style={onSelectRow ? { cursor: "pointer" } : undefined}
+                role={onSelectRow ? "button" : undefined}
+                tabIndex={onSelectRow ? 0 : undefined}
+                aria-label={onSelectRow ? `${s.company} ${p.period} ${p.displayValue} — view source` : undefined}
+                onClick={onSelectRow ? () => onSelectRow(p.row) : undefined}
+                onKeyDown={
+                  onSelectRow
+                    ? (e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          onSelectRow(p.row);
+                        }
                       }
-                    }
-                  : undefined
-              }
-            >
-              <title>
-                {s.company} · {p.period} · {p.displayValue}
-                {s.kind === "point" ? " (single-quarter snapshot)" : ""}
-              </title>
-            </circle>
+                    : undefined
+                }
+              >
+                <title>
+                  {s.company} · {p.period} · {p.displayValue}
+                  {s.kind === "point" ? " (single-quarter snapshot)" : ""}
+                  {onSelectRow ? " — click to see the source" : ""}
+                </title>
+              </circle>
+            </g>
           ))}
         </g>
       ))}
@@ -639,16 +417,17 @@ function AllCompaniesChart({
   );
 }
 
-// Compact all-companies chart for the "All metrics" small multiples: one per metric, acronym
-// title, standardized axis, no per-point value labels (kept clean at small size).
+// A compact overlay chart for the small multiples: one per metric, acronym title, standardized
+// axis, no per-point value labels (kept clean at small size). The WHOLE card is a button — click
+// it to enlarge. Points are non-interactive here; source-tracing lives in the enlarged view.
 function MiniChart({
   metric,
   series,
-  onSelectRow,
+  onExpand,
 }: {
   metric: CanonicalMetric;
   series: CompanySeries[];
-  onSelectRow?: (row: MetricRow) => void;
+  onExpand: () => void;
 }) {
   const periodKeys = [...new Set(series.flatMap((s) => s.points.map((p) => p.periodKey)))].sort((a, b) => a - b);
   const xIndex = new Map(periodKeys.map((k, i) => [k, i]));
@@ -658,81 +437,236 @@ function MiniChart({
   const { min: minV, max: maxV } = yDomain(series.flatMap((s) => s.points.map((p) => p.value)), metric);
   const span = maxV - minV || 1;
   const denom = Math.max(1, periodKeys.length - 1);
-  const x = (periodKey: number) => MPAD.left + ((xIndex.get(periodKey) ?? 0) / denom) * MINNER_W;
+  const x = (periodKey: number) =>
+    periodKeys.length === 1
+      ? MPAD.left + MINNER_W / 2
+      : MPAD.left + ((xIndex.get(periodKey) ?? 0) / denom) * MINNER_W;
   const y = (v: number) => MPAD.top + MINNER_H - ((v - minV) / span) * MINNER_H;
 
   return (
-    <div style={{ border: "1px solid #eee", borderRadius: 6, padding: "0.5rem 0.6rem", background: "#fff" }}>
-      <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "#1a202c" }}>
-        {METRIC_LABELS[metric]}{" "}
-        <span style={{ fontWeight: 400, fontSize: "0.72em", color: "#858b94" }}>
-          · {METRIC_FULL_NAME[metric]}
-        </span>
-      </div>
-      {series.length === 0 ? (
-        <div style={{ color: "#858b94", fontSize: "0.8rem", padding: "1.5rem 0", textAlign: "center" }}>
-          No comparable series
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onExpand}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onExpand();
+        }
+      }}
+      title={`Click to enlarge ${METRIC_LABELS[metric]}`}
+      style={{
+        border: "1px solid #eee",
+        borderRadius: 6,
+        padding: "0.5rem 0.6rem",
+        background: "#fff",
+        cursor: "pointer",
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+        <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "#1a202c" }}>
+          {METRIC_LABELS[metric]}{" "}
+          <span style={{ fontWeight: 400, fontSize: "0.72em", color: "#858b94" }}>· {METRIC_FULL_NAME[metric]}</span>
         </div>
-      ) : (
-        <svg viewBox={`0 0 ${MW} ${MH}`} width="100%" style={{ height: "auto" }} role="img" aria-label={`${METRIC_LABELS[metric]} across ${series.length} companies`}>
-          <line x1={MPAD.left} y1={y(maxV)} x2={MW - MPAD.right} y2={y(maxV)} stroke="#eee" />
-          <line x1={MPAD.left} y1={y(minV)} x2={MW - MPAD.right} y2={y(minV)} stroke="#eee" />
-          <text x={MPAD.left - 6} y={y(maxV)} textAnchor="end" dominantBaseline="middle" fontSize="9" fill="#858b94">
-            {formatAxisTick(maxV, metric)}
+        <span aria-hidden style={{ fontSize: "0.8rem", color: "#a0aec0" }}>⤢</span>
+      </div>
+      <svg viewBox={`0 0 ${MW} ${MH}`} width="100%" style={{ height: "auto" }} role="img" aria-label={`${METRIC_LABELS[metric]} across ${series.length} companies — click to enlarge`}>
+        <line x1={MPAD.left} y1={y(maxV)} x2={MW - MPAD.right} y2={y(maxV)} stroke="#eee" />
+        <line x1={MPAD.left} y1={y(minV)} x2={MW - MPAD.right} y2={y(minV)} stroke="#eee" />
+        <text x={MPAD.left - 6} y={y(maxV)} textAnchor="end" dominantBaseline="middle" fontSize="9" fill="#858b94">
+          {formatAxisTick(maxV, metric)}
+        </text>
+        <text x={MPAD.left - 6} y={y(minV)} textAnchor="end" dominantBaseline="middle" fontSize="9" fill="#858b94">
+          {formatAxisTick(minV, metric)}
+        </text>
+        {periodKeys.map((k) => (
+          <text key={k} x={x(k)} y={MH - MPAD.bottom + 14} textAnchor="middle" fontSize="9" fill="#858b94">
+            {abbrevPeriod(keyToPeriod.get(k) ?? "")}
           </text>
-          <text x={MPAD.left - 6} y={y(minV)} textAnchor="end" dominantBaseline="middle" fontSize="9" fill="#858b94">
-            {formatAxisTick(minV, metric)}
-          </text>
-          {periodKeys.map((k) => (
-            <text key={k} x={x(k)} y={MH - MPAD.bottom + 14} textAnchor="middle" fontSize="9" fill="#858b94">
-              {abbrevPeriod(keyToPeriod.get(k) ?? "")}
-            </text>
-          ))}
-          {series.map((s) => (
-            <g key={s.company}>
-              {s.kind === "line" && (
+        ))}
+        {series.map((s) => (
+          <g key={s.company}>
+            {s.kind === "line" && (
+              <>
+                {/* Invisible hit line + native <title>: hover a line to read the company name. */}
+                <polyline
+                  points={s.points.map((p) => `${x(p.periodKey)},${y(p.value)}`).join(" ")}
+                  fill="none"
+                  stroke="transparent"
+                  strokeWidth="10"
+                >
+                  <title>{s.company}</title>
+                </polyline>
                 <polyline
                   points={s.points.map((p) => `${x(p.periodKey)},${y(p.value)}`).join(" ")}
                   fill="none"
                   stroke={s.color}
-                  strokeWidth="1.8"
-                />
-              )}
-              {s.points.map((p) => (
-                <circle
-                  key={p.period}
-                  cx={x(p.periodKey)}
-                  cy={y(p.value)}
-                  r={s.kind === "line" ? 2.5 : 4}
-                  fill={s.color}
-                  stroke={s.kind === "point" ? "#fff" : undefined}
-                  strokeWidth={s.kind === "point" ? 1.2 : undefined}
-                  style={onSelectRow ? { cursor: "pointer" } : undefined}
-                  role={onSelectRow ? "button" : undefined}
-                  tabIndex={onSelectRow ? 0 : undefined}
-                  aria-label={onSelectRow ? `${s.company} ${p.period} ${p.displayValue} — view source` : undefined}
-                  onClick={onSelectRow ? () => onSelectRow(p.row) : undefined}
-                  onKeyDown={
-                    onSelectRow
-                      ? (e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            onSelectRow(p.row);
-                          }
-                        }
-                      : undefined
-                  }
+                  strokeWidth="2"
                 >
-                  <title>
-                    {s.company} · {p.period} · {p.displayValue}
-                    {s.kind === "point" ? " (snapshot)" : ""}
-                  </title>
-                </circle>
-              ))}
-            </g>
-          ))}
-        </svg>
-      )}
+                  <title>{s.company}</title>
+                </polyline>
+              </>
+            )}
+            {s.points.map((p) => (
+              <circle
+                key={p.period}
+                cx={x(p.periodKey)}
+                cy={y(p.value)}
+                r={s.kind === "line" ? 2.5 : 4}
+                fill={s.color}
+                stroke={s.kind === "point" ? "#fff" : undefined}
+                strokeWidth={s.kind === "point" ? 1.2 : undefined}
+              >
+                <title>
+                  {s.company} · {p.period} · {p.displayValue}
+                  {s.kind === "point" ? " (snapshot)" : ""}
+                </title>
+              </circle>
+            ))}
+          </g>
+        ))}
+      </svg>
+    </div>
+  );
+}
+
+// The enlarge modal — a bigger version of the clicked chart, with the legend, an honest breakdown
+// caption, any excluded-company note, and (one-company scope) the label-drift note. Clicking a
+// point traces it to its source doc: we close the modal, then open the provenance drawer.
+function ChartModal({
+  metric,
+  scope,
+  company,
+  series,
+  excluded,
+  onClose,
+  onSelectRow,
+}: {
+  metric: CanonicalMetric;
+  scope: Scope;
+  company: string;
+  series: CompanySeries[];
+  excluded: ExcludedSeries[];
+  onClose: () => void;
+  onSelectRow?: (row: MetricRow) => void;
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const title = scope === "one" ? `${company} — ${METRIC_LABELS[metric]}` : METRIC_LABELS[metric];
+  const singleSeries = series.length === 1;
+  // Label-drift note: one company's series can span several source labels the backend collapsed.
+  const rawLabels = singleSeries ? [...new Set(series[0].points.map((p) => p.rawLabel))] : [];
+  const b = seriesBreakdown(series);
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`${title} — enlarged chart`}
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(15,23,42,0.55)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 60,
+        padding: "1.5rem",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: "#fff",
+          borderRadius: 10,
+          padding: "1.1rem 1.3rem 1.3rem",
+          maxWidth: "min(94vw, 940px)",
+          width: "100%",
+          maxHeight: "90vh",
+          overflowY: "auto",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.6rem" }}>
+          <div>
+            <div style={{ fontSize: "1.05rem", fontWeight: 700, color: "#1a202c" }}>{title}</div>
+            <div style={{ fontSize: "0.82rem", color: "#718096" }}>{METRIC_FULL_NAME[metric]}</div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close enlarged chart"
+            style={{
+              border: "1px solid #cbd5e0",
+              borderRadius: 6,
+              background: "#fff",
+              cursor: "pointer",
+              fontSize: "0.85rem",
+              padding: "0.25rem 0.6rem",
+              color: "#333",
+            }}
+          >
+            Close ✕
+          </button>
+        </div>
+
+        {series.length === 0 ? (
+          <p role="status" style={{ color: "#c77700", background: "#fff8ec", border: "1px solid #f0dcae", borderRadius: 6, padding: "0.75rem 1rem" }}>
+            No comparable series for {METRIC_LABELS[metric]} in this scope.
+          </p>
+        ) : (
+          <>
+            <BigChart
+              series={series}
+              metric={metric}
+              label={title}
+              showValues={singleSeries}
+              onSelectRow={onSelectRow ? (row) => { onClose(); onSelectRow(row); } : undefined}
+            />
+            <Legend series={series} />
+            {!singleSeries && (
+              <p style={{ color: "#5b6472", fontSize: "0.8rem", marginTop: "0.4rem" }}>
+                <strong>{b.total}</strong> {b.total === 1 ? "company" : "companies"} shown
+                {b.lines > 0 && ` · ${b.lines} as trend ${b.lines === 1 ? "line" : "lines"} (3+ quarters)`}
+                {b.points > 0 && ` · ${b.points} as single-quarter ${b.points === 1 ? "snapshot dot" : "snapshot dots"}`}
+                . A company with one reported quarter is drawn as a dot, never a fabricated line.
+              </p>
+            )}
+            {singleSeries && rawLabels.length > 1 && (
+              <p style={{ color: "#666", fontSize: "0.8rem", marginTop: "0.4rem" }}>
+                Plotted as one metric across <strong>{rawLabels.length}</strong> different source labels
+                (e.g. {rawLabels.slice(0, 2).map((l) => `"${l}"`).join(", ")}) — the backend collapsed the
+                label drift into a single series.
+              </p>
+            )}
+            {onSelectRow && (
+              <p style={{ color: "#718096", fontSize: "0.78rem", marginTop: "0.35rem" }}>
+                Click any point to trace that number back to its source document.
+              </p>
+            )}
+          </>
+        )}
+
+        {excluded.length > 0 && (
+          <p style={{ color: "#666", fontSize: "0.8rem", marginTop: "0.5rem" }}>
+            Hidden from this chart (kept honest, not silently dropped):{" "}
+            {excluded.map((e, i) => (
+              <span key={e.company}>
+                {i > 0 ? "; " : ""}
+                <strong>{e.company}</strong> ({e.reason})
+              </span>
+            ))}
+            .
+          </p>
+        )}
+      </div>
     </div>
   );
 }

@@ -350,9 +350,22 @@ export function groupByMarket(metrics: MetricRow[]): DisplayGroup[] {
   }));
 }
 
+// Within a strategy table, order companies by MARKET (SECTOR_ORDER: SaaS first, then marketplace,
+// payments, …) and alphabetically inside a market — so the Private Equity table reads SaaS-first
+// instead of a flat A→Z mix of sectors. Heat is still ranked within each actual market, so this is
+// a pure row-ordering (display) choice; comparability is unaffected.
 export function groupByStrategy(metrics: MetricRow[]): DisplayGroup[] {
+  const sectors = companySectors(metrics);
+  const marketRank = (company: string) => {
+    const sector = sectors.get(company);
+    const i = sector ? SECTOR_ORDER.indexOf(sector) : -1;
+    return i === -1 ? SECTOR_ORDER.length : i; // unknown/absent market sorts last, never dropped
+  };
+  const orderByMarketThenName = (set: Set<string>) =>
+    [...set].sort((a, b) => marketRank(a) - marketRank(b) || a.localeCompare(b));
+
   const byStrat = new Map<Strategy, Set<string>>();
-  for (const [company, sector] of companySectors(metrics)) {
+  for (const [company, sector] of sectors) {
     const strat = STRATEGY_OF[sector];
     let set = byStrat.get(strat);
     if (!set) {
@@ -369,7 +382,7 @@ export function groupByStrategy(metrics: MetricRow[]): DisplayGroup[] {
         key: strat,
         label: STRATEGY_LABELS[strat],
         description: STRATEGY_DESCRIPTION[strat],
-        companies: [...set].sort(),
+        companies: orderByMarketThenName(set),
       });
     }
   }

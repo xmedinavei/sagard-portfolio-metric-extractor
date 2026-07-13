@@ -15,7 +15,7 @@ export function ExceptionsPanel({ export: exp }: { export: MetricsExport }) {
 
   return (
     <section style={{ marginTop: "2rem" }}>
-      <h2 style={{ fontSize: "1.15rem" }}>Exceptions — expected metrics not reported</h2>
+      <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#16233d", borderBottom: "2px solid #e8ecf2", paddingBottom: "0.3rem", marginBottom: "0.6rem" }}>Exceptions — expected metrics not reported</h2>
       <p style={{ color: "#666", fontSize: "0.85rem", marginTop: 0, maxWidth: 900 }}>
         <strong>Your &quot;chase this up&quot; list — what a company should have reported this
         quarter but didn&apos;t.</strong>

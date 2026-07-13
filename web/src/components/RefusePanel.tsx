@@ -44,7 +44,7 @@ export function RefusePanel({
 
   return (
     <section style={{ marginTop: "2rem" }}>
-      <h2 style={{ fontSize: "1.15rem" }}>Refused comparisons</h2>
+      <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#16233d", borderBottom: "2px solid #e8ecf2", paddingBottom: "0.3rem", marginBottom: "0.6rem" }}>Refused comparisons</h2>
       <p style={{ color: "#666", fontSize: "0.85rem", marginTop: 0, maxWidth: 900 }}>
         <strong>Numbers the tool refuses to rank against the others — because they only{" "}
         <em>look</em> comparable.</strong>

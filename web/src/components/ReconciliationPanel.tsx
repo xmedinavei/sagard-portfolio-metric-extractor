@@ -61,7 +61,7 @@ export function ReconciliationPanel({ export: exp }: { export: MetricsExport }) 
 
   return (
     <section style={{ marginTop: "2rem" }}>
-      <h2 style={{ fontSize: "1.15rem" }}>Cross-source check</h2>
+      <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#16233d", borderBottom: "2px solid #e8ecf2", paddingBottom: "0.3rem", marginBottom: "0.6rem" }}>Cross-source check</h2>
       <p style={{ color: "#666", fontSize: "0.85rem", marginTop: 0, maxWidth: 820 }}>
         <strong>Do the two documents agree?</strong> Some numbers show up in <em>both</em> a
         company&apos;s own report <em>and</em> the portfolio-wide summary. We check they match — and
