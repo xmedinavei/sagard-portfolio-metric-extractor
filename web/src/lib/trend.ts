@@ -18,6 +18,7 @@
 
 import type { CanonicalMetric, MetricRow } from "../types";
 import { CANONICAL_METRIC_ORDER, nonUsdCurrency, parsePeriodKey } from "./grid";
+import { HEAT_DIRECTION } from "./heat";
 
 // A (company, metric) needs at least this many DISTINCT periods before we draw a trend.
 // Below it the panel shows "insufficient history" rather than a 1-2 point pseudo-line.
@@ -250,3 +251,43 @@ export function seriesBreakdown(series: CompanySeries[]): {
   const lines = series.filter((s) => s.kind === "line").length;
   return { total: series.length, lines, points: series.length - lines };
 }
+
+// ── Per-cell delta (the grid's Trend view) ────────────────────────────────────────────────
+// The change from the PREVIOUS reported quarter to the latest, formatted honestly per metric:
+//   * percentage metrics (gross margin, NRR, logo churn) → percentage-POINT change ("+5.0 pts"),
+//     because a "% change of a %" (NRR 118→123 = "+4.2%") reads wrong — an analyst means points;
+//   * money & counts → percent change ("+8%"); "n/a" when the prior value is 0 (no base).
+// `improving` is the good/bad direction (drives green/red) from the single HEAT_DIRECTION source,
+// so churn ▲ is a worsening (not improving) and burn getting less-negative ▲ is an improvement.
+// It is null — no colour judgement — for headcount (no inherent good direction) and for a
+// refused / different-basis cell (opts.neutral), where "better" is undefined.
+export interface DeltaView {
+  text: string; // "+8%" | "+5.0 pts" | "n/a"
+  arrow: "▲" | "▼" | "—";
+  improving: boolean | null;
+}
+export function formatDelta(
+  metric: CanonicalMetric,
+  latest: number,
+  prior: number,
+  opts?: { neutral?: boolean },
+): DeltaView {
+  const change = latest - prior;
+  const arrow: "▲" | "▼" | "—" = change > 0 ? "▲" : change < 0 ? "▼" : "—";
+  const sign = change > 0 ? "+" : change < 0 ? "-" : "±";
+  let text: string;
+  if (PERCENT_METRICS.has(metric)) {
+    text = `${sign}${Math.abs(change).toFixed(1)} pts`; // a percentage's own delta is POINTS
+  } else if (prior === 0) {
+    text = "n/a"; // no meaningful % change from a zero base
+  } else {
+    text = `${sign}${Math.abs((change / Math.abs(prior)) * 100).toFixed(0)}%`;
+  }
+  let improving: boolean | null = null;
+  const direction = HEAT_DIRECTION[metric];
+  if (!opts?.neutral && direction && change !== 0) {
+    improving = direction === "higher_better" ? change > 0 : change < 0;
+  }
+  return { text, arrow, improving };
+}
+

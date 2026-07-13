@@ -7,7 +7,7 @@
 import { useState } from "react";
 import type { CSSProperties } from "react";
 
-import type { MetricRow, MetricsExport } from "../types";
+import type { CanonicalMetric, MetricRow, MetricsExport } from "../types";
 import {
   CANONICAL_METRIC_ORDER,
   CURRENCY_SYMBOL,
@@ -34,7 +34,8 @@ import {
   type Cell,
   type OperatingValueView,
 } from "../lib/grid";
-import { heatColor, laggardKey, sectorHeat, type HeatCell } from "../lib/heat";
+import { heatColor, laggardKey, portfolioHeat, type HeatCell } from "../lib/heat";
+import { buildSeries, formatDelta, type TrendPoint } from "../lib/trend";
 
 type GroupMode = "market" | "strategy";
 
@@ -169,6 +170,71 @@ function CellValue({
   );
 }
 
+// ── Trend view (per-cell over-time) ──────────────────────────────────────────────────────────
+// A compact, SELF-SCALED sparkline: it shows the SHAPE of a company's own metric over its
+// reported quarters (comparing magnitudes stays the job of the heat colour + the value number).
+// The tooltip lists every quarter's value, so "which quarter" is always one hover away.
+const SPARK_W = 78;
+const SPARK_H = 22;
+const SPARK_PAD = 3;
+function Sparkline({ points }: { points: TrendPoint[] }) {
+  const values = points.map((p) => p.value);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = max - min || 1;
+  const n = points.length;
+  const x = (i: number) =>
+    n === 1 ? SPARK_W / 2 : SPARK_PAD + (i / (n - 1)) * (SPARK_W - 2 * SPARK_PAD);
+  const y = (v: number) => SPARK_PAD + (SPARK_H - 2 * SPARK_PAD) * (1 - (v - min) / span);
+  const poly = points.map((p, i) => `${x(i)},${y(p.value)}`).join(" ");
+  const title = points.map((p) => `${p.period}: ${p.displayValue}`).join("  →  ");
+  return (
+    <svg
+      width={SPARK_W}
+      height={SPARK_H}
+      viewBox={`0 0 ${SPARK_W} ${SPARK_H}`}
+      role="img"
+      aria-label={title}
+      style={{ display: "inline-block", verticalAlign: "middle" }}
+    >
+      <title>{title}</title>
+      <polyline points={poly} fill="none" stroke="#3a5a8c" strokeWidth="1.5" />
+      <circle cx={x(0)} cy={y(points[0].value)} r="1.6" fill="#9aa5b5" />
+      <circle cx={x(n - 1)} cy={y(points[n - 1].value)} r="2.2" fill="#3a5a8c" />
+    </svg>
+  );
+}
+
+// The per-cell over-time sub-line under a value in Trend view: the sparkline + a plain,
+// QUARTER-NAMED delta ("▲ +8% vs Q1 2025 · latest Q2 2025"). A single-quarter cell says so
+// explicitly instead of drawing a fake one-point line (the anti-guessing rule used everywhere).
+function TrendSubline({ points, metric }: { points: TrendPoint[]; metric: CanonicalMetric }) {
+  if (points.length === 0) return null;
+  const latest = points[points.length - 1];
+  if (points.length === 1) {
+    return <div style={{ ...subLabel, marginTop: "0.2rem" }}>· only {latest.period} reported</div>;
+  }
+  const prior = points[points.length - 2];
+  const d = formatDelta(metric, latest.value, prior.value);
+  // Arrow COLOUR = which way the number moved: green rose (▲), red fell (▼), grey when there is no
+  // good/bad direction (headcount) or it is a refused/flat cell. Matches the cell background so the
+  // two never disagree. (Owner's call: a falling logo churn shows red though it is an improvement.)
+  const color = d.improving === null ? "#5b6472" : d.arrow === "▲" ? "#2f7a46" : "#b3401f";
+  return (
+    <div style={{ marginTop: "0.2rem" }}>
+      <div>
+        <Sparkline points={points} />
+      </div>
+      <div style={{ ...subLabel, marginTop: "0.1rem", whiteSpace: "normal", lineHeight: 1.25 }}>
+        <span style={{ color, fontWeight: 600 }}>
+          {d.arrow} {d.text}
+        </span>{" "}
+        vs {prior.period} · latest {latest.period}
+      </div>
+    </div>
+  );
+}
+
 export function RagGrid({
   export: exp,
   onSelectRow,
@@ -183,9 +249,16 @@ export function RagGrid({
   // The grid shows each company's LATEST figure by default (period = null), or flips to a
   // specific reported quarter so you can see every quarter, not just the last one.
   const [period, setPeriod] = useState<string | null>(null);
+  // Trend view: adds a per-cell sparkline + quarter-over-quarter delta ON TOP of the latest
+  // snapshot. It sits ALONGSIDE the quarter buttons, never replacing them — you can still pin any
+  // single quarter or "Latest reported".
+  const [trend, setTrend] = useState(false);
   const effectivePeriod = period && periods.includes(period) ? period : null;
-  const cells = effectivePeriod
-    ? valuesForPeriod(metrics, effectivePeriod)
+  // The snapshot the cells + heat are computed from: a pinned quarter, else each company's latest.
+  // Trend view always uses the latest snapshot and layers the over-time view onto each cell.
+  const activePeriod = trend ? null : effectivePeriod;
+  const cells = activePeriod
+    ? valuesForPeriod(metrics, activePeriod)
     : latestByCompanyMetric(metrics);
 
   // Group companies by MARKET (sector) or by investment STRATEGY (PE vs credit). Display-only.
@@ -201,10 +274,15 @@ export function RagGrid({
   const heat = new Map<string, HeatCell>();
   const laggardKeys = new Set<string>();
   for (const g of groupCompaniesBySector(metrics)) {
-    for (const [k, v] of sectorHeat(g.sector, g.companies, cells)) heat.set(k, v);
     const lk = laggardKey(g.companies, cells);
     if (lk) laggardKeys.add(lk);
   }
+  // Rank EVERY heatable metric — money AND ratios — across the whole EQUITY BOOK (cross-sector), so
+  // a company is coloured against the rest of the book regardless of business type (the owner's call
+  // for the Q-report grid). The CREDIT book (the lender) is kept out: its figures are a different
+  // basis. Heat is only consumed in the Q-report views, so this never affects Trend view.
+  const equityCompanies = [...sectorOf.keys()].filter((c) => sectorOf.get(c) !== "credit");
+  for (const [k, v] of portfolioHeat(equityCompanies, cells)) heat.set(k, v);
 
   // Pass issues so a backend-flagged missing metric reads as a gap, not a false N/A.
   const applicable = sectorApplicableMetrics(metrics, exp.issues);
@@ -220,13 +298,20 @@ export function RagGrid({
         Metrics by {groupMode === "strategy" ? "strategy" : "sector"}
       </h2>
       <p style={{ color: "#666", fontSize: "0.85rem", marginTop: 0 }}>
-        {effectivePeriod
-          ? `Showing each company's ${effectivePeriod} figure.`
-          : "Latest reported figure per company."}{" "}
-        Cells are heat-shaded green → red{" "}
-        <em>within each sector</em>, ranking <em>same-quarter peers only</em> (best → worst,
-        where a sector has 2+ comparable companies); ▼ marks the sector laggard. A{" "}
-        <em>· Qx 20xx</em> tag means the figure is from an older quarter (the company reported
+        {trend
+          ? "Trend view — each cell shows its quarter-over-quarter trend; only cells with more than one quarter are coloured (by their own direction — see the note below), and the within-sector level heat returns in the Latest / per-quarter views."
+          : effectivePeriod
+            ? `Showing each company's ${effectivePeriod} figure.`
+            : "Latest reported figure per company."}{" "}
+        {!trend && (
+          <>
+            Cells are heat-shaded green → red by ranking each company against the whole{" "}
+            <em>equity book</em> (every PE company, cross-sector — money and ratios alike, business
+            type ignored). The lender is kept separate (its figures are a different basis).
+            Same-quarter peers only; ▼ marks the lowest NRR.{" "}
+          </>
+        )}
+        A <em>· Qx 20xx</em> tag means the figure is from an older quarter (the company reported
         nothing newer). <em>N/A</em> = not applicable to the sector; <em>—</em> = a genuine gap;{" "}
         <em>not ranked</em> / <em>not comparable</em> = a real number on a different basis or
         currency — shown, but not ranked. NRR and logo churn are <em>LTM</em> (trailing twelve
@@ -265,8 +350,9 @@ export function RagGrid({
       {groupMode === "strategy" && (
         <p style={{ color: "#5b6472", fontSize: "0.8rem", margin: "0 0 0.6rem", maxWidth: 900 }}>
           Grouped by investment strategy — the whole equity book in one table, the lender on its
-          own. Each company keeps a market tag, and the heat still ranks a company only against its
-          own-market peers (a marketplace&apos;s margin is never coloured against a SaaS one).
+          own. Each company keeps a market tag. The heat ranks every company against the whole equity
+          book (cross-sector — a marketplace is coloured against SaaS too); the lender is kept
+          separate.
         </p>
       )}
 
@@ -289,17 +375,23 @@ export function RagGrid({
           <span aria-hidden="true" style={{ fontSize: "0.72rem", color: "#98a0ad", marginRight: "0.1rem" }}>
             older
           </span>
-          {[...periods].reverse().map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => setPeriod(p)}
-              aria-pressed={effectivePeriod === p}
-              style={pillStyle(effectivePeriod === p)}
-            >
-              {p}
-            </button>
-          ))}
+          {[...periods].reverse().map((p) => {
+            const active = !trend && effectivePeriod === p;
+            return (
+              <button
+                key={p}
+                type="button"
+                onClick={() => {
+                  setPeriod(p);
+                  setTrend(false);
+                }}
+                aria-pressed={active}
+                style={pillStyle(active)}
+              >
+                {p}
+              </button>
+            );
+          })}
           <span aria-hidden="true" style={{ fontSize: "0.72rem", color: "#98a0ad", marginLeft: "0.1rem" }}>
             newer →
           </span>
@@ -310,15 +402,31 @@ export function RagGrid({
           />
           <button
             type="button"
-            onClick={() => setPeriod(null)}
-            aria-pressed={effectivePeriod === null}
-            style={pillStyle(effectivePeriod === null)}
+            onClick={() => {
+              setPeriod(null);
+              setTrend(false);
+            }}
+            aria-pressed={!trend && effectivePeriod === null}
+            style={pillStyle(!trend && effectivePeriod === null)}
           >
             Latest reported
           </button>
+          {/* A second divider, then the over-time Trend view (adds a per-cell sparkline + delta). */}
+          <span
+            aria-hidden="true"
+            style={{ width: 1, alignSelf: "stretch", background: "#d0d5dd", margin: "0.15rem 0.35rem" }}
+          />
+          <button
+            type="button"
+            onClick={() => setTrend(true)}
+            aria-pressed={trend}
+            style={pillStyle(trend)}
+          >
+            Trend (over time)
+          </button>
         </div>
       )}
-      {effectivePeriod && (
+      {!trend && effectivePeriod && (
         <p style={{ color: "#5b6472", fontSize: "0.8rem", margin: "0 0 0.6rem", maxWidth: 900 }}>
           Showing <strong>{effectivePeriod}</strong> — <strong>{reportedCompanies}</strong> of{" "}
           {totalCompanies} companies reported at least one metric this quarter (an empty cell means
@@ -327,7 +435,26 @@ export function RagGrid({
         </p>
       )}
 
-      {/* Heat legend — explains the green→red scale that shades the value cells. */}
+      {/* Trend-view legend — in Trend view ONLY cells with a trend are coloured, by the company's
+          OWN direction of travel (no level heat here). */}
+      {trend && (
+        <p style={{ color: "#5b6472", fontSize: "0.8rem", margin: "0 0 0.6rem", maxWidth: 920 }}>
+          <strong>Trend view</strong> compares each company to its <strong>own previous quarter</strong>{" "}
+          (not to other companies). Only cells with more than one quarter are coloured — by which way
+          the number moved this quarter:{" "}
+          <span style={{ color: "#2f7a46", fontWeight: 600 }}>green</span> = it rose (▲),{" "}
+          <span style={{ color: "#b3401f", fontWeight: 600 }}>red</span> = it fell (▼),{" "}
+          <span style={{ color: "#5b6472", fontWeight: 600 }}>grey</span> = flat, or a metric with no
+          good/bad direction (headcount). For most metrics up is the good way; the one exception is{" "}
+          <em>logo churn</em> — a fall (<span style={{ color: "#b3401f", fontWeight: 600 }}>red ▼</span>)
+          is actually an improvement there (fewer customers lost). Single-quarter cells are left
+          blank; the within-sector level heat returns in the Latest / per-quarter views.
+        </p>
+      )}
+
+      {/* Heat legend — the green→red LEVEL scale (Latest / per-quarter views only; Trend view has
+          its own colour rule explained above). */}
+      {!trend && (
       <div
         style={{
           display: "flex",
@@ -351,9 +478,15 @@ export function RagGrid({
         </span>
         <span>best</span>
         <span style={{ color: "#858b94" }}>
-          — ranked within a sector, same-quarter peers only. ▼ = the sector laggard.
+          — <strong>each company ranked against the whole equity book</strong> (cross-sector,
+          same-quarter peers; the lender kept separate). ▼ = the lowest NRR.
+        </span>
+        <span style={{ color: "#858b94" }}>
+          A <strong>white</strong> value cell is a real number with no comparable figure to rank here
+          (non-USD money, an older quarter, a refused basis, or headcount) — shown, not ranked.
         </span>
       </div>
+      )}
 
       {/* Metric guide — a plain-language reference for each column (visual support; collapsible). */}
       <details open style={{ margin: "0.2rem 0 1.1rem" }}>
@@ -386,11 +519,14 @@ export function RagGrid({
         const groupHasHeat = group.companies.some((c) =>
           CANONICAL_METRIC_ORDER.some((m) => heat.has(cellKey(c, m))),
         );
-        const noHeatNote = groupHasHeat
-          ? null
-          : singleCompany
-            ? "Only one company here — nothing to rank against, so no heat shading."
-            : "No same-quarter peers to rank, so no heat shading here.";
+        // The "no heat shading" note is about the LEVEL peer-ranking — irrelevant in Trend view,
+        // which colours by each company's own direction (even a lone company gets coloured there).
+        const noHeatNote =
+          trend || groupHasHeat
+            ? null
+            : singleCompany
+              ? "Only one company here — nothing to rank against, so no heat shading."
+              : "No same-quarter peers to rank, so no heat shading here.";
         return (
         <div key={group.key} style={{ margin: "1rem 0", overflowX: "auto" }}>
           <h3 style={{ fontSize: "1rem", margin: "0 0 0.4rem" }}>
@@ -515,27 +651,62 @@ export function RagGrid({
                     // A figure from an older quarter than the portfolio's newest — tag it so a
                     // stale value never reads as current (e.g. FleetLink revenue from Q4 2024).
                     const stalePeriod =
-                      effectivePeriod === null &&
+                      activePeriod === null &&
                       cell.kind === "value" &&
                       cell.row &&
                       parsePeriodKey(cell.row.period) < newestKey
                         ? cell.row.period
                         : null;
 
+                    // Trend view colours ONLY cells that have a trend (>= 2 quarters), by the
+                    // company's OWN direction on this metric — "good" = the metric moved the right
+                    // way per HEAT_DIRECTION (note: falling logo churn is GOOD). A single-quarter,
+                    // flat, non-directional (headcount) or refused cell stays uncoloured. There is
+                    // NO level heat in Trend view; it returns in the Latest / per-quarter views.
+                    const trendPoints =
+                      trend && cell.kind === "value" ? buildSeries(metrics, company, metric) : [];
+                    let trendTone: "green" | "red" | null = null;
+                    if (trend && trendPoints.length >= 2) {
+                      const a = trendPoints[trendPoints.length - 2];
+                      const b = trendPoints[trendPoints.length - 1];
+                      const d = formatDelta(metric, b.value, a.value);
+                      // Colour by which way the NUMBER moved (▲ rose = green, ▼ fell = red); grey
+                      // only when there's no good/bad direction (headcount) or it's flat. A refused
+                      // cell IS coloured here — Trend view judges its OWN direction, not a peer
+                      // comparison, so a lender's own margin rising is green (still "not ranked" vs
+                      // the equity book). (Owner's call: a falling logo churn shows red.)
+                      trendTone = d.improving === null ? null : d.arrow === "▲" ? "green" : "red";
+                    }
+
                     let style: CSSProperties = cellStyle(cell);
                     if (currency) style = { ...style, color: "#555" };
-                    else if (heatCell) style = { ...style, background: heatCell.color };
-                    if (isLaggard) style = { ...style, borderLeft: "3px solid #92400e" };
+                    if (trend) {
+                      // own-trend highlight: green = the number rose, red = it fell, else uncoloured.
+                      if (trendTone === "green") style = { ...style, background: heatColor(1) };
+                      else if (trendTone === "red") style = { ...style, background: heatColor(0) };
+                    } else {
+                      // Latest / per-quarter views: a ranked cell gets its red→green tint. Everything
+                      // else stays WHITE — a value with no comparable figure to rank (non-USD money,
+                      // an older/stale quarter, a refused basis, or headcount) as well as gaps / N/A.
+                      if (!currency && heatCell) style = { ...style, background: heatCell.color };
+                      if (isLaggard) style = { ...style, borderLeft: "3px solid #92400e" };
+                    }
 
                     const value = (
                       <CellValue
                         cell={cell}
                         currency={currency}
                         operating={operating}
-                        isLaggard={isLaggard}
+                        isLaggard={!trend && isLaggard}
                         stalePeriod={stalePeriod}
                       />
                     );
+                    // Trend view: the company's own over-time sub-line under the value. A refused
+                    // (different-basis) cell is shown but its delta is never green/red-judged.
+                    const trendSub =
+                      trend && cell.kind === "value" ? (
+                        <TrendSubline points={trendPoints} metric={metric} />
+                      ) : null;
                     return (
                       // Keep the <td> a real table cell; the button role lives on an inner span
                       // so table semantics survive for screen readers (a11y).
@@ -559,6 +730,7 @@ export function RagGrid({
                         ) : (
                           value
                         )}
+                        {trendSub}
                       </td>
                     );
                   })}

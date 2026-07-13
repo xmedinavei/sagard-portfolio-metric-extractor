@@ -1,16 +1,71 @@
-# Sagard Portfolio Metric Extractor
+<p align="center">
+  <img src="web/public/concord-mark.svg" alt="Concord" height="72">
+</p>
 
-A local, offline **monitoring cockpit** for portfolio-company metrics: load a folder of quarterly PDFs with
-one click and get a sector-grouped grid, over-time trends, unsafe comparisons visibly flagged, and
-**click-any-number provenance**. Under the hood is a deterministic pipeline that extracts a canonical metric
-set from messy PDFs, normalizes inconsistent reporting formats, and publishes auditable, source-traceable
-artifacts — also usable as a standalone CLI.
+<p align="center"><em>One comparable, source-traced view of every portfolio company.</em></p>
 
-**The core idea:** *the same label does not always mean the same metric.* Two companies can both report
-"Gross Margin" and mean different things — a SaaS software margin vs. a lender's interest spread. So the
-tool's job is not only to pull numbers out; it is to make them **comparable and traceable**: every value
-carries its source, and the tool visibly **refuses** to line up two numbers that are not actually the same
-metric. Comparability is the product, not extraction.
+<p align="center">
+  <sub>A case-study monitoring cockpit · prepared for</sub><br>
+  <img src="web/public/sagard-logo.png" alt="Sagard" height="26">
+</p>
+
+---
+
+## What Concord is — and the problem it solves
+
+A private-markets team monitoring a portfolio receives a stack of quarterly PDFs from many companies. The
+hard part isn't reading them — it's that **the same words rarely mean the same thing**:
+
+- **Different labels, one metric.** One company writes "ARR", another "End-of-Period ARR", another
+  "annualized recurring revenue" — all the same number under three names.
+- **Same label, different basis.** Two companies both report "Gross Margin", but a lender's is an *interest
+  spread*, not a software margin — lining them up is meaningless.
+- **Different currencies and quarters.** A GBP figure sits silently beside USD; a stale Q4 number sits
+  beside a current one.
+
+Drop all of that into one dashboard and you **manufacture false comparisons** — the exact mistake that
+erodes trust in the numbers. **Concord** does the opposite: it extracts every metric straight from the
+source PDFs *with its provenance*, resolves the label drift to one canonical metric, and **visibly refuses
+to compare things that aren't comparable** — flagging a different basis, currency, or quarter instead of
+hiding it.
+
+> **The thesis in one line:** *the same label is not the same metric.* **Comparability is the product, not
+> extraction.** Every number is one click from its source document, and nothing incomparable is ever
+> silently ranked together.
+
+Concord runs as a **local, offline cockpit** (a Flask API + React single-page app) and as a standalone CLI
+over the same deterministic, source-traceable pipeline. What you see on screen is described in
+[What the cockpit shows](#what-the-cockpit-shows); the rest of this README is **how to run it**.
+
+---
+
+## What the cockpit shows
+
+One screen, built to answer *"can I trust this number, and is it comparable?"* — all on the offline export.
+
+- **Metrics grid** — companies × the eight canonical metrics, grouped either by **Market** (SaaS ·
+  Credit · Marketplace · Payments) or by investment **Strategy** (Private Equity vs Private Credit —
+  the default; the PE table is ordered SaaS-first). Cells are heat-shaded green → red **within a
+  sector, same-quarter peers only**, so a colour always means "how this company ranks against its
+  own-market peers," never across sectors. A **quarter selector** flips the whole grid to any single
+  reported quarter or "Latest reported"; a **Trend (over time)** view adds, inside each cell, a small
+  sparkline plus the quarter-over-quarter change (e.g. `▲ +8% vs Q1 2025 · latest Q2 2025`) — each
+  number's quarter is named, and single-quarter cells say so instead of drawing a fake line.
+- **Trend over time** — every metric at a glance as small charts, grouped the same way as the grid
+  (Grow · Profit / Keep / Fund / Scale). Switch between **all companies** and **one company**; click
+  any chart to enlarge it (and trace a point to its source); hover a line to read the company name.
+- **Refused comparisons** — a shared metric name on a different *basis* (a lender's interest-margin
+  "gross margin") is shown but never ranked against a true gross margin.
+- **Cross-source check** — where a figure appears in both a company report and the portfolio summary,
+  whether the two agree (and which one wins).
+- **Exceptions** — the "chase this up" list: metrics a company was expected to report but didn't.
+- **Source-terminology breadth** — where **label drift** is handled: the many source labels ("ARR",
+  "End-of-Period ARR", "annualized recurring revenue", …) that all resolve to one canonical metric.
+- **Click-any-number provenance** — every displayed number is one click from its source: the file,
+  the source's own label, the confidence, and the exact excerpt.
+
+Comparability is enforced throughout: a different-basis or non-USD figure is **shown and named, never
+silently mixed** into a ranking or a shared axis.
 
 ---
 
@@ -22,9 +77,11 @@ metric. Comparability is the product, not extraction.
 
 ---
 
-## Quick start — the live demo
+## Quick start — run the demo with `make serve`
 
-The primary experience is a local, offline **monitoring cockpit** (a Flask API + React single-page app).
+**`make serve` is the way to see Concord.** It launches a local, offline **monitoring cockpit** (a Flask
+API + React single-page app), and everything on screen is the live pipeline output. The command-line
+options further down are optional extras — **not** the demo.
 
 ```bash
 cd personal/sagard-portfolio-metric-extractor
@@ -52,6 +109,9 @@ uses deterministic local parsing.
 ---
 
 ## Running from the command line
+
+> **You don't need any of this to run the demo — that's `make serve` in the Quick start above.** This
+> section is reference only: the same pipeline seen from the command line, without the web app.
 
 The backend is also a standalone CLI pipeline — the cockpit is a thin layer over it. Both options below
 assume you have run `make setup` first (which creates the Python venv and installs requirements). Two ways

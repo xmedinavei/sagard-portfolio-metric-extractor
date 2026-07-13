@@ -114,6 +114,35 @@ export function sectorHeat(
   return out;
 }
 
+// ── Portfolio-wide heat (Q-report views) ──────────────────────────────────────────────────────
+// Rank EVERY heatable metric — money AND ratios alike — across the whole set of companies passed in
+// (the caller passes the equity book; the lender is kept separate). This is the owner's explicit
+// call: for the Q-report grid a cross-business comparison is wanted, so a marketplace's margin IS
+// coloured against a SaaS one (business type is ignored). The comparability guards still hold via
+// comparableEntries — non-USD money and refused-basis cells are dropped, and only same-newest-period
+// cells are ranked — so no cross-currency, different-basis, or cross-quarter comparison is
+// introduced; only the sector boundary is removed. headcount is absent from HEAT_DIRECTION, so it is
+// never ranked (size, not performance).
+export function portfolioHeat(
+  companies: string[],
+  latest: Map<string, MetricRow>,
+): Map<string, HeatCell> {
+  const out = new Map<string, HeatCell>();
+  for (const metric of Object.keys(HEAT_DIRECTION) as CanonicalMetric[]) {
+    const direction = HEAT_DIRECTION[metric]!;
+    const entries = comparableEntries(metric, companies, latest);
+    if (entries.length < 2) continue; // need >= 2 comparable figures to rank
+    const values = entries.map((e) => e.value);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    for (const e of entries) {
+      const fraction = heatFraction(e.value, min, max, direction);
+      out.set(e.key, { color: heatColor(fraction), fraction });
+    }
+  }
+  return out;
+}
+
 // The cellKey of the single worst comparable performer for `metric` in this sector — the
 // "laggard" the grid marks explicitly (default: the NRR league's laggard). null when there
 // are fewer than two comparable peers (nothing to rank). Ties break on sorted company order

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { MetricRow } from "../types";
 import { cellKey, latestByCompanyMetric } from "./grid";
-import { heatColor, heatFraction, laggardKey, sectorHeat } from "./heat";
+import { heatColor, heatFraction, laggardKey, portfolioHeat, sectorHeat } from "./heat";
 
 // Same MetricRow factory shape as grid.test.ts / trend.test.ts — harmless defaults so each
 // test only states the fields it cares about.
@@ -142,6 +142,41 @@ describe("sectorHeat — within-sector, comparable-only tinting", () => {
     expect(heat.has(cellKey("NovaCloud", "cash_balance"))).toBe(false);
     expect(heat.has(cellKey("NovaCloud", "headcount"))).toBe(false);
     expect(heat.has(cellKey("CarbonTrack", "headcount"))).toBe(false);
+  });
+});
+
+describe("portfolioHeat — money ranked across the whole portfolio", () => {
+  it("ranks a money metric across ALL companies regardless of sector (best 1, worst 0)", () => {
+    const rows = [
+      // The user's case: a marketplace with MORE revenue than a SaaS company should rank higher.
+      mkRow({ company_name: "Saas1", sector: "saas", canonical_metric: "revenue_qtr", value: 8_400_000, display_value: "$8.4M" }),
+      mkRow({ company_name: "Market1", sector: "marketplace", canonical_metric: "revenue_qtr", value: 9_300_000, display_value: "$9.3M" }),
+      mkRow({ company_name: "Pay1", sector: "payments", canonical_metric: "revenue_qtr", value: 17_300_000, display_value: "$17.3M" }),
+    ];
+    const heat = portfolioHeat(["Market1", "Pay1", "Saas1"], latestByCompanyMetric(rows));
+    expect(heat.get(cellKey("Pay1", "revenue_qtr"))?.fraction).toBe(1); // most revenue → green
+    expect(heat.get(cellKey("Saas1", "revenue_qtr"))?.fraction).toBe(0); // least → red
+    const market = heat.get(cellKey("Market1", "revenue_qtr"))!.fraction; // between, and above Saas1
+    expect(market).toBeGreaterThan(0);
+    expect(market).toBeLessThan(1);
+  });
+
+  it("ranks RATIOS cross-sector too, and still excludes non-USD money", () => {
+    const rows = [
+      // gross margin is now ranked ACROSS sectors: marketplace 54 vs SaaS 78 in one peer set.
+      mkRow({ company_name: "A", sector: "saas", canonical_metric: "gross_margin_pct", value: 78, unit: "percentage", display_value: "78%" }),
+      mkRow({ company_name: "B", sector: "marketplace", canonical_metric: "gross_margin_pct", value: 54, unit: "percentage", display_value: "54%" }),
+      // non-USD money is STILL excluded (can't rank £ against $).
+      mkRow({ company_name: "NovaCloud", sector: "saas", canonical_metric: "revenue_qtr", value: 8_400_000, display_value: "$8.4M" }),
+      mkRow({ company_name: "ClearPay", sector: "payments", canonical_metric: "revenue_qtr", value: 17_300_000, display_value: "$17.3M" }),
+      mkRow({ company_name: "PeopleFlow", sector: "saas", canonical_metric: "revenue_qtr", value: 5_100_000, display_value: "5.1M" }),
+    ];
+    const heat = portfolioHeat(["A", "B", "ClearPay", "NovaCloud", "PeopleFlow"], latestByCompanyMetric(rows));
+    // gross margin ranked cross-sector: B (54, marketplace) worst, A (78) best.
+    expect(heat.get(cellKey("B", "gross_margin_pct"))?.fraction).toBe(0);
+    expect(heat.get(cellKey("A", "gross_margin_pct"))?.fraction).toBe(1);
+    expect(heat.has(cellKey("PeopleFlow", "revenue_qtr"))).toBe(false); // GBP excluded
+    expect(heat.has(cellKey("ClearPay", "revenue_qtr"))).toBe(true); // USD money ranked cross-sector
   });
 });
 

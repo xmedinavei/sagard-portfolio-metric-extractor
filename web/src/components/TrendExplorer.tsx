@@ -19,7 +19,7 @@ import { useEffect, useState } from "react";
 
 import type { CanonicalMetric, MetricRow, MetricsExport } from "../types";
 import { METRIC_FULL_NAME, METRIC_GROUPS, METRIC_LABELS } from "../lib/grid";
-import type { CompanySeries, ExcludedSeries } from "../lib/trend";
+import type { CompanySeries, ExcludedSeries, TrendPoint } from "../lib/trend";
 import {
   MIN_TREND_POINTS,
   SERIES_PALETTE,
@@ -30,6 +30,7 @@ import {
   seriesBreakdown,
   yDomain,
 } from "../lib/trend";
+import { HEAT_DIRECTION } from "../lib/heat";
 
 const selectStyle: CSSProperties = {
   padding: "0.3rem 0.5rem",
@@ -83,6 +84,23 @@ function recolor(series: CompanySeries[], colorOf: Map<string, string>): Company
   return series.map((s) => ({ ...s, color: colorOf.get(s.company) ?? s.color }));
 }
 
+// In ONE-company scope, colour a metric's line by that company's OWN direction of travel over the
+// period (first → last), honouring what "good" means for the metric (HEAT_DIRECTION): improving =
+// green, worsening = red, no good/bad direction (headcount) or too few points = neutral slate. A
+// FALLING logo churn or a rising (less-negative) burn are improvements → green. All-companies scope
+// keeps the per-company palette instead (that view distinguishes companies, not direction).
+const TREND_GOOD = "#2f7a46";
+const TREND_BAD = "#b3401f";
+const TREND_NEUTRAL = "#5b6472";
+function directionColor(metric: CanonicalMetric, points: TrendPoint[]): string {
+  const direction = HEAT_DIRECTION[metric];
+  if (!direction || points.length < 2) return TREND_NEUTRAL;
+  const change = points[points.length - 1].value - points[0].value;
+  if (change === 0) return TREND_NEUTRAL;
+  const improving = direction === "higher_better" ? change > 0 : change < 0;
+  return improving ? TREND_GOOD : TREND_BAD;
+}
+
 // "Q2 2025" -> "Q2'25" for the cramped small-multiple x axis.
 const abbrevPeriod = (p: string) => p.replace(/ 20(\d\d)$/, "'$1");
 
@@ -123,7 +141,11 @@ export function TrendExplorer({
     let series = recolor(built.series, colorOf);
     let excluded = built.excluded;
     if (scope === "one") {
-      series = series.filter((s) => s.company === company);
+      // One company: keep only its series, and colour the line by its own direction (green rising /
+      // red falling, per the metric's good direction) instead of the company palette colour.
+      series = series
+        .filter((s) => s.company === company)
+        .map((s) => ({ ...s, color: directionColor(m, s.points) }));
       excluded = excluded.filter((e) => e.company === company);
     }
     scoped.set(m, { series, excluded });
@@ -161,7 +183,11 @@ export function TrendExplorer({
         into <em>one</em>. Charts are grouped like the tables (Grow · Profit / Keep / Fund / Scale).
         Y-axes are
         standardized per metric — money &amp; headcount start at <strong>0</strong>, percentages fit
-        their own range — and each company keeps one colour throughout. A trend needs{" "}
+        their own range. In <em>all companies</em> each company keeps its own colour; in{" "}
+        <em>one company</em> each line is coloured by its direction —{" "}
+        <span style={{ color: "#2f7a46", fontWeight: 600 }}>green</span> where the metric is improving,{" "}
+        <span style={{ color: "#b3401f", fontWeight: 600 }}>red</span> where it is worsening (a falling
+        churn is an improvement → green; headcount has no good/bad direction → neutral). A trend needs{" "}
         {MIN_TREND_POINTS}+ quarters; fewer shows as a snapshot dot. <strong>Click any chart</strong>{" "}
         to enlarge it and trace a number to its source.
       </p>

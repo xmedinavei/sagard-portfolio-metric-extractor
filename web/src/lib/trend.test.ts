@@ -6,6 +6,7 @@ import {
   buildSeries,
   distinctCompanies,
   formatAxisTick,
+  formatDelta,
   hasSufficientHistory,
   metricsForCompany,
   metricsPresent,
@@ -282,3 +283,38 @@ describe("formatAxisTick", () => {
     expect(formatAxisTick(142, "headcount")).toBe("142");
   });
 });
+
+describe("formatDelta — per-cell quarter-over-quarter change", () => {
+  it("money/counts use % change; the arrow + improving follow HEAT_DIRECTION", () => {
+    // ARR up 31.6M → 34.2M = +8% (higher is better → improving).
+    const arr = formatDelta("arr_eop", 34_200_000, 31_600_000);
+    expect(arr).toEqual({ text: "+8%", arrow: "▲", improving: true });
+    // Burn is negative; -5.0M → -4.0M is +20% and LESS negative = an improvement (green).
+    const burn = formatDelta("monthly_burn", -4_000_000, -5_000_000);
+    expect(burn).toEqual({ text: "+20%", arrow: "▲", improving: true });
+    // Headcount has no inherent good direction → never colour-judged.
+    expect(formatDelta("headcount", 120, 100).improving).toBeNull();
+  });
+
+  it("percentage metrics use percentage-POINTS, not a % of a %", () => {
+    // NRR 118 → 123 is +5 POINTS (not +4.2%); higher NRR is better → improving.
+    expect(formatDelta("net_revenue_retention_pct", 123, 118)).toEqual({
+      text: "+5.0 pts",
+      arrow: "▲",
+      improving: true,
+    });
+    // Churn UP 5 → 7 is +2 points and worse (lower churn is better → not improving = red).
+    expect(formatDelta("logo_churn_pct", 7, 5)).toEqual({
+      text: "+2.0 pts",
+      arrow: "▲",
+      improving: false,
+    });
+  });
+
+  it("guards a zero prior base and honours the neutral (different-basis) flag", () => {
+    expect(formatDelta("revenue_qtr", 5_000_000, 0).text).toBe("n/a");
+    // A refused / different-basis cell is shown but never green/red-judged.
+    expect(formatDelta("gross_margin_pct", 62, 58, { neutral: true }).improving).toBeNull();
+  });
+});
+
