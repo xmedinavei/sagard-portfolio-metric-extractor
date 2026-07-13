@@ -68,20 +68,21 @@ describe("provenanceView", () => {
     expect(view.snippet).toBe("| ARR (End of Period) | $34.2M |");
   });
 
-  it("shows file-level provenance and NO page number when source_page is null (the norm)", () => {
-    // 116/116 live rows have source_page === null — DEC-C file-level provenance. The
-    // drawer must not invent a page; pageDisplay stays null so the component renders none.
+  it("reports file-level provenance and NO page number (DEC-C v1 commitment)", () => {
+    // v1 provenance is file-level; the drawer must not surface a page. pageDisplay stays
+    // null so the component renders no page line.
     const view = provenanceView(mkRow({ source_page: null }));
     expect(view.pageDisplay).toBeNull();
     expect(view.granularityLabel).toBe(PROVENANCE_GRANULARITY_LABEL);
     expect(view.granularityLabel).toBe("source file (file-level)");
   });
 
-  it("shows a page line only if the backend ever populates a real page (forward-compat)", () => {
-    // Not v1 (source_page is always null today), but the projection must be honest if it
-    // ever isn't — so a real page number surfaces rather than being silently dropped.
-    const view = provenanceView(mkRow({ source_page: 4 }));
-    expect(view.pageDisplay).toBe("p. 4");
+  it("suppresses the page even when the parser populates source_page (live rows carry page 1)", () => {
+    // The live pipeline sets source_page=1 on every row (a single-metric-table pack), and a
+    // multi-page pack can carry 2 — but v1 still reports file-level only, so pageDisplay
+    // stays null. Showing "p. 1" would contradict the file-level pitch.
+    expect(provenanceView(mkRow({ source_page: 1 })).pageDisplay).toBeNull();
+    expect(provenanceView(mkRow({ source_page: 2 })).pageDisplay).toBeNull();
   });
 
   it("passes a null value through unchanged (a null value is not a zero)", () => {

@@ -5,9 +5,13 @@ import {
   cellKey,
   cellText,
   classifyCell,
+  formatUsdShort,
   groupCompaniesBySector,
   latestByCompanyMetric,
+  nonUsdCurrency,
+  operatingValueView,
   parsePeriodKey,
+  reportingCurrency,
   sectorApplicableMetrics,
 } from "./grid";
 
@@ -121,6 +125,62 @@ describe("latestByCompanyMetric", () => {
     expect(cell?.period).toBe("Q2 2025");
     expect(cell?.value).toBe(34_200_000);
     expect(cell?.display_value).toBe("$34.2M");
+  });
+});
+
+describe("reporting currency (Trap C — currency)", () => {
+  it("defaults to USD but marks a known non-USD company", () => {
+    expect(reportingCurrency("NovaCloud")).toBe("USD");
+    expect(reportingCurrency("PeopleFlow")).toBe("GBP");
+  });
+
+  it("flags a non-USD MONEY metric, but never a percentage/count or a USD company", () => {
+    // PeopleFlow's money levels are GBP → flagged; a ratio (NRR) or count (headcount) is
+    // never currency-flagged (you don't FX a percentage); USD companies are never flagged.
+    expect(nonUsdCurrency("PeopleFlow", "revenue_qtr")).toBe("GBP");
+    expect(nonUsdCurrency("PeopleFlow", "arr_eop")).toBe("GBP");
+    expect(nonUsdCurrency("PeopleFlow", "net_revenue_retention_pct")).toBeNull();
+    expect(nonUsdCurrency("PeopleFlow", "gross_margin_pct")).toBeNull();
+    expect(nonUsdCurrency("PeopleFlow", "headcount")).toBeNull();
+    expect(nonUsdCurrency("NovaCloud", "revenue_qtr")).toBeNull();
+  });
+});
+
+describe("operating cash (Trap C — ClearPay $38.4M → $32.2M)", () => {
+  it("formats a raw USD amount as short $X.XM", () => {
+    expect(formatUsdShort(32_200_000)).toBe("$32.2M");
+    expect(formatUsdShort(38_400_000)).toBe("$38.4M");
+  });
+
+  it("surfaces the basis-adjusted value + note when value_normalized differs", () => {
+    // ClearPay's cash_balance: headline $38.4M, but $6.2M is restricted client money it
+    // cannot spend, so the backend already computed operating cash = $32.2M. The tool must
+    // SHOW that, not hide it.
+    const clearpay = mkRow({
+      company_name: "ClearPay", sector: "payments", canonical_metric: "cash_balance",
+      value: 38_400_000, display_value: "$38.4M", value_normalized: 32_200_000,
+    });
+    const view = operatingValueView(clearpay);
+    expect(view?.text).toBe("$32.2M");
+    expect(view?.note).toContain("operating");
+  });
+
+  it("returns null for an ordinary row (no adjustment) and when normalized equals headline", () => {
+    const plain = mkRow({ company_name: "NovaCloud", sector: "saas", canonical_metric: "cash_balance", value: 19_600_000, display_value: "$19.6M" });
+    expect(operatingValueView(plain)).toBeNull();
+    const equal = mkRow({ company_name: "X", sector: "saas", canonical_metric: "cash_balance", value: 100, value_normalized: 100 });
+    expect(operatingValueView(equal)).toBeNull();
+  });
+
+  it("returns null when the headline value itself is null (defensive branch)", () => {
+    const noHeadline = mkRow({ company_name: "X", sector: "saas", canonical_metric: "cash_balance", value: null, value_normalized: 100 });
+    expect(operatingValueView(noHeadline)).toBeNull();
+  });
+
+  it("never labels a non-USD company's normalized figure with a $ (currency guard)", () => {
+    // PeopleFlow reports in GBP; even if it carried a value_normalized we must NOT print "$".
+    const gbp = mkRow({ company_name: "PeopleFlow", sector: "saas", canonical_metric: "cash_balance", value: 5_000_000, value_normalized: 4_500_000 });
+    expect(operatingValueView(gbp)).toBeNull();
   });
 });
 

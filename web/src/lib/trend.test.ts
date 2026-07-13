@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import type { MetricRow } from "../types";
 import {
+  buildAllCompaniesSeries,
   buildSeries,
   distinctCompanies,
   hasSufficientHistory,
   metricsForCompany,
+  metricsPresent,
 } from "./trend";
 
 // A MetricRow factory: fills the 23 §A.4 fields with harmless defaults so each test only
@@ -159,5 +161,81 @@ describe("selector helpers", () => {
     // NovaCloud reports arr_eop + monthly_burn; the order follows CANONICAL_METRIC_ORDER
     // (arr_eop before monthly_burn), and only metrics it actually has are offered.
     expect(metricsForCompany(CORPUS, "NovaCloud")).toEqual(["arr_eop", "monthly_burn"]);
+  });
+});
+
+// A multi-company corpus for the all-companies overlay (V3): SaaS companies with NRR over
+// several quarters (the league), a 2-quarter company (insufficient), a lender with a REFUSED
+// margin (different basis), and PeopleFlow reporting revenue in GBP (non-USD money).
+const OVERLAY_CORPUS: MetricRow[] = [
+  // NovaCloud NRR — 5 quarters (the league leader)
+  mkRow({ company_name: "NovaCloud", sector: "saas", canonical_metric: "net_revenue_retention_pct", period: "Q2 2024", value: 115, unit: "percentage", display_value: "115%" }),
+  mkRow({ company_name: "NovaCloud", sector: "saas", canonical_metric: "net_revenue_retention_pct", period: "Q3 2024", value: 117, unit: "percentage", display_value: "117%" }),
+  mkRow({ company_name: "NovaCloud", sector: "saas", canonical_metric: "net_revenue_retention_pct", period: "Q4 2024", value: 119, unit: "percentage", display_value: "119%" }),
+  mkRow({ company_name: "NovaCloud", sector: "saas", canonical_metric: "net_revenue_retention_pct", period: "Q1 2025", value: 121, unit: "percentage", display_value: "121%" }),
+  mkRow({ company_name: "NovaCloud", sector: "saas", canonical_metric: "net_revenue_retention_pct", period: "Q2 2025", value: 123, unit: "percentage", display_value: "123%" }),
+  // CarbonTrack NRR — exactly 3 quarters (renders)
+  mkRow({ company_name: "CarbonTrack", sector: "saas", canonical_metric: "net_revenue_retention_pct", period: "Q4 2024", value: 118, unit: "percentage", display_value: "118%" }),
+  mkRow({ company_name: "CarbonTrack", sector: "saas", canonical_metric: "net_revenue_retention_pct", period: "Q1 2025", value: 120, unit: "percentage", display_value: "120%" }),
+  mkRow({ company_name: "CarbonTrack", sector: "saas", canonical_metric: "net_revenue_retention_pct", period: "Q2 2025", value: 121, unit: "percentage", display_value: "121%" }),
+  // ShortCo NRR — only 2 quarters (insufficient history)
+  mkRow({ company_name: "ShortCo", sector: "saas", canonical_metric: "net_revenue_retention_pct", period: "Q1 2025", value: 110, unit: "percentage", display_value: "110%" }),
+  mkRow({ company_name: "ShortCo", sector: "saas", canonical_metric: "net_revenue_retention_pct", period: "Q2 2025", value: 112, unit: "percentage", display_value: "112%" }),
+  // NovaCloud gross margin — comparable (3 quarters)
+  mkRow({ company_name: "NovaCloud", sector: "saas", canonical_metric: "gross_margin_pct", period: "Q4 2024", value: 76, unit: "percentage", display_value: "76%" }),
+  mkRow({ company_name: "NovaCloud", sector: "saas", canonical_metric: "gross_margin_pct", period: "Q1 2025", value: 77, unit: "percentage", display_value: "77%" }),
+  mkRow({ company_name: "NovaCloud", sector: "saas", canonical_metric: "gross_margin_pct", period: "Q2 2025", value: 78, unit: "percentage", display_value: "78%" }),
+  // LendBridge gross margin — REFUSED (interest margin, a different basis) over 3 quarters
+  mkRow({ company_name: "LendBridge", sector: "credit", canonical_metric: "gross_margin_pct", period: "Q4 2024", value: 60, unit: "percentage", display_value: "60%", comparison_status: "refused", metric_basis: "interest_margin" }),
+  mkRow({ company_name: "LendBridge", sector: "credit", canonical_metric: "gross_margin_pct", period: "Q1 2025", value: 61, unit: "percentage", display_value: "61%", comparison_status: "refused", metric_basis: "interest_margin" }),
+  mkRow({ company_name: "LendBridge", sector: "credit", canonical_metric: "gross_margin_pct", period: "Q2 2025", value: 62, unit: "percentage", display_value: "62%", comparison_status: "refused", metric_basis: "interest_margin" }),
+  // Revenue: NovaCloud + CarbonTrack in USD, PeopleFlow in GBP (non-USD money → excluded)
+  mkRow({ company_name: "NovaCloud", sector: "saas", canonical_metric: "revenue_qtr", period: "Q4 2024", value: 7_200_000, display_value: "$7.2M" }),
+  mkRow({ company_name: "NovaCloud", sector: "saas", canonical_metric: "revenue_qtr", period: "Q1 2025", value: 7_900_000, display_value: "$7.9M" }),
+  mkRow({ company_name: "NovaCloud", sector: "saas", canonical_metric: "revenue_qtr", period: "Q2 2025", value: 8_400_000, display_value: "$8.4M" }),
+  mkRow({ company_name: "PeopleFlow", sector: "saas", canonical_metric: "revenue_qtr", period: "Q4 2024", value: 4_900_000, display_value: "4.9M" }),
+  mkRow({ company_name: "PeopleFlow", sector: "saas", canonical_metric: "revenue_qtr", period: "Q1 2025", value: 5_000_000, display_value: "5.0M" }),
+  mkRow({ company_name: "PeopleFlow", sector: "saas", canonical_metric: "revenue_qtr", period: "Q2 2025", value: 5_100_000, display_value: "5.1M" }),
+];
+
+describe("buildAllCompaniesSeries — the all-companies overlay (V3)", () => {
+  it("includes companies with >= 3 comparable quarters, each with a stable distinct colour", () => {
+    const { series, excluded } = buildAllCompaniesSeries(OVERLAY_CORPUS, "net_revenue_retention_pct");
+    expect(series.map((s) => s.company).sort()).toEqual(["CarbonTrack", "NovaCloud"]);
+    // every included series gets a non-empty colour, and two lines never share one
+    expect(series.every((s) => s.color.length > 0)).toBe(true);
+    expect(series[0].color).not.toBe(series[1].color);
+    // ShortCo (2 quarters) is named-excluded, not silently dropped
+    expect(excluded).toContainEqual({ company: "ShortCo", reason: "insufficient history" });
+  });
+
+  it("excludes a refused-basis company by name (LendBridge interest margin)", () => {
+    const { series, excluded } = buildAllCompaniesSeries(OVERLAY_CORPUS, "gross_margin_pct");
+    expect(series.map((s) => s.company)).toEqual(["NovaCloud"]);
+    expect(excluded).toContainEqual({ company: "LendBridge", reason: "different basis" });
+  });
+
+  it("excludes a non-USD money series by name (PeopleFlow GBP revenue)", () => {
+    const { series, excluded } = buildAllCompaniesSeries(OVERLAY_CORPUS, "revenue_qtr");
+    expect(series.map((s) => s.company)).toEqual(["NovaCloud"]);
+    expect(excluded).toContainEqual({ company: "PeopleFlow", reason: "reported in GBP" });
+  });
+
+  it("does not list a company that simply never reports the metric (absent != excluded)", () => {
+    // LendBridge reports no NRR at all → it is absent from BOTH series and excluded.
+    const { series, excluded } = buildAllCompaniesSeries(OVERLAY_CORPUS, "net_revenue_retention_pct");
+    const named = [...series.map((s) => s.company), ...excluded.map((e) => e.company)];
+    expect(named).not.toContain("LendBridge");
+  });
+});
+
+describe("metricsPresent", () => {
+  it("lists every metric present anywhere, in canonical order", () => {
+    // OVERLAY_CORPUS carries revenue_qtr, gross_margin_pct, net_revenue_retention_pct.
+    expect(metricsPresent(OVERLAY_CORPUS)).toEqual([
+      "revenue_qtr",
+      "gross_margin_pct",
+      "net_revenue_retention_pct",
+    ]);
   });
 });

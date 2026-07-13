@@ -9,15 +9,21 @@ import type { CSSProperties } from "react";
 import type { MetricRow, MetricsExport } from "../types";
 import {
   CANONICAL_METRIC_ORDER,
+  CURRENCY_SYMBOL,
   METRIC_LABELS,
   SECTOR_LABELS,
+  cellKey,
   classifyCell,
   groupCompaniesBySector,
   latestByCompanyMetric,
+  nonUsdCurrency,
+  operatingValueView,
   sectorApplicableMetrics,
   cellText,
   type Cell,
+  type OperatingValueView,
 } from "../lib/grid";
+import { laggardKey, sectorHeat } from "../lib/heat";
 
 const cellBase: CSSProperties = {
   border: "1px solid #e2e2e2",
@@ -34,8 +40,36 @@ function cellStyle(cell: Cell): CSSProperties {
   return cellBase;
 }
 
-function CellValue({ cell }: { cell: Cell }) {
+function CellValue({
+  cell,
+  currency,
+  operating,
+  isLaggard,
+}: {
+  cell: Cell;
+  currency?: string | null;
+  // The one basis-adjusted figure on the corpus (ClearPay operating cash) — shown as a small
+  // sub-line under the headline so the tool SHOWS what it caught (Trap C).
+  operating?: OperatingValueView | null;
+  // The explicit sector laggard (lowest NRR) — a small ▼ tag reinforcing the red heat tint.
+  isLaggard?: boolean;
+}) {
   const text = cellText(cell);
+  if (cell.kind === "value" && currency) {
+    // A real number reported in a non-USD currency (PeopleFlow = GBP). Shown with its own
+    // currency symbol and explicitly NOT comparable to the USD column — the tool refuses the
+    // silent cross-currency comparison instead of committing it. FX conversion is roadmap.
+    const symbol = CURRENCY_SYMBOL[currency] ?? "";
+    // Prefix the symbol only if the backend display didn't already carry one (non-USD levels
+    // print bare, e.g. "5.1M" -> "£5.1M"); never double up a "$"/"£"/"€".
+    const shown = symbol && !/^[£$€]/.test(text) ? `${symbol}${text}` : text;
+    return (
+      <span title={`Reported in ${currency} — not comparable to the USD column`}>
+        {shown}{" "}
+        <span style={{ fontSize: "0.75em", color: "#888" }}>· not comparable ({currency})</span>
+      </span>
+    );
+  }
   if (cell.kind === "value" && cell.notRanked) {
     // A real number on a different basis (credit gross margin = interest margin).
     // Shown, but explicitly not ranked against the sector's peers. Phase 3 tells the
@@ -52,7 +86,29 @@ function CellValue({ cell }: { cell: Cell }) {
   if (cell.kind === "gap") {
     return <span title="No value reported for this company (genuine gap)">{text}</span>;
   }
-  return <span>{text}</span>;
+  // A plain comparable value — it may carry a basis-adjusted operating figure (ClearPay)
+  // and/or the sector-laggard tag.
+  return (
+    <span>
+      {text}
+      {isLaggard && (
+        <span
+          title="Lowest in its sector on this metric — the laggard"
+          style={{ fontSize: "0.72em", color: "#b45309", marginLeft: "0.35rem" }}
+        >
+          ▼ laggard
+        </span>
+      )}
+      {operating && (
+        <span
+          title={operating.note}
+          style={{ display: "block", fontSize: "0.72em", color: "#2f7a46" }}
+        >
+          · {operating.text} operating
+        </span>
+      )}
+    </span>
+  );
 }
 
 export function RagGrid({
@@ -74,12 +130,20 @@ export function RagGrid({
     <section style={{ marginTop: "1.5rem" }}>
       <h2 style={{ fontSize: "1.15rem" }}>Metrics by sector</h2>
       <p style={{ color: "#666", fontSize: "0.85rem", marginTop: 0 }}>
-        Latest reported quarter per company. <em>N/A</em> = the metric does not apply to
-        that sector; <em>—</em> = a genuine gap for that company; <em>not ranked</em> = a
-        real number measured on a different basis.
+        Latest reported quarter per company. Cells are heat-shaded green → red{" "}
+        <em>within each sector</em> (best → worst on comparable metrics); ▼ marks the sector
+        laggard. <em>N/A</em> = the metric does not apply to that sector; <em>—</em> = a
+        genuine gap for that company; <em>not ranked</em> = a real number measured on a
+        different basis; <em>not comparable (GBP)</em> = reported in a non-USD currency, so it
+        is not ranked against the USD column.
       </p>
 
-      {groups.map((group) => (
+      {groups.map((group) => {
+        // Heat + laggard are computed PER SECTOR — never across sectors — so a company is
+        // only ever ranked against genuine peers (comparability, the whole thesis).
+        const heat = sectorHeat(group.sector, group.companies, latest);
+        const laggard = laggardKey(group.companies, latest);
+        return (
         <div key={group.sector} style={{ margin: "1rem 0", overflowX: "auto" }}>
           <h3 style={{ fontSize: "1rem", margin: "0 0 0.4rem" }}>
             {SECTOR_LABELS[group.sector]}{" "}
@@ -120,12 +184,31 @@ export function RagGrid({
                     const open = () => {
                       if (openRow && onSelectRow) onSelectRow(openRow);
                     };
+                    // Non-USD money value (PeopleFlow GBP): flag + mute like a not-ranked
+                    // cell so it never reads as comparable to the USD peers.
+                    const currency =
+                      cell.kind === "value" ? nonUsdCurrency(company, metric) : null;
+                    // RAG heat (V1): `heat` already excludes refused + non-USD cells, so it
+                    // is defined ONLY for a genuinely rankable value — never fighting the
+                    // currency / not-ranked styling below.
+                    const heatCell =
+                      cell.kind === "value" ? heat.get(cellKey(company, metric)) : undefined;
+                    // The one basis-adjusted figure on the corpus (ClearPay operating cash).
+                    const operating =
+                      cell.kind === "value" && cell.row ? operatingValueView(cell.row) : null;
+                    const isLaggard =
+                      cell.kind === "value" && cellKey(company, metric) === laggard;
+
+                    let style: CSSProperties = cellStyle(cell);
+                    if (currency) style = { ...style, color: "#555" };
+                    else if (heatCell) style = { ...style, background: heatCell.color };
+                    if (isLaggard) style = { ...style, borderLeft: "3px solid #b45309" };
+                    if (clickable) style = { ...style, cursor: "pointer" };
+
                     return (
                       <td
                         key={metric}
-                        style={
-                          clickable ? { ...cellStyle(cell), cursor: "pointer" } : cellStyle(cell)
-                        }
+                        style={style}
                         onClick={clickable ? open : undefined}
                         onKeyDown={
                           clickable
@@ -141,7 +224,12 @@ export function RagGrid({
                         tabIndex={clickable ? 0 : undefined}
                         title={clickable ? "Click to see the source of this number" : undefined}
                       >
-                        <CellValue cell={cell} />
+                        <CellValue
+                          cell={cell}
+                          currency={currency}
+                          operating={operating}
+                          isLaggard={isLaggard}
+                        />
                       </td>
                     );
                   })}
@@ -150,7 +238,8 @@ export function RagGrid({
             </tbody>
           </table>
         </div>
-      ))}
+        );
+      })}
     </section>
   );
 }

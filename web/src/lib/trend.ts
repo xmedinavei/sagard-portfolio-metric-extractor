@@ -17,7 +17,7 @@
 // (currency, comparison_status === "unchecked", code === "unrecognized_label").
 
 import type { CanonicalMetric, MetricRow } from "../types";
-import { CANONICAL_METRIC_ORDER, parsePeriodKey } from "./grid";
+import { CANONICAL_METRIC_ORDER, nonUsdCurrency, parsePeriodKey } from "./grid";
 
 // A (company, metric) needs at least this many DISTINCT periods before we draw a trend.
 // Below it the panel shows "insufficient history" rather than a 1-2 point pseudo-line.
@@ -107,4 +107,87 @@ export function metricsForCompany(
     if (row.company_name === company) present.add(row.canonical_metric);
   }
   return CANONICAL_METRIC_ORDER.filter((m) => present.has(m));
+}
+
+// Every canonical metric present ANYWHERE in the export, in schema order — the metric list
+// for the all-companies overlay (V3), which is not tied to a single company.
+export function metricsPresent(metrics: MetricRow[]): CanonicalMetric[] {
+  const present = new Set<CanonicalMetric>();
+  for (const row of metrics) present.add(row.canonical_metric);
+  return CANONICAL_METRIC_ORDER.filter((m) => present.has(m));
+}
+
+// ── All-companies overlay (Phase 5 — V3) ─────────────────────────────────────────────────
+// One line PER company for a SINGLE metric, so the "league over time" reads in one chart.
+// Comparability is guarded exactly like the grid and the refuse panel:
+//   * a company whose row for this metric is REFUSED (credit gross margin = interest margin)
+//     is excluded — a different basis must never share an axis with the comparable ones;
+//   * a company reporting this MONEY metric in a non-USD currency (PeopleFlow GBP) is
+//     excluded — you cannot plot £ and $ together without FX (roadmap). A ratio (NRR) is
+//     NOT currency-denominated, so PeopleFlow still joins the NRR league correctly.
+// Excluded companies are RETURNED with a reason so the panel can NAME them honestly
+// ("LendBridge hidden — different basis") rather than silently dropping them. A company that
+// simply does not report the metric is absent, not "excluded" (mirrors the grid's N/A).
+export interface CompanySeries {
+  company: string;
+  points: TrendPoint[];
+  color: string;
+}
+export interface ExcludedSeries {
+  company: string;
+  reason: string;
+}
+export interface AllCompaniesSeries {
+  series: CompanySeries[]; // companies with >= MIN_TREND_POINTS comparable quarters
+  excluded: ExcludedSeries[]; // guarded-out or too-short, each named with a reason
+}
+
+// A fixed, offline colour ramp (no external palette dependency — keeps the bundle self
+// contained). Assigned by the sorted order of the included companies, so colours are stable
+// across renders. ~10 distinct, reasonably colour-blind-distinguishable hues.
+export const SERIES_PALETTE: string[] = [
+  "#2b6cb0", // blue
+  "#c05621", // orange
+  "#2f855a", // green
+  "#b83280", // magenta
+  "#6b46c1", // purple
+  "#b7791f", // gold
+  "#319795", // teal
+  "#9b2c2c", // dark red
+  "#4a5568", // slate
+  "#00707a", // deep teal
+];
+
+export function buildAllCompaniesSeries(
+  metrics: MetricRow[],
+  metric: CanonicalMetric,
+): AllCompaniesSeries {
+  const series: CompanySeries[] = [];
+  const excluded: ExcludedSeries[] = [];
+  for (const company of distinctCompanies(metrics)) {
+    const rowsForMetric = metrics.filter(
+      (r) => r.company_name === company && r.canonical_metric === metric,
+    );
+    if (rowsForMetric.length === 0) continue; // not reported here — absent, not "excluded"
+
+    if (rowsForMetric.some((r) => r.comparison_status === "refused")) {
+      excluded.push({ company, reason: "different basis" });
+      continue;
+    }
+    const currency = nonUsdCurrency(company, metric);
+    if (currency) {
+      excluded.push({ company, reason: `reported in ${currency}` });
+      continue;
+    }
+    const points = buildSeries(metrics, company, metric);
+    if (points.length < MIN_TREND_POINTS) {
+      excluded.push({ company, reason: "insufficient history" });
+      continue;
+    }
+    series.push({ company, points, color: "" }); // colour assigned once the set is final
+  }
+  series.forEach((s, i) => {
+    s.color = SERIES_PALETTE[i % SERIES_PALETTE.length];
+  });
+  return { series, excluded };
 }

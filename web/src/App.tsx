@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 
 import { fetchMetrics, fetchReports, runPipeline } from "./api";
@@ -26,6 +27,20 @@ interface RunMeta {
   elapsed_s: number;
 }
 
+// Nav-bar button styling (V2). Disabled = the in-flight re-run (muted, no pointer).
+function navButtonStyle(disabled: boolean): CSSProperties {
+  return {
+    padding: "0.3rem 0.7rem",
+    fontSize: "0.85rem",
+    fontFamily: "system-ui, sans-serif",
+    border: "1px solid #cbd5e0",
+    borderRadius: 6,
+    background: disabled ? "#f1f5f9" : "#fff",
+    color: disabled ? "#94a3b8" : "#1a202c",
+    cursor: disabled ? "default" : "pointer",
+  };
+}
+
 export function App() {
   const [status, setStatus] = useState<Status>("loading");
   const [data, setData] = useState<MetricsExport | null>(null);
@@ -36,6 +51,13 @@ export function App() {
   // Phase 4: the row whose provenance drawer is open (null = closed). Clicking any grid
   // cell or trend point sets it; the drawer's close button / Esc / backdrop clears it.
   const [selectedRow, setSelectedRow] = useState<MetricRow | null>(null);
+  // Phase 5 (V2): an IN-PLACE re-run flag, kept separate from `status` so the nav-bar
+  // "Re-run" re-parses without dropping back to the initial load screen — the cockpit stays
+  // on screen with a subtle "Re-running…" cue.
+  const [reloading, setReloading] = useState(false);
+  // A re-run failure is surfaced inline (kept separate from the fatal `error`/`status`), so a
+  // transient re-run error never blanks the panels the presenter is standing on.
+  const [reRunError, setReRunError] = useState<string | null>(null);
 
   // Cold start: read the last export (if the server already ran this process). This
   // effect OWNS the initial status transition — result.export ? loaded : idle — so a
@@ -98,16 +120,91 @@ export function App() {
       });
   }
 
+  // Nav-bar "Re-run" (V2): re-parse the intake PDFs from disk WITHOUT flipping back to the
+  // load screen. Same POST /api/run as handleLoad, but it flags `reloading` instead of
+  // `status = "loading"`, so the loaded cockpit stays visible under a "Re-running…" cue.
+  function handleReRun() {
+    setReloading(true);
+    setReRunError(null);
+    runPipeline()
+      .then((result) => {
+        setData(result.export);
+        setRunMeta({
+          parsed: result.parsed,
+          total: result.total,
+          elapsed_s: result.elapsed_s,
+        });
+        setStatus("loaded");
+      })
+      .catch((err: unknown) => {
+        // Keep status = "loaded": surface the error inline and leave the current export on
+        // screen rather than swapping the whole cockpit for the fatal error view.
+        setReRunError(err instanceof Error ? err.message : String(err));
+      })
+      .finally(() => setReloading(false));
+  }
+
+  // Nav-bar "Back to start": return to the top of the cockpit (the grid).
+  function backToStart() {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   return (
-    <main
-      style={{
-        fontFamily: "system-ui, sans-serif",
-        maxWidth: 1100,
-        margin: "0 auto",
-        padding: "2rem",
-      }}
-    >
-      <h1>Portfolio Cockpit</h1>
+    <>
+      {/* Sticky nav bar (V2): the app title + in-place Re-run + Back-to-start. Actions show
+          once an export is loaded (nothing to re-run/scroll before the first load). */}
+      <header
+        className="cockpit-nav"
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 900,
+          background: "rgba(255, 255, 255, 0.92)",
+          borderBottom: "1px solid #e5e7eb",
+          backdropFilter: "saturate(1.2) blur(4px)",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 1100,
+            margin: "0 auto",
+            padding: "0.6rem 2rem",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "1rem",
+          }}
+        >
+          <span style={{ fontWeight: 600, fontFamily: "system-ui, sans-serif" }}>
+            Portfolio Cockpit
+          </span>
+          {status === "loaded" && (
+            <span style={{ display: "flex", gap: "0.5rem" }}>
+              <button
+                type="button"
+                onClick={handleReRun}
+                disabled={reloading}
+                style={navButtonStyle(reloading)}
+              >
+                {reloading ? "Re-running…" : "↻ Re-run"}
+              </button>
+              <button type="button" onClick={backToStart} style={navButtonStyle(false)}>
+                ↑ Back to start
+              </button>
+            </span>
+          )}
+        </div>
+      </header>
+
+      <main
+        style={{
+          fontFamily: "system-ui, sans-serif",
+          maxWidth: 1100,
+          margin: "0 auto",
+          padding: "2rem",
+        }}
+      >
+        <h1>Portfolio Cockpit</h1>
       <p style={{ color: "#666" }}>
         Local, offline monitoring cockpit — Sagard case study.
       </p>
@@ -129,6 +226,20 @@ export function App() {
 
       {status === "loaded" && data && (
         <>
+          {reRunError && (
+            <p
+              role="alert"
+              style={{
+                color: "#b00020",
+                background: "#fdecea",
+                border: "1px solid #f5c6c2",
+                borderRadius: 6,
+                padding: "0.5rem 0.8rem",
+              }}
+            >
+              Re-run failed: {reRunError}. Showing the previous results.
+            </p>
+          )}
           <p>
             Loaded <strong>{data.export_metadata.metric_count}</strong> metrics from{" "}
             <strong>{data.export_metadata.document_count}</strong> reports (schema{" "}
@@ -138,6 +249,11 @@ export function App() {
           {runMeta && (
             <p style={{ color: "#666" }}>
               {runMeta.parsed}/{runMeta.total} parsed in {runMeta.elapsed_s.toFixed(1)} s
+              {reloading && (
+                <span role="status" style={{ color: "#2b6cb0", marginLeft: "0.6rem" }}>
+                  · Re-running…
+                </span>
+              )}
             </p>
           )}
 
@@ -163,6 +279,7 @@ export function App() {
           <ProvenanceDrawer row={selectedRow} onClose={() => setSelectedRow(null)} />
         </>
       )}
-    </main>
+      </main>
+    </>
   );
 }

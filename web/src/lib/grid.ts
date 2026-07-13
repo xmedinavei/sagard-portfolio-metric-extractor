@@ -52,6 +52,73 @@ export const SECTOR_LABELS: Record<SectorKind, string> = {
   payments: "Payments",
 };
 
+// ── Reporting-currency rulebook (Trap C — currency). Human-owned data: which companies
+// report their pack in a non-USD currency. In production this comes from the backend
+// `currency` field (RESERVED / null in v1), so we keep a small explicit map here — exactly
+// the "human-owned rulebook the machine applies" the design calls for. Default is USD.
+// Without this, PeopleFlow's GBP levels (printed as a bare "5.1M") sit silently in the same
+// USD column as everyone else — the very currency trap the tool exists to prevent. ─────────
+export const REPORTING_CURRENCY: Record<string, string> = {
+  PeopleFlow: "GBP", // pack states "GBP"; levels are printed without a symbol, e.g. "5.1M"
+};
+
+// Symbol per ISO currency code (display only). An unknown code falls back to no symbol.
+export const CURRENCY_SYMBOL: Record<string, string> = { USD: "$", GBP: "£", EUR: "€" };
+
+// The canonical metrics that are money AMOUNTS, so a currency applies. Percentages and
+// counts (gross margin, NRR, logo churn, headcount) are NOT currency-denominated — you never
+// FX-convert a ratio — so they are never currency-flagged.
+export const CURRENCY_DENOMINATED_METRICS: Set<CanonicalMetric> = new Set([
+  "revenue_qtr",
+  "arr_eop",
+  "cash_balance",
+  "monthly_burn",
+]);
+
+// The currency a company reports in (default USD).
+export function reportingCurrency(company: string): string {
+  return REPORTING_CURRENCY[company] ?? "USD";
+}
+
+// If this (company, metric) money value is reported in a non-USD currency, return that
+// currency code so the grid can flag it "not comparable" to the USD column; else null.
+export function nonUsdCurrency(company: string, metric: CanonicalMetric): string | null {
+  const currency = reportingCurrency(company);
+  if (currency === "USD") return null;
+  if (!CURRENCY_DENOMINATED_METRICS.has(metric)) return null;
+  return currency;
+}
+
+// Format a raw USD amount as a short "$X.XM" string (display only). Every value on this
+// corpus is millions-scale and the source packs print one decimal, so we match that.
+export function formatUsdShort(value: number): string {
+  return `$${(value / 1_000_000).toFixed(1)}M`;
+}
+
+// A backend-computed, basis-adjusted figure that differs from the headline value — the one
+// live case is ClearPay's `value_normalized` = $32.2M OPERATING cash beside the headline
+// $38.4M (the $6.2M gap is segregated client money it legally cannot spend — Trap C). This
+// number is already in the export; without surfacing it the cockpit hides what the tool
+// CAUGHT. Returns the adjusted figure + a short note, or null for every ordinary row (where
+// `value_normalized` is null or equal to the headline).
+export interface OperatingValueView {
+  text: string; // e.g. "$32.2M"
+  note: string; // e.g. "operating cash — excludes restricted client funds"
+}
+export function operatingValueView(row: MetricRow): OperatingValueView | null {
+  if (row.value_normalized === null || row.value === null) return null;
+  if (row.value_normalized === row.value) return null;
+  // Currency guard: value_normalized is a USD-basis adjustment and formatUsdShort always
+  // prints "$". A non-USD company with a normalized figure is not a real case today, but this
+  // keeps BOTH the grid and the drawer honest — never stamp "$" on a £ figure (the very
+  // mislabel the tool exists to prevent).
+  if (reportingCurrency(row.company_name) !== "USD") return null;
+  return {
+    text: formatUsdShort(row.value_normalized),
+    note: "operating cash — excludes restricted client funds",
+  };
+}
+
 // The backend emits periods as "Q<n> YYYY" (quarter FIRST, e.g. "Q2 2025"). A plain
 // string sort is WRONG — it would rank "Q4 2024" above "Q2 2025" because the quarter
 // char dominates the year. We fold it into a single monotonic integer year*10+quarter

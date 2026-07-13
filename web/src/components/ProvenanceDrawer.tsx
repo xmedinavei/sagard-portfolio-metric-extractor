@@ -2,14 +2,14 @@
 // user clicks any number in the cockpit (a grid cell from Phase 1, a trend point from
 // Phase 2) and shows where that number came from: the source file, the source's own label
 // and value text, the confidence, and the excerpt it was read from. Provenance is FILE
-// level in v1 (source_page is null on every live row — DEC-C), so we say so honestly and
-// never show a page number. All display logic lives in ../lib/provenance (unit-tested);
-// this file is a thin renderer + the open/close shell.
+// level in v1 (DEC-C): the parser populates source_page, but v1 reports file-level only and
+// ../lib/provenance suppresses the page, so the drawer never shows one. All display logic
+// lives in ../lib/provenance (unit-tested); this file is a thin renderer + open/close shell.
 
 import { useEffect } from "react";
 
 import type { MetricRow } from "../types";
-import { METRIC_LABELS } from "../lib/grid";
+import { METRIC_LABELS, operatingValueView } from "../lib/grid";
 import { provenanceView } from "../lib/provenance";
 
 // One labelled provenance field (a term/definition pair).
@@ -46,6 +46,8 @@ export function ProvenanceDrawer({
 
   if (!row) return null;
   const p = provenanceView(row);
+  // The one basis-adjusted figure on the corpus (ClearPay: $38.4M headline → $32.2M operating).
+  const operating = operatingValueView(row);
 
   return (
     // Backdrop — clicking it (outside the panel) closes the drawer.
@@ -101,6 +103,26 @@ export function ProvenanceDrawer({
         <div style={{ fontSize: "1.7rem", fontWeight: 600, margin: "0.5rem 0 0.25rem", fontVariantNumeric: "tabular-nums" }}>
           {p.displayValue}
         </div>
+
+        {/* Basis adjustment (Trap C): when the backend computed an operating figure that
+            differs from the headline (ClearPay), show what the tool CAUGHT — the headline
+            includes money the company legally cannot spend. */}
+        {operating && (
+          <div
+            style={{
+              margin: "0.5rem 0 0.25rem",
+              padding: "0.55rem 0.7rem",
+              background: "#eef8f0",
+              border: "1px solid #cbe6d3",
+              borderRadius: 6,
+              fontSize: "0.82rem",
+              color: "#2f6f47",
+            }}
+          >
+            <strong>{operating.text}</strong> {operating.note}. The headline figure includes
+            restricted client money it cannot spend.
+          </div>
+        )}
 
         <hr style={{ border: "none", borderTop: "1px solid #eee", margin: "0.9rem 0" }} />
 

@@ -20,8 +20,12 @@ export function formatConfidence(confidence: number): string {
   return `${(clamped * 100).toFixed(1)}%`;
 }
 
-// The honest granularity label (DEC-C). Provenance is FILE-level in v1 — `source_page` is
-// null on 116/116 live rows — so we say "source file (file-level)" and never invent a page.
+// The honest granularity label (DEC-C). Provenance is FILE-level in v1. NOTE: the local
+// parser DOES populate `source_page` on live rows (a single-metric-table pack reads as page
+// 1; a multi-page pack can read 2) — but page/sentence anchoring is a roadmap upgrade we do
+// not claim yet, so v1 deliberately reports file-level only and never surfaces that page
+// number (see `provenanceView`). Saying "file-level" while the drawer printed "· p. 1" would
+// contradict the pitch; we keep the label and the drawer consistent.
 export const PROVENANCE_GRANULARITY_LABEL = "source file (file-level)";
 
 // The drawer's display-ready payload. A plain projection of one MetricRow's provenance
@@ -34,8 +38,9 @@ export interface ProvenanceView {
   value: number | null; // the numeric value (null is NOT zero — §A.4)
   confidencePct: string; // e.g. "99.0%"
   snippet: string; // the source excerpt the value was read from
-  // null when `source_page` is null (the norm, DEC-C) → the drawer shows NO page line.
-  // Only non-null if the backend ever populates a real page (forward-compat, not v1).
+  // Always null in v1: provenance is FILE-level (DEC-C), so the drawer shows NO page line
+  // even though the parser populates `source_page`. This is the single line that flips when
+  // true page/sentence provenance ships.
   pageDisplay: string | null;
   granularityLabel: string; // always the file-level label in v1
 }
@@ -49,7 +54,9 @@ export function provenanceView(row: MetricRow): ProvenanceView {
     value: row.value,
     confidencePct: formatConfidence(row.confidence),
     snippet: row.source_snippet,
-    pageDisplay: row.source_page === null ? null : `p. ${row.source_page}`,
+    // v1 commits to file-level provenance: suppress the parser's `source_page` (live rows
+    // carry page 1) so the drawer never shows a page number the pitch calls roadmap.
+    pageDisplay: null,
     granularityLabel: PROVENANCE_GRANULARITY_LABEL,
   };
 }
