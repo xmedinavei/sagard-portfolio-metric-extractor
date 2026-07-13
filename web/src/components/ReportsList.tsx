@@ -23,8 +23,13 @@ export function ReportsList({ reports, reportsError, loading, onLoad }: ReportsL
         onClick={onLoad}
         disabled={loading}
         style={{
-          padding: "0.5rem 1rem",
+          padding: "0.5rem 1.1rem",
           fontSize: "1rem",
+          fontFamily: "system-ui, sans-serif",
+          border: "1px solid #2b6cb0",
+          borderRadius: 6,
+          background: loading ? "#93b4d6" : "#2b6cb0",
+          color: "#fff",
           cursor: loading ? "default" : "pointer",
         }}
       >
@@ -46,10 +51,10 @@ export function ReportsList({ reports, reportsError, loading, onLoad }: ReportsL
         </>
       )}
 
-      {!reports && !reportsError && <p style={{ color: "#888" }}>Scanning intake folder…</p>}
+      {!reports && !reportsError && <p style={{ color: "#5b6472" }}>Scanning intake folder…</p>}
 
       {reportsError && (
-        <p style={{ color: "#888" }}>
+        <p style={{ color: "#5b6472" }}>
           Could not list the intake folder ({reportsError}) — you can still load.
         </p>
       )}

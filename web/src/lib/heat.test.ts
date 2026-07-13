@@ -94,6 +94,20 @@ describe("sectorHeat — within-sector, comparable-only tinting", () => {
     expect(heat.has(cellKey("NovaCloud", "gross_margin_pct"))).toBe(true);
   });
 
+  it("ranks only same-(newest)-period cells — a stale quarter is excluded from heat", () => {
+    const rows = [
+      mkRow({ company_name: "Current1", sector: "saas", canonical_metric: "revenue_qtr", period: "Q2 2025", value: 8_000_000, display_value: "$8.0M" }),
+      mkRow({ company_name: "Current2", sector: "saas", canonical_metric: "revenue_qtr", period: "Q2 2025", value: 4_000_000, display_value: "$4.0M" }),
+      // A company whose latest revenue is an OLDER quarter — must NOT be heat-ranked against
+      // the current-quarter peers (cross-period comparison the tool must not make silently).
+      mkRow({ company_name: "Stale", sector: "saas", canonical_metric: "revenue_qtr", period: "Q4 2024", value: 6_000_000, display_value: "$6.0M" }),
+    ];
+    const heat = sectorHeat("saas", ["Current1", "Current2", "Stale"], latestByCompanyMetric(rows));
+    expect(heat.get(cellKey("Current1", "revenue_qtr"))?.fraction).toBe(1);
+    expect(heat.get(cellKey("Current2", "revenue_qtr"))?.fraction).toBe(0);
+    expect(heat.has(cellKey("Stale", "revenue_qtr"))).toBe(false);
+  });
+
   it("never heats a non-USD money cell (PeopleFlow GBP revenue)", () => {
     const rows = [
       mkRow({ company_name: "NovaCloud", sector: "saas", canonical_metric: "revenue_qtr", value: 8_400_000, display_value: "$8.4M" }),

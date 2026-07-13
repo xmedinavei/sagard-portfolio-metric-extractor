@@ -118,28 +118,32 @@ export function metricsPresent(metrics: MetricRow[]): CanonicalMetric[] {
 }
 
 // ── All-companies overlay (Phase 5 — V3) ─────────────────────────────────────────────────
-// One line PER company for a SINGLE metric, so the "league over time" reads in one chart.
-// Comparability is guarded exactly like the grid and the refuse panel:
-//   * a company whose row for this metric is REFUSED (credit gross margin = interest margin)
-//     is excluded — a different basis must never share an axis with the comparable ones;
-//   * a company reporting this MONEY metric in a non-USD currency (PeopleFlow GBP) is
-//     excluded — you cannot plot £ and $ together without FX (roadmap). A ratio (NRR) is
-//     NOT currency-denominated, so PeopleFlow still joins the NRR league correctly.
-// Excluded companies are RETURNED with a reason so the panel can NAME them honestly
-// ("LendBridge hidden — different basis") rather than silently dropping them. A company that
-// simply does not report the metric is absent, not "excluded" (mirrors the grid's N/A).
+// EVERY comparable company that reports the metric is plotted, so "All companies" genuinely
+// shows all of them. Because this corpus is mostly single-quarter (only NovaCloud has 5
+// quarters; MediSight/PeopleFlow have 3; the rest report one quarter), companies split into:
+//   * "line" — >= MIN_TREND_POINTS distinct quarters → a real trend polyline;
+//   * "point" — 1-2 quarters → a single-quarter snapshot shown as a bare dot (NOT a
+//     fabricated line — the anti-guessing guard still holds, we just never HIDE the company).
+// Comparability is still enforced by EXCLUDING (and naming) the genuinely-incomparable:
+//   * a REFUSED row (credit gross margin = interest margin) — a different basis;
+//   * a non-USD MONEY metric (PeopleFlow GBP) — can't share a $ axis without FX (roadmap).
+// A company that simply does not report the metric is absent, not "excluded" (mirrors N/A).
 export interface CompanySeries {
   company: string;
   points: TrendPoint[];
   color: string;
+  // "line" = >= MIN_TREND_POINTS distinct quarters → a real trend drawn as a polyline;
+  // "point" = 1-2 quarters → a single-quarter SNAPSHOT drawn as bare dot(s), never a
+  // fabricated line. Both are plotted so "All companies" genuinely shows every comparable co.
+  kind: "line" | "point";
 }
 export interface ExcludedSeries {
   company: string;
   reason: string;
 }
 export interface AllCompaniesSeries {
-  series: CompanySeries[]; // companies with >= MIN_TREND_POINTS comparable quarters
-  excluded: ExcludedSeries[]; // guarded-out or too-short, each named with a reason
+  series: CompanySeries[]; // every comparable company: lines (>=3 quarters) + snapshot points (1-2)
+  excluded: ExcludedSeries[]; // only the genuinely incomparable (refused basis / non-USD), each named
 }
 
 // A fixed, offline colour ramp (no external palette dependency — keeps the bundle self
@@ -180,14 +184,31 @@ export function buildAllCompaniesSeries(
       continue;
     }
     const points = buildSeries(metrics, company, metric);
-    if (points.length < MIN_TREND_POINTS) {
-      excluded.push({ company, reason: "insufficient history" });
+    if (points.length === 0) {
+      // Reports the metric but no dated/valued row we can place on the axis — rare.
+      excluded.push({ company, reason: "no dated value" });
       continue;
     }
-    series.push({ company, points, color: "" }); // colour assigned once the set is final
+    // Plotted either way: a trend line if it has enough history, else a snapshot dot.
+    series.push({
+      company,
+      points,
+      color: "",
+      kind: points.length >= MIN_TREND_POINTS ? "line" : "point",
+    });
   }
   series.forEach((s, i) => {
     s.color = SERIES_PALETTE[i % SERIES_PALETTE.length];
   });
   return { series, excluded };
+}
+
+// Convenience counts for the panel's honest caption ("N companies · M trends · K snapshots").
+export function seriesBreakdown(series: CompanySeries[]): {
+  total: number;
+  lines: number;
+  points: number;
+} {
+  const lines = series.filter((s) => s.kind === "line").length;
+  return { total: series.length, lines, points: series.length - lines };
 }

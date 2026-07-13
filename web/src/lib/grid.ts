@@ -95,6 +95,24 @@ export function formatUsdShort(value: number): string {
   return `$${(value / 1_000_000).toFixed(1)}M`;
 }
 
+// Some source packs print money BARE ("27.9M") and others with a "$" ("$34.2M"). A grid whose
+// whole pitch is comparability must not show a bare number beside a symboled one — so for a
+// money metric with no currency symbol we prefix the COMPANY's reporting currency. Prefixing a
+// blanket "$" would be WRONG: PeopleFlow reports in GBP and prints bare, so "$" would stamp a
+// false USD label (the exact currency trap the tool refuses). USD companies get "$"; PeopleFlow
+// gets "£". Non-money metrics (%, counts) are never touched, and text that already carries a
+// symbol (incl. a parenthesised "($0.55M)" burn) is returned unchanged.
+export function withCurrencySymbol(
+  text: string,
+  metric: CanonicalMetric,
+  company: string,
+): string {
+  if (!CURRENCY_DENOMINATED_METRICS.has(metric)) return text;
+  if (/[£$€]/.test(text)) return text;
+  const symbol = CURRENCY_SYMBOL[reportingCurrency(company)] ?? "$";
+  return `${symbol}${text}`;
+}
+
 // A backend-computed, basis-adjusted figure that differs from the headline value — the one
 // live case is ClearPay's `value_normalized` = $32.2M OPERATING cash beside the headline
 // $38.4M (the $6.2M gap is segregated client money it legally cannot spend — Trap C). This

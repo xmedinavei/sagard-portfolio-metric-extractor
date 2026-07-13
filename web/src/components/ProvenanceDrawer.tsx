@@ -6,17 +6,17 @@
 // ../lib/provenance suppresses the page, so the drawer never shows one. All display logic
 // lives in ../lib/provenance (unit-tested); this file is a thin renderer + open/close shell.
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import type { MetricRow } from "../types";
-import { METRIC_LABELS, operatingValueView } from "../lib/grid";
+import { METRIC_LABELS, operatingValueView, withCurrencySymbol } from "../lib/grid";
 import { provenanceView } from "../lib/provenance";
 
 // One labelled provenance field (a term/definition pair).
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ margin: "0.7rem 0" }}>
-      <div style={{ fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.04em", color: "#888" }}>
+      <div style={{ fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.04em", color: "#5b6472" }}>
         {label}
       </div>
       <div style={{ fontSize: "0.9rem", color: "#222", marginTop: "0.15rem", wordBreak: "break-word" }}>
@@ -33,10 +33,13 @@ export function ProvenanceDrawer({
   row: MetricRow | null;
   onClose: () => void;
 }) {
-  // Esc closes the drawer. The effect is a no-op (adds no listener) when nothing is open,
-  // and cleans up its listener whenever `row` changes or the drawer unmounts.
+  const panelRef = useRef<HTMLElement | null>(null);
+  // Esc closes the drawer, and opening it moves keyboard focus INTO the dialog (a11y — a
+  // modal must not leave focus stranded behind the backdrop). The effect is a no-op when
+  // nothing is open, and cleans up its listener whenever `row` changes or the drawer unmounts.
   useEffect(() => {
     if (!row) return;
+    panelRef.current?.focus();
     function onKey(event: KeyboardEvent) {
       if (event.key === "Escape") onClose();
     }
@@ -64,8 +67,11 @@ export function ProvenanceDrawer({
     >
       {/* The panel. stopPropagation so a click inside does NOT close it. */}
       <aside
+        ref={panelRef}
+        tabIndex={-1}
         onClick={(event) => event.stopPropagation()}
         role="dialog"
+        aria-modal="true"
         aria-label="Source provenance"
         style={{
           width: "min(440px, 92vw)",
@@ -88,7 +94,7 @@ export function ProvenanceDrawer({
               fontSize: "1.4rem",
               lineHeight: 1,
               cursor: "pointer",
-              color: "#888",
+              color: "#5b6472",
             }}
           >
             ×
@@ -101,7 +107,7 @@ export function ProvenanceDrawer({
           {row.period ? ` · ${row.period}` : ""}
         </p>
         <div style={{ fontSize: "1.7rem", fontWeight: 600, margin: "0.5rem 0 0.25rem", fontVariantNumeric: "tabular-nums" }}>
-          {p.displayValue}
+          {withCurrencySymbol(p.displayValue, row.canonical_metric, row.company_name)}
         </div>
 
         {/* Basis adjustment (Trap C): when the backend computed an operating figure that
@@ -162,7 +168,7 @@ export function ProvenanceDrawer({
           </Field>
         )}
 
-        <p style={{ color: "#999", fontSize: "0.75rem", marginTop: "1rem" }}>
+        <p style={{ color: "#5f6672", fontSize: "0.75rem", marginTop: "1rem" }}>
           Every number in the cockpit is one click from its source. Provenance is file-level
           in v1 — page/sentence anchoring is on the roadmap.
         </p>

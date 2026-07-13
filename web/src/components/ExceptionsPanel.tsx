@@ -28,7 +28,7 @@ export function ExceptionsPanel({ export: exp }: { export: MetricsExport }) {
           <li key={group.company} style={{ margin: "0.3rem 0" }}>
             <strong>{group.company}</strong>{" "}
             {group.sector && (
-              <span style={{ color: "#888" }}>({SECTOR_LABELS[group.sector]})</span>
+              <span style={{ color: "#5b6472" }}>({SECTOR_LABELS[group.sector]})</span>
             )}{" "}
             — {group.metrics.map((m) => METRIC_LABELS[m]).join(", ")}
           </li>

@@ -69,7 +69,7 @@ export function RefusePanel({
         <div key={company} style={{ margin: "0.75rem 0" }}>
           <h3 style={{ fontSize: "1rem", margin: "0 0 0.35rem" }}>
             {company}{" "}
-            <span style={{ color: "#888", fontWeight: 400, fontSize: "0.85rem" }}>
+            <span style={{ color: "#5b6472", fontWeight: 400, fontSize: "0.85rem" }}>
               ({rows.length} refused {rows.length === 1 ? "row" : "rows"})
             </span>
           </h3>
@@ -104,7 +104,7 @@ export function RefusePanel({
                 >
                   {row.display_value}
                 </span>{" "}
-                <span style={{ color: "#888" }}>({row.period})</span> —{" "}
+                <span style={{ color: "#5b6472" }}>({row.period})</span> —{" "}
                 <span style={{ color: "#8a4b00" }}>{refusalReason(row)}</span>
               </li>
             ))}

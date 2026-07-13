@@ -175,7 +175,21 @@ export function App() {
             gap: "1rem",
           }}
         >
-          <span style={{ fontWeight: 600, fontFamily: "system-ui, sans-serif" }}>
+          <span
+            style={{
+              fontWeight: 600,
+              fontFamily: "system-ui, sans-serif",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.45rem",
+            }}
+          >
+            {/* A small brand mark so the sticky nav reads as a brand bar, not a repeat of the
+                page's <h1> below it. */}
+            <span
+              aria-hidden="true"
+              style={{ display: "inline-block", width: 14, height: 14, borderRadius: 3, background: "#2b6cb0" }}
+            />
             Portfolio Cockpit
           </span>
           {status === "loaded" && (

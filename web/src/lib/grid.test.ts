@@ -13,6 +13,7 @@ import {
   parsePeriodKey,
   reportingCurrency,
   sectorApplicableMetrics,
+  withCurrencySymbol,
 } from "./grid";
 
 // A MetricRow factory: fills the 23 §A.4 fields with harmless defaults so each test
@@ -181,6 +182,32 @@ describe("operating cash (Trap C — ClearPay $38.4M → $32.2M)", () => {
     // PeopleFlow reports in GBP; even if it carried a value_normalized we must NOT print "$".
     const gbp = mkRow({ company_name: "PeopleFlow", sector: "saas", canonical_metric: "cash_balance", value: 5_000_000, value_normalized: 4_500_000 });
     expect(operatingValueView(gbp)).toBeNull();
+  });
+});
+
+describe("withCurrencySymbol (consistent money formatting, currency-aware)", () => {
+  it("prefixes $ for a bare USD company's money value", () => {
+    expect(withCurrencySymbol("27.9M", "arr_eop", "MediSight")).toBe("$27.9M");
+    expect(withCurrencySymbol("9.3M", "revenue_qtr", "ApexFreight")).toBe("$9.3M");
+  });
+
+  it("prefixes the company's OWN currency — never a false $ for a non-USD company (GBP)", () => {
+    // The regression the re-audit caught: PeopleFlow's GBP money prints bare, so a blanket "$"
+    // would stamp a false USD label (the exact currency trap the tool refuses). Must get "£".
+    expect(withCurrencySymbol("5.1M", "revenue_qtr", "PeopleFlow")).toBe("£5.1M");
+    expect(withCurrencySymbol("21.4M", "arr_eop", "PeopleFlow")).toBe("£21.4M");
+    expect(withCurrencySymbol("5.1M", "revenue_qtr", "PeopleFlow").startsWith("$")).toBe(false);
+  });
+
+  it("leaves a value that already carries a currency symbol unchanged", () => {
+    expect(withCurrencySymbol("$34.2M", "arr_eop", "NovaCloud")).toBe("$34.2M");
+    expect(withCurrencySymbol("($0.55M)", "monthly_burn", "CarbonTrack")).toBe("($0.55M)");
+  });
+
+  it("never touches a non-money metric (percentages, counts)", () => {
+    expect(withCurrencySymbol("78%", "gross_margin_pct", "NovaCloud")).toBe("78%");
+    expect(withCurrencySymbol("142", "headcount", "NovaCloud")).toBe("142");
+    expect(withCurrencySymbol("123%", "net_revenue_retention_pct", "NovaCloud")).toBe("123%");
   });
 });
 

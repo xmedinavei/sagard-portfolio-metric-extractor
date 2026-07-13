@@ -15,7 +15,7 @@
 // colour-only), and the tints are pale, so the cell text stays fully readable.
 
 import type { CanonicalMetric, MetricRow, SectorKind } from "../types";
-import { cellKey, nonUsdCurrency } from "./grid";
+import { cellKey, nonUsdCurrency, parsePeriodKey } from "./grid";
 
 // Which direction is "good" for each heatable metric. A metric ABSENT from this map is never
 // heated (headcount = neutral size metric).
@@ -73,16 +73,21 @@ function comparableEntries(
   metric: CanonicalMetric,
   companies: string[],
   latest: Map<string, MetricRow>,
-): { key: string; value: number }[] {
-  const entries: { key: string; value: number }[] = [];
+): { key: string; value: number; periodKey: number }[] {
+  const entries: { key: string; value: number; periodKey: number }[] = [];
   for (const company of companies) {
     const row = latest.get(cellKey(company, metric));
     if (!row || row.value === null) continue;
     if (row.comparison_status === "refused") continue; // different basis
     if (nonUsdCurrency(company, metric) !== null) continue; // non-USD money value
-    entries.push({ key: cellKey(company, metric), value: row.value });
+    entries.push({ key: cellKey(company, metric), value: row.value, periodKey: parsePeriodKey(row.period) });
   }
-  return entries;
+  // Rank only cells from the SAME (newest) period. Different companies' "latest" quarters can
+  // differ (e.g. a company with no current-quarter figure), and heat-ranking a stale quarter
+  // against a current one is the exact cross-period comparison the tool must not make silently.
+  if (entries.length === 0) return entries;
+  const newest = Math.max(...entries.map((e) => e.periodKey));
+  return entries.filter((e) => e.periodKey === newest);
 }
 
 // Build a map from cellKey → heat tint for every comparable value cell in ONE sector. A

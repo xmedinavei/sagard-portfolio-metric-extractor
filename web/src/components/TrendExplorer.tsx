@@ -26,6 +26,7 @@ import {
   hasSufficientHistory,
   metricsForCompany,
   metricsPresent,
+  seriesBreakdown,
 } from "../lib/trend";
 
 const selectStyle: CSSProperties = {
@@ -323,8 +324,8 @@ function AllCompaniesView({
             maxWidth: W,
           }}
         >
-          <strong>No comparable series.</strong> No company has {MIN_TREND_POINTS}+ comparable
-          quarters of {metric ? METRIC_LABELS[metric] : "this metric"}.
+          <strong>No comparable series.</strong> No company reports{" "}
+          {metric ? METRIC_LABELS[metric] : "this metric"} with a comparable, dated value.
         </p>
       ) : (
         <>
@@ -334,6 +335,20 @@ function AllCompaniesView({
             onSelectRow={onSelectRow}
           />
           <Legend series={series} />
+          {(() => {
+            // Honest breakdown: this corpus is mostly single-quarter, so most companies plot
+            // as snapshot dots, not trend lines. Say exactly what's on screen.
+            const b = seriesBreakdown(series);
+            return (
+              <p style={{ color: "#5b6472", fontSize: "0.8rem", maxWidth: W, marginTop: "0.4rem" }}>
+                <strong>{b.total}</strong> {b.total === 1 ? "company" : "companies"} shown
+                {b.lines > 0 && ` · ${b.lines} as trend ${b.lines === 1 ? "line" : "lines"} (3+ quarters)`}
+                {b.points > 0 &&
+                  ` · ${b.points} as single-quarter ${b.points === 1 ? "snapshot dot" : "snapshot dots"}`}
+                . A company with one reported quarter is drawn as a dot, never a fabricated line.
+              </p>
+            );
+          })()}
           {sectorsShown.size > 1 && (
             <p style={{ color: "#666", fontSize: "0.8rem", maxWidth: W, marginTop: "0.4rem" }}>
               Showing levels across <strong>{sectorsShown.size}</strong> sectors — a cross-sector
@@ -360,23 +375,25 @@ function AllCompaniesView({
   );
 }
 
-// A small colour-swatch legend under the overlay chart (one entry per plotted company).
+// A small colour-swatch legend under the overlay chart (one entry per plotted company). The
+// swatch shape encodes the series kind: a bar for a trend line, a dot for a single-quarter
+// snapshot — so the line/dot distinction is legible in the legend, not just on the chart.
 function Legend({ series }: { series: CompanySeries[] }) {
   return (
     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem 1rem", maxWidth: W, marginTop: "0.4rem" }}>
       {series.map((s) => (
         <span key={s.company} style={{ display: "inline-flex", alignItems: "center", fontSize: "0.8rem", color: "#444" }}>
           <span
-            style={{
-              display: "inline-block",
-              width: 12,
-              height: 12,
-              borderRadius: 2,
-              background: s.color,
-              marginRight: "0.35rem",
-            }}
+            style={
+              s.kind === "line"
+                ? { display: "inline-block", width: 16, height: 3, borderRadius: 2, background: s.color, marginRight: "0.35rem" }
+                : { display: "inline-block", width: 9, height: 9, borderRadius: "50%", background: s.color, border: "1.5px solid #fff", boxShadow: "0 0 0 1px " + s.color, marginRight: "0.4rem" }
+            }
           />
           {s.company}
+          {s.kind === "point" && (
+            <span style={{ color: "#5b6472", marginLeft: "0.25rem" }}>(snapshot)</span>
+          )}
         </span>
       ))}
     </div>
@@ -417,10 +434,10 @@ function TrendChart({
       {/* min / max reference lines + their value labels on the y axis */}
       <line x1={PAD.left} y1={y(maxV)} x2={W - PAD.right} y2={y(maxV)} stroke="#eee" />
       <line x1={PAD.left} y1={y(minV)} x2={W - PAD.right} y2={y(minV)} stroke="#eee" />
-      <text x={PAD.left - 8} y={y(maxV)} textAnchor="end" dominantBaseline="middle" fontSize="11" fill="#999">
+      <text x={PAD.left - 8} y={y(maxV)} textAnchor="end" dominantBaseline="middle" fontSize="11" fill="#5f6672">
         {maxPoint?.displayValue}
       </text>
-      <text x={PAD.left - 8} y={y(minV)} textAnchor="end" dominantBaseline="middle" fontSize="11" fill="#999">
+      <text x={PAD.left - 8} y={y(minV)} textAnchor="end" dominantBaseline="middle" fontSize="11" fill="#5f6672">
         {minPoint?.displayValue}
       </text>
 
@@ -430,9 +447,26 @@ function TrendChart({
       {/* points + per-point value and period labels */}
       {points.map((p, i) => (
         <g key={p.period}>
-          {/* A larger transparent hit target makes the point easy to click (Phase 4). */}
+          {/* A larger transparent hit target makes the point easy to click (Phase 4) and
+              keyboard-operable (a11y): Tab to it, Enter/Space opens its source. */}
           {onSelectRow && (
-            <circle cx={x(i)} cy={y(p.value)} r="12" fill="transparent" style={{ cursor: "pointer" }} onClick={() => onSelectRow(p.row)}>
+            <circle
+              cx={x(i)}
+              cy={y(p.value)}
+              r="12"
+              fill="transparent"
+              style={{ cursor: "pointer" }}
+              role="button"
+              tabIndex={0}
+              aria-label={`${p.period} ${p.displayValue} — view source`}
+              onClick={() => onSelectRow(p.row)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onSelectRow(p.row);
+                }
+              }}
+            >
               <title>Click to see the source of this number</title>
             </circle>
           )}
@@ -500,10 +534,10 @@ function AllCompaniesChart({
       {/* min / max reference lines + their value labels */}
       <line x1={PAD.left} y1={y(maxV)} x2={W - PAD.right} y2={y(maxV)} stroke="#eee" />
       <line x1={PAD.left} y1={y(minV)} x2={W - PAD.right} y2={y(minV)} stroke="#eee" />
-      <text x={PAD.left - 8} y={y(maxV)} textAnchor="end" dominantBaseline="middle" fontSize="11" fill="#999">
+      <text x={PAD.left - 8} y={y(maxV)} textAnchor="end" dominantBaseline="middle" fontSize="11" fill="#5f6672">
         {maxPoint?.displayValue}
       </text>
-      <text x={PAD.left - 8} y={y(minV)} textAnchor="end" dominantBaseline="middle" fontSize="11" fill="#999">
+      <text x={PAD.left - 8} y={y(minV)} textAnchor="end" dominantBaseline="middle" fontSize="11" fill="#5f6672">
         {minPoint?.displayValue}
       </text>
 
@@ -514,27 +548,47 @@ function AllCompaniesChart({
         </text>
       ))}
 
-      {/* one line per company */}
+      {/* one series per company: a trend LINE when it has >=3 quarters, else snapshot DOT(s) */}
       {series.map((s) => (
         <g key={s.company}>
-          <polyline
-            points={s.points.map((p) => `${x(p.periodKey)},${y(p.value)}`).join(" ")}
-            fill="none"
-            stroke={s.color}
-            strokeWidth="2"
-          />
+          {s.kind === "line" && (
+            <polyline
+              points={s.points.map((p) => `${x(p.periodKey)},${y(p.value)}`).join(" ")}
+              fill="none"
+              stroke={s.color}
+              strokeWidth="2"
+            />
+          )}
           {s.points.map((p) => (
             <circle
               key={p.period}
               cx={x(p.periodKey)}
               cy={y(p.value)}
-              r="3.5"
+              r={s.kind === "line" ? 3.5 : 5}
               fill={s.color}
+              stroke={s.kind === "point" ? "#fff" : undefined}
+              strokeWidth={s.kind === "point" ? 1.5 : undefined}
               style={onSelectRow ? { cursor: "pointer" } : undefined}
+              role={onSelectRow ? "button" : undefined}
+              tabIndex={onSelectRow ? 0 : undefined}
+              aria-label={
+                onSelectRow ? `${s.company} ${p.period} ${p.displayValue} — view source` : undefined
+              }
               onClick={onSelectRow ? () => onSelectRow(p.row) : undefined}
+              onKeyDown={
+                onSelectRow
+                  ? (e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        onSelectRow(p.row);
+                      }
+                    }
+                  : undefined
+              }
             >
               <title>
                 {s.company} · {p.period} · {p.displayValue}
+                {s.kind === "point" ? " (single-quarter snapshot)" : ""}
               </title>
             </circle>
           ))}

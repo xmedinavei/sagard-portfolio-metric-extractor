@@ -6,7 +6,7 @@
 // comparison_status === "unchecked", code === "unrecognized_label").
 
 import type { CanonicalMetric, IssueRow, MetricRow, SectorKind } from "../types";
-import { CANONICAL_METRIC_ORDER } from "./grid";
+import { CANONICAL_METRIC_ORDER, cellKey } from "./grid";
 
 // ── Naming-registry constants (README §"API routes, query keys, constants"). Defined
 // fresh here (additive-safe) rather than re-pointing grid.ts's private "missing_metric"
@@ -21,6 +21,10 @@ export const MISSING_METRIC_CODE = "missing_metric"; // issue code
 // Reading it lets the reconciliation panel be an honest "we checked N, all agree" signal
 // instead of only showing disagreements. It is an emitted (info) code, never RESERVED.
 export const CROSS_SOURCE_MATCH_CODE = "cross_document_duplicate";
+// Additive: intra-DOCUMENT candidate collisions the engine resolved (two candidate values for
+// the same metric inside ONE report → it kept the primary reading). Surfacing the count turns
+// a bare "0 disagreements" into visible evidence of the reconciliation work actually done.
+export const CANDIDATE_CONFLICT_CODE = "conflicting_candidates";
 
 // A stable, collision-free key for a cross-document conflict/agreement. Distinct
 // (company, metric, period) triples never collide (JSON.stringify of the tuple), so this
@@ -63,6 +67,7 @@ export interface ReconSummary {
   conflicts: ReconEntry[]; // genuine disagreements (own report kept). 0 in the live data.
   matchCount: number; // metrics confirmed to AGREE across both documents (live: 22)
   checkedCount: number; // total metrics that appeared in both documents = conflicts + matches
+  resolvedConflictCount: number; // intra-DOCUMENT candidate collisions auto-resolved (live: 7)
 }
 
 function toReconEntry(issue: IssueRow): ReconEntry {
@@ -101,10 +106,12 @@ export function reconciliationSummary(issues: IssueRow[]): ReconSummary {
     .map(toReconEntry)
     .sort((a, b) => Math.abs(b.delta ?? 0) - Math.abs(a.delta ?? 0));
   const matchCount = dedupeByKey(issues.filter((i) => i.code === CROSS_SOURCE_MATCH_CODE)).length;
+  const resolvedConflictCount = issues.filter((i) => i.code === CANDIDATE_CONFLICT_CODE).length;
   return {
     conflicts,
     matchCount,
     checkedCount: conflicts.length + matchCount,
+    resolvedConflictCount,
   };
 }
 
@@ -127,7 +134,8 @@ function companySectorMap(metrics: MetricRow[]): Map<string, SectorKind> {
 // Missing metrics grouped by company. The backend already decides sector-awareness (it
 // only flags a metric missing if it applies to that company's sector), so the frontend
 // renders faithfully and must NOT re-derive "missing" itself. The raw issues fire per
-// document/period, so we dedupe to distinct (company, metric): live 30 raw -> 18 distinct.
+// document/period, so we dedupe to distinct (company, metric) and then suppress any pair that
+// has a reported value: live 30 raw -> 18 distinct -> 10 genuine gaps (mirrors the grid).
 // LendBridge (credit) has zero missing issues, so it never appears (it is never asked for
 // SaaS metrics) — this is exactly success criterion #5 ("zero false missing").
 export function missingMetricsByCompany(
@@ -135,10 +143,22 @@ export function missingMetricsByCompany(
   issues: IssueRow[],
 ): MissingGroup[] {
   const sectors = companySectorMap(metrics);
+  // A (company, metric) is only a GENUINE gap if no value was actually reported for it. The
+  // backend fires `missing_metric` per document/period, so a company that reports a metric in
+  // its latest quarter can still carry a missing_metric for an EARLIER quarter — which the
+  // grid shows as a live number while this panel would call "missing" (a self-contradiction
+  // that breaks the "no false missing alarms" promise). Mirror the grid: suppress any pair
+  // that has ANY reported value (the grid always shows the latest available). Live: this drops
+  // 8 false gaps (18 -> 10), so Exceptions now exactly matches the grid's "—" cells.
+  const reported = new Set<string>();
+  for (const m of metrics) {
+    if (m.value !== null) reported.add(cellKey(m.company_name, m.canonical_metric));
+  }
   const byCompany = new Map<string, Set<CanonicalMetric>>();
   for (const issue of issues) {
     if (issue.code !== MISSING_METRIC_CODE) continue;
     if (!issue.company_name || !issue.canonical_metric) continue;
+    if (reported.has(cellKey(issue.company_name, issue.canonical_metric))) continue; // reported ⇒ not a gap
     let set = byCompany.get(issue.company_name);
     if (!set) {
       set = new Set<CanonicalMetric>();
@@ -156,7 +176,8 @@ export function missingMetricsByCompany(
     .sort((a, b) => a.company.localeCompare(b.company));
 }
 
-// Total distinct (company, metric) gaps across the whole portfolio (live: 18).
+// Total distinct (company, metric) gaps across the whole portfolio (live: 10, after the
+// reported-value suppression above — mirrors the grid's "—" cells).
 export function totalMissingCount(groups: MissingGroup[]): number {
   return groups.reduce((sum, g) => sum + g.metrics.length, 0);
 }

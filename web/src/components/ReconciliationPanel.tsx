@@ -43,7 +43,7 @@ function ConflictCard({ entry }: { entry: ReconEntry }) {
     >
       <strong>{entry.company}</strong> —{" "}
       {entry.metric ? METRIC_LABELS[entry.metric] : "metric"}{" "}
-      <span style={{ color: "#888" }}>({entry.period})</span>
+      <span style={{ color: "#5b6472" }}>({entry.period})</span>
       <div style={{ marginTop: "0.3rem", fontVariantNumeric: "tabular-nums" }}>
         Company report <strong>{fmt(entry.observed)}</strong> kept · portfolio summary{" "}
         {fmt(entry.expected)} set aside · gap{" "}
@@ -54,7 +54,9 @@ function ConflictCard({ entry }: { entry: ReconEntry }) {
 }
 
 export function ReconciliationPanel({ export: exp }: { export: MetricsExport }) {
-  const { conflicts, matchCount, checkedCount } = reconciliationSummary(exp.issues);
+  const { conflicts, matchCount, checkedCount, resolvedConflictCount } = reconciliationSummary(
+    exp.issues,
+  );
   if (checkedCount === 0) return null; // nothing appears in two documents to reconcile
 
   return (
@@ -82,6 +84,15 @@ export function ReconciliationPanel({ export: exp }: { export: MetricsExport }) 
             the summary&apos;s copy is set aside — never silently averaged.
           </p>
         </>
+      )}
+
+      {resolvedConflictCount > 0 && (
+        <p style={{ color: "#5b6472", fontSize: "0.8rem", marginTop: "0.5rem" }}>
+          Separately, <strong>{resolvedConflictCount}</strong> candidate{" "}
+          {resolvedConflictCount === 1 ? "collision was" : "collisions were"} auto-resolved{" "}
+          <em>within</em> individual reports (two candidate readings for one metric → the
+          primary reading kept), so the figures above are already de-conflicted.
+        </p>
       )}
     </section>
   );

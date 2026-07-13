@@ -8,6 +8,7 @@ import {
   hasSufficientHistory,
   metricsForCompany,
   metricsPresent,
+  seriesBreakdown,
 } from "./trend";
 
 // A MetricRow factory: fills the 23 §A.4 fields with harmless defaults so each test only
@@ -199,14 +200,24 @@ const OVERLAY_CORPUS: MetricRow[] = [
 ];
 
 describe("buildAllCompaniesSeries — the all-companies overlay (V3)", () => {
-  it("includes companies with >= 3 comparable quarters, each with a stable distinct colour", () => {
+  it("plots 3+-quarter companies as trend lines and 1-2-quarter companies as snapshot dots", () => {
     const { series, excluded } = buildAllCompaniesSeries(OVERLAY_CORPUS, "net_revenue_retention_pct");
-    expect(series.map((s) => s.company).sort()).toEqual(["CarbonTrack", "NovaCloud"]);
-    // every included series gets a non-empty colour, and two lines never share one
+    const kinds = Object.fromEntries(series.map((s) => [s.company, s.kind]));
+    expect(kinds["NovaCloud"]).toBe("line"); // 5 quarters
+    expect(kinds["CarbonTrack"]).toBe("line"); // exactly 3 quarters
+    expect(kinds["ShortCo"]).toBe("point"); // 2 quarters → snapshot DOT, no longer excluded
+    // every plotted series gets a non-empty colour
     expect(series.every((s) => s.color.length > 0)).toBe(true);
-    expect(series[0].color).not.toBe(series[1].color);
-    // ShortCo (2 quarters) is named-excluded, not silently dropped
-    expect(excluded).toContainEqual({ company: "ShortCo", reason: "insufficient history" });
+    // a single/short-history company is now SHOWN as a dot, not excluded as "insufficient history"
+    expect(excluded.some((e) => e.company === "ShortCo")).toBe(false);
+  });
+
+  it("seriesBreakdown counts trend lines vs snapshot dots", () => {
+    const { series } = buildAllCompaniesSeries(OVERLAY_CORPUS, "net_revenue_retention_pct");
+    const b = seriesBreakdown(series);
+    expect(b.total).toBe(3); // NovaCloud + CarbonTrack + ShortCo
+    expect(b.lines).toBe(2); // NovaCloud, CarbonTrack
+    expect(b.points).toBe(1); // ShortCo
   });
 
   it("excludes a refused-basis company by name (LendBridge interest margin)", () => {

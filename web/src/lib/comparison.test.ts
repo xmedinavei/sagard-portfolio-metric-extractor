@@ -175,6 +175,18 @@ describe("reconciliationSummary (3.2 cross-source check)", () => {
     expect(summary.matchCount).toBe(22);
     expect(summary.checkedCount).toBe(22);
   });
+
+  it("counts intra-document candidate collisions the engine auto-resolved (work-done signal)", () => {
+    // Turns a bare "0 disagreements" into visible evidence of the reconciliation work.
+    const issues = [
+      mkIssue({ code: "cross_document_duplicate", company_name: "A", canonical_metric: "arr_eop", period: "Q2 2025" }),
+      mkIssue({ code: "conflicting_candidates", company_name: "B", canonical_metric: "gross_margin_pct" }),
+      mkIssue({ code: "conflicting_candidates", company_name: "C", canonical_metric: "headcount" }),
+    ];
+    const summary = reconciliationSummary(issues);
+    expect(summary.resolvedConflictCount).toBe(2);
+    expect(summary.matchCount).toBe(1);
+  });
 });
 
 describe("missingMetricsByCompany (3.3 sector-aware exceptions)", () => {
@@ -220,6 +232,22 @@ describe("missingMetricsByCompany (3.3 sector-aware exceptions)", () => {
     expect(groups).toHaveLength(1);
     expect(groups[0].company).toBe("MediSight");
     expect(groups[0].metrics).toEqual(["cash_balance"]);
+  });
+
+  it("suppresses a false gap: a metric the grid shows a value for is NOT listed missing", () => {
+    // NovaCloud reports revenue in Q2 2025 (grid shows $8.4M) but the backend also flagged
+    // revenue missing in an EARLIER quarter. The exceptions panel must not contradict the grid
+    // — it should list only the genuine gap (cash_balance), mirroring the grid's "—" cells.
+    const metrics = [
+      mkRow({ company_name: "NovaCloud", sector: "saas", canonical_metric: "revenue_qtr", period: "Q2 2025", value: 8_400_000 }),
+      mkRow({ company_name: "NovaCloud", sector: "saas", canonical_metric: "monthly_burn", period: "Q2 2025", value: -750_000 }),
+    ];
+    const issues = [
+      mkIssue({ code: "missing_metric", company_name: "NovaCloud", canonical_metric: "revenue_qtr", period: "Q2 2024" }),
+      mkIssue({ code: "missing_metric", company_name: "NovaCloud", canonical_metric: "cash_balance", period: "Q2 2025" }),
+    ];
+    const groups = missingMetricsByCompany(metrics, issues);
+    expect(groups.find((g) => g.company === "NovaCloud")?.metrics).toEqual(["cash_balance"]);
   });
 });
 

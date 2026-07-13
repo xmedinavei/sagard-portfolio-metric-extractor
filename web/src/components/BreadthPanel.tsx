@@ -38,7 +38,7 @@ export function BreadthPanel({ export: exp }: { export: MetricsExport }) {
                 <td style={{ ...tdStyle, fontWeight: 600 }}>
                   {METRIC_LABELS[entry.metric]}
                   {entry.isOptional && (
-                    <span style={{ color: "#888", fontWeight: 400 }}> · optional</span>
+                    <span style={{ color: "#5b6472", fontWeight: 400 }}> · optional</span>
                   )}
                 </td>
                 <td style={{ ...tdStyle, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
