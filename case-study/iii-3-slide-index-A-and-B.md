@@ -9,7 +9,7 @@
 
 # PART 1 — OUTLINE A (THOROUGH)
 
-**Slide index — 41 slides, 13 sections (0–12), ~45 min capable.** Present ~35–36 of 41 (curate §8 to 5–6) to protect 10+ min of Q&A.
+**Slide index — 42 slides, 13 sections (0–12), ~45 min capable.** Present ~36–37 of 42 (curate §8 to 5–6) to protect 10+ min of Q&A.
 
 | # | Section (impactful title) | Slides | Running | ~Min |
 |---|---|---|---|---|
@@ -24,19 +24,20 @@
 | 8 | The path to production trust | 9 built · show 5–6 | 34 | 6 |
 | 9 | Prototype → run alongside → scale | 3 | 37 | 3.5 |
 | 10 | The hard part wasn't the code | 1 | 38 | 1 |
-| 11 | That's Concord | 1 | 39 | 0.5 |
-| 12 | Correct my map, read the room | 2 | 41 | Q&A |
+| 11 | That's Concord + the final punch | 2 | 40 | 1 |
+| 12 | Correct my map, read the room | 2 | 42 | Q&A |
 
 ---
 
 ## Section 0 — Point the tool, not the toy  ·  (1 slide)  ·  ~0.5 min
 *(alt title: Start with the human)*
 
-### Slide 0.1 — Close to the user, on purpose
-- Xavier — tools that sit next to their users
-- most of my time: not coding
-- first job: learn how Sagard really works
-- [graphic: understated title card — big name block "Xavier Medina", one quiet line "I spent my time learning your world, not building a toy"; no data, lots of whitespace]
+### Slide 0.1 — I ship AI in production — so I sweat what "trustworthy" costs
+- Xavier — software engineer · 4+ yrs building AI systems end-to-end
+- today at ProsperaLabs: I automate real customer workflows — voice · chat · email
+- across ecommerce · real estate · legal · customer-service teams
+- I like owning products end-to-end — but here, most of my time went to learning your world, not coding
+- [graphic: understated title card — big name block "Xavier Medina", a quiet sub-line "software engineer · 4+ yrs shipping AI in production · voice · chat · email"; one warm line beneath "…yet most of my time here went to learning your world, not building a toy"; no data, lots of whitespace]
 
 ---
 
@@ -336,7 +337,7 @@
 ## Section 10 — The hard part wasn't the code  ·  (1 slide)  ·  ~1 min
 *(alt title: Two rounds, opposite trust)*
 
-### Slide 10.1 — Same builder, opposite trust posture
+### Slide 10.1 — Same builder, opposite trust posture  ·  (the emotional closer)
 - least of my time: building the tool
 - most: learning your world + finding the real problem
 - round 1 = deal partner → speed over precision
@@ -345,15 +346,22 @@
 
 ---
 
-## Section 11 — That's Concord  ·  (1 slide)  ·  ~0.5 min
-*(alt title: Hand over)*
+## Section 11 — That's Concord + the final punch  ·  (2 slides)  ·  ~1 min
+*(alt title: Hand over, then the punch card)*
 
-### Slide 11.1 — Comparability, one click from proof
+### Slide 11.1 — That's Concord — comparability, one click from proof
 - comparability is the product, not extraction
 - every number one click from its source
-- clear path to the redundant version
-- your questions — and I have a few for you
+- a clear path to the redundant, production-grade version
+- over to you — and I have a few questions for you
 - [graphic: clean closing card — the thesis line big and centered; three small icons (compare / trace / redundant path); "over to you"]
+
+### Slide 11.2 — The final punch  ·  (the very last beat)
+- Concord — one comparable, source-traced view of every portfolio company
+- built with AI · decided by humans
+- "Made with love, with AI — but human-first on every decision ❤️"
+- Thanks.
+- [graphic: full-bleed punch card — the Concord mark (two overlapping rings = convergence / agreement) centered above the word "Concord" and its slogan "One comparable, source-traced view of every portfolio company"; one warm line beneath "Made with love, with AI — but human-first on every decision ❤️"; a big, quiet "Thanks." at the foot; the "Prepared for Sagard" mark small in the corner; one accent colour, deep whitespace, no data — hold this card up through Q&A]
 
 ---
 
@@ -402,11 +410,10 @@
 *(alt title: The 60% that isn't 60%)*
 
 ### Slide 1.1 — Same 60%, different truth
-- Xavier — tools that sit close to their users
+- Xavier — software engineer, 4+ yrs shipping AI in production (voice · chat · email @ ProsperaLabs) — but most of my time here was learning your world
 - two portcos, one number: "60% gross margin"
-- one SaaS · one lender
-- one column for both?
-- [graphic: two company cards, each a big "60%" (one SAAS, one LENDER) dropping into one shared column with a red "=?" — then the column SPLITS into two labelled lanes (delivery-margin vs interest-margin), the merge struck out; caption "the product is the split, not the pull"]
+- one SaaS · one lender · one column for both?
+- [graphic: two company cards, each a big "60%" (one SAAS, one LENDER) dropping into one shared column with a red "=?" — then the column SPLITS into two labelled lanes (delivery-margin vs interest-margin), the merge struck out; caption "the product is the split, not the pull"; a small corner name-strip "Xavier Medina · builds AI in production"]
 
 ---
 
@@ -541,7 +548,7 @@
 ## Section 10 — Two rounds, opposite trust  ·  (1 slide)  ·  ~1 min
 *(alt title: The real work wasn't the code)*
 
-### Slide 10.1 — Same builder, opposite trust posture
+### Slide 10.1 — Same builder, opposite trust posture  ·  (the emotional closer)
 - most of my time: learning your world, not coding
 - round 1: deal partner → scrape → Slack = speed over precision
 - this round: operations → a number you'd sign = precision over speed
@@ -553,12 +560,12 @@
 ## Section 11 — Days → one click  ·  (1 slide)  ·  ~1 min
 *(alt title: Caught before the IC)*
 
-### Slide 11.1 — Days of typing → one trustworthy click
+### Slide 11.1 — Days → one click — and a human on every decision
 - today: days of re-keying before anyone sees the portfolio
-- Concord: one click to a comparable, source-traced view
-- the real win: a wrong number caught before the IC
-- close: "would rather refuse a comparison than fake one"
-- [graphic: big-number before/after — "DAYS" struck through → "1 CLICK"; the thesis line as a full-width banner underneath]
+- Concord: one click to a comparable, source-traced view — refuse rather than fake
+- built with AI, decided by humans — "human-first on every decision ❤️"
+- Thanks.
+- [graphic: big-number before/after — "DAYS" struck through → "1 CLICK" — resolving into the closing punch card: the Concord mark (two overlapping rings) + slogan "One comparable, source-traced view of every portfolio company", the line "Made with love, with AI — but human-first on every decision ❤️", a big quiet "Thanks.", the "Prepared for Sagard" mark small in the corner; hold through Q&A]
 
 ---
 
@@ -586,3 +593,19 @@
 - **Use the real screens.** For demo slides, screenshot the actual cockpit (load screen "24 / 24 in 0.958 s", the metrics grid, the Trend line, the provenance drawer, the four trust panels) — not mock-ups.
 - **Honest register on every data slide.** "24 synthetic PDFs", "file-level today", "designed, not built", "prototype, not production" — put the caveat on the slide, small, so the graphic never over-claims.
 - **Leave room for the visual.** If the body fills the slide, cut a phrase. The graphic is half the message.
+
+---
+
+## Notes (private — do NOT put on slides)
+
+*Xavier's own delivery notes. None of this goes on a slide — it's how you carry the room.*
+
+- **Intro (Slide 0.1 / B 1.1) — lead with the bio, confidently.** Say the "4+ years building AI in production, end-to-end, across voice/chat/email" line with your chest out — it's what *earns* you the right to say, later, "one method is not production-grade." You've shipped real AI, so the honesty reads as expertise, not hedging. Then, in the same breath, **pivot to humility**: "…but here, most of my time went to learning your world, not coding." Confidence first, humility second — that one-two is the whole tone of the talk, and it plants the fun-fact you land at the end.
+
+- **Final punch (Slide 11.2 / B 11.1) — stage it, don't rush it.** After the fun fact, **pause before the logo card comes up**. Let the room settle. Bring up the punch card and let the heart line *land* — read it slowly: "Made with love, with AI — but human-first on every decision." The line **"human-first on every decision" is your entire thesis in six words** — refuse-to-compare, provenance, humans-own-the-mark, all of it. Say "Thanks," and leave the card on screen through Q&A. Don't talk over it.
+
+- **Section 12 ("My questions for THEM") still needs your review.** The two question slides (A 12.1 / 12.2, B 12.1) are drafted but **not yet finalized by you** — reread them the morning of, cut to the 3 you actually want, and make sure they match the room (Parinaz = AI rigor, Sharon = controls/reporting-ops).
+
+- **System-design / scaling defense lives in a SEPARATE doc — not the slides.** The deep "how would you scale / architect this" material (Option 1 harden-in-place vs Option 2 cloud re-platform, the ensemble orchestrator, queues / retries / idempotency / dead-letter queue, partitioning, data-residency) lives in **`case-study/iv-system-design-and-scaling.md`** — your **Q&A / whiteboard** reference, kept off the deck on purpose so the slides stay clean. The recruiter (Christopher) flagged scalability as a focus of the round, so study that doc and pull from it live if they push on architecture — do **not** turn it into slides.
+
+- **Standing honesty guardrails (say the caveat every time):** recall **76%→90% on 24 *synthetic* PDFs** (always say "synthetic"); the redundant ensemble is **designed, not built**; provenance is **file-level** (no page number/screenshot yet); currency is **flag / refuse, never convert** (PeopleFlow's GBP is a front-end rule — the parser doesn't see the £). Put the caveat on the slide, small — never over-claim.
