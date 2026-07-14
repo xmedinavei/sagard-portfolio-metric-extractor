@@ -1,13 +1,19 @@
 # Document iii-2 — Presentation Outline **B: LEAN** (~35-minute running order)
 ### Sagard "Concord" — the tight version
 
+> ⚠️ **SUPERSEDED — this lean "Outline B" has been retired.** The chosen version is **Outline A**. Build the
+> deck from `iii-1-presentation-outline-A-thorough.md` (the decision-locked source of truth) + the Outline-A
+> slide index `iii-3-slide-index-A.md`. This file is kept only as a historical reference — it is **not**
+> the plan of record, and its pointers to a "Part 2 / Outline B" slide index no longer exist (iii-3 is now
+> Outline A only).
+
 > **What this is.** The same story as Version A, **trimmed to land in ~35 minutes + Q&A.** The moves that
 > make it lean: the **assumptions are compressed** into one section, the **live demo is a single title slide
 > run live** (the beats and caveats are spoken, not printed), and the **product improvements are curated to
 > 2–3 for the talk**. The *full* detail of every section lives in the sibling file
 > `iii-1-presentation-outline-A-thorough.md` (referenced below as **Thorough §X**). Read this to *run* the
 > talk; read Thorough to *prepare* and to *answer deep questions.* The slide-by-slide build sheet for this
-> lean cut is **Part 2 (Outline B)** of `iii-3-slide-index-A-and-B.md` — this prose and those slides are the
+> lean cut is **Part 2 (Outline B)** of `iii-3-slide-index-A.md` — this prose and those slides are the
 > same talk.
 >
 > **Same room, same rules:** **Parinaz** (Head of AI — rigor, right-sized AI, punishes hype / the "prototype
