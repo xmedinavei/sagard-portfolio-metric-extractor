@@ -35,7 +35,7 @@
 
 | # | Section | ~Time | Its one job |
 |---|---|---|---|
-| 0 | Intro (you) | 1 min | Who you are — builder first, then humble |
+| 0 | Intro (you) | 1 min | Who you are — an FDE who understands your world first |
 | 1 | The hook question | 1 min | One question that makes both minds lean in |
 | 2 | Assumptions ("correct me") | 6–8 min | Show you learned their world; invite them to fix your map |
 | 3 | The problem | 3 min | The Operations team's manual quarter-close monitoring |
@@ -57,14 +57,15 @@
 
 > 🔒 **DECISION — LOCKED (§0 Intro):**
 > - **Slides:** exactly **1**.
-> - **Slide 0.1 — title (the point):** "Builder first, then honest about what's hard"
-> - **On-slide anchors:** "Xavier Medina — software engineer" · "4+ yrs shipping production AI at ProsperaLabs" · "voice · chat · email" · "builder → listener"
-> - **Graphic:** a two-step arrow — a **BUILDER** tile ("ships end-to-end: unclear problem → first useful version → reliable") → a **LISTENER** tile ("learned Sagard's world before touching code"). It foreshadows the §10 time bar. **No Concord wordmark on this slide** — the brand first appears in §4/§7; keep the intro about the person.
-> - **Speak, don't slide:** the FULL bio quote and the FULL humility-pivot quote are spoken, never printed — only the four anchors appear. Deliver the bio confidently; deliver the pivot warmly.
+> - **Slide 0.1 — title (the point):** "An FDE starts in your world — not in the code"
+> - **On-slide anchors:** "the FDE job: an ambiguous problem → **understand your world** → solve the real one" · "Xavier Medina — software engineer · 4+ yrs shipping production AI (ProsperaLabs: voice · chat · email)" · "so here, most of my time went to understanding YOUR world, not coding"
+> - **Graphic:** a left-to-right **FDE arc** — "an ambiguous problem" → a **big, dominant UNDERSTAND YOUR WORLD node** (Sagard · PE · the Ops team) → "build the right thing." The understand node is by far the largest — it foreshadows the §10 time bar. **No Concord wordmark on this slide** — the brand first appears in §4/§7; keep the intro about the person.
+> - **Speak, don't slide:** the FULL bio quote and the FULL humility-pivot quote are spoken, never printed — only the three anchors appear. Deliver the bio confidently (it *earns* the honesty), but the slide's **point is understanding-first** — that is the FDE job.
 > - **Backup only — NEVER a slide:** none.
 > - **On-slide honesty caveat (small):** none — the honesty ("most of my time did not go into coding") lands harder spoken. Keep "production-grade" tied to **ProsperaLabs, never to Concord** (Concord's shipped demo is a single deterministic pass — explicitly not production-grade).
 
-Lead with the bio, **confidently** — it *earns* you the right to say, later, "one method is not production-grade."
+The slide's **point is understanding-first** — that is what an FDE does. In *delivery*, still open with the bio
+**confidently** — it *earns* you the right to say, later, "one method is not production-grade."
 Then your FDE motivation. Then the humility pivot.
 
 > *"I'm Xavier. I'm a software engineer — for 4+ years I've **built AI-powered, production-grade systems,
@@ -90,7 +91,7 @@ before touching code. It also plants the **time bar** you land in §10.
 
 > 🔒 **DECISION — LOCKED (§1 The hook question):**
 > - **Slides:** exactly **1**.
-> - **Slide 1.1 — title (the point):** "One data layer, two opposite readers"
+> - **Slide 1.1 — title (the point):** "Two opposite readers, one shared data layer"
 > - **On-slide anchors:** the hook **#6** printed verbatim as the slide's main line — *"When your deal partner and your valuations analyst open the same quarterly pack, they need opposite things from it — what if one clean, traceable data layer could serve both?"* · small sub-label "same pack · opposite needs · one source of truth"
 > - **Graphic:** two persona silhouettes (deal partner ↔ valuations analyst) reaching from opposite sides toward ONE shared data-layer bar under a single quarterly pack — "speed" tagged one side, "precision" the other. **Do NOT** use the SaaS-vs-lender "same 60%" column visual here — that reveal is owned by §4.
 > - **Speak, don't slide:** the elaboration ("Parinaz hears *meaning depends on who's reading*; Sharon hears *one source-of-truth serving many jobs*").
@@ -137,11 +138,11 @@ to re-open if the room wants a different door, and **never put an alternate on a
 > 🔒 **DECISION — LOCKED (§2 Assumptions — "correct me"):**
 > - **Slides:** exactly **5**. This section renders as **5 slides per this block**; the `### 2.1 / ### 2.2` prose sub-headers below are speaker narration, **not** the slide split. Locked core = the two pictures + the persona map + the customer call-out + the tension line. **ALL fund-money mechanics (money flow, "2-and-20", "the mark") are spoken only — never printed.**
 >
-> - **Slide 2.1 — title:** "One branch: we scoped Concord to the direct PE portfolio companies"
+> - **Slide 2.1 — title:** "Four strategies, one focus — Concord starts with your direct PE portfolio companies"
 >   - **On-slide anchors:** "VC · PE · Private Credit · Real Estate" · "PE = where Concord focuses today" · "the rest = documented extensions, not v1"
 >   - **Graphic:** four strategy tiles in a row; the **PE** tile enlarged + accent-ringed "← Concord focuses here today"; the other three **dimmed/greyed-out**, labelled "documented extensions, not v1". **Footnote (keep verbatim):** "*re-verify Sagard's strategy line-up + scale figures on sagard.com the morning of; print NO AUM / portfolio-count / fund-size numbers as fact.*"
 >   - **On-slide honesty caveat (small):** "v1 = PE only; the other three branches are documented extensions, not built."
-> - **Slide 2.2 — title:** "One stage: Concord lives in HOLD / MONITOR — the quarter-by-quarter middle"
+> - **Slide 2.2 — title:** "Fundraise → invest → hold → exit: Concord lives in the quarter-by-quarter middle"
 >   - **On-slide anchors:** "Fundraise → Invest → HOLD / MONITOR → Exit" · "a fund lives ~10 years" · "monitoring = the quarter-by-quarter middle"
 >   - **Graphic:** horizontal 4-stage fund-cycle arrow, glowing pin on stage 3 "HOLD / MONITOR = Concord's home".
 >   - **On-slide honesty caveat (small):** "Concord feeds the inputs to *the mark* — it never makes the mark (a human, audited judgment)."
@@ -149,7 +150,7 @@ to re-open if the room wants a different door, and **never put an alternate on a
 >   - **On-slide anchors:** the persona map, rendered as a table with columns **Persona · What they DO (short) · Trust posture**, with **row #2 (Reporting Operations + Controls) highlighted** and tagged "⬅ our customer" · sub-note "speed vs precision"
 >   - **Graphic:** the 5-row persona table (exactly those three columns), row #2 highlighted.
 >   - **On-slide honesty caveat (small):** "these are my assumed roles — please correct me."
-> - **Slide 2.4 — title:** "Our customer is Reporting Operations + Controls — NOT Value Creation"
+> - **Slide 2.4 — title:** "Controls, reconciliation, audit trail — that's our customer, not Value Creation"
 >   - **On-slide anchors:** "owns the quarterly monitoring, reconciliation & reporting grind" · "must trust AND trace every number" · "controls · source-of-truth · audit trail" · "NOT operating-partner / Value Creation"
 >   - **Graphic:** a single customer-spotlight card for persona #2 (three control words: reconcile · trace · sign-off) with a struck-through "Value Creation / operations" chip.
 >   - **On-slide honesty caveat (small):** "(my assumption — one person, a team, or a vendor? one of my questions for you.)"
@@ -238,11 +239,11 @@ valuations, LP-reporting, and credit want an audited, reconciled number. The sam
 
 > 🔒 **DECISION — LOCKED (§3 The problem):**
 > - **Slides:** exactly **3**.
-> - **Slide 3.1 — title:** "The manual quarter-close — the Operations team hand-keys 20+ packs, by hand, every quarter"
+> - **Slide 3.1 — title:** "Monitoring the portfolio means hand-keying 20+ packs — every quarter"
 >   - **On-slide anchors:** "second week after quarter-close" · "20+ PDF packs — SaaS · lender · payments · freight" · "hand-keyed into one master sheet" · "this review **is** the monitoring"
 >   - **Graphic:** a stack of labelled PDF-pack icons (SaaS / lender / payments / freight) funnelling through a small human-with-keyboard into one spreadsheet grid.
 >   - **On-slide honesty caveat (small):** "Synthetic test packs — 10 companies across 24 PDFs. Say '20+ **packs**', not '20+ companies.'"
-> - **Slide 3.2 — title:** "Four traps — each provable from the real packs"
+> - **Slide 3.2 — title:** "Four traps in the manual close — each one provable in the packs"
 >   - **On-slide anchors (2×2, ONE real example per trap):** "Same metric, many names → NovaCloud ARR: 'End-of-Period ARR' = 'ARR (End of Period)'" · "Same name, different meaning → SaaS delivery-margin vs LendBridge interest-margin" · "Right number, wrong basis → ClearPay $38.4M incl. $6.2M client float = $32.2M spendable" · "Can't prove it → no number links back to its source"
 >   - **Graphic:** 2×2 grid of trap cards, one real example each; the naive "one shared column" struck through on traps 2 and 3.
 >   - **Speak, don't slide (trap 3's second example):** ConstructIQ reports burn *per quarter* while everyone else is *per month* — spoken, not on the card.
@@ -289,7 +290,7 @@ Then make it **felt**, in Sharon's exact world:
 
 > 🔒 **DECISION — LOCKED (§4 How we solve it):**
 > - **Slides:** exactly **5**.
-> - **Slide 4.1 — title:** "One click, one flow: load → classify → normalize → reconcile → refuse → click-to-source"
+> - **Slide 4.1 — title:** "One offline click runs the flow — a human owns every number that leaves"
 >   - **On-slide anchors:** "load all packs offline, one click" · "classify equity vs credit" · "normalize onto one shared vocabulary" · "reconcile against the company's own report" · "refuse unsafe **cross-class** comparisons (lender vs software)" · "click any number → its source" · "a human owns every number that leaves"
 >   - **Graphic:** a left-to-right pipeline of 6 labelled stages ending in a click-to-source drawer icon, a small human badge over the exit gate.
 >   - **On-slide honesty caveat (small):** "Provenance is **file-level** today (source file · original label · confidence · exact excerpt) — not page/sentence (roadmap). Refuse fires **across asset classes** (lender vs SaaS) today; intra-sector margin flagging is next."
@@ -297,12 +298,12 @@ Then make it **felt**, in Sharon's exact world:
 >   - **On-slide anchors:** "SaaS 60% gross margin (illustrative)" · "LENDER 60% gross margin (illustrative)" · "**=?**" · "one merged column **SPLITS** → SaaS · delivery-margin | lender · interest-margin" · inset "one metric, many names → one stitched line"
 >   - **Graphic (self-contained — do NOT fetch any external line reference):** the THESIS REVEAL — two cards, each a bold "60% gross margin" **tagged "(illustrative)" inline**, one SAAS one LENDER, a big "=?" between; the merged spreadsheet column visibly SPLITS into two labelled lanes ("SaaS · delivery-margin" vs "lender · interest-margin") with the naive merge struck out; a small inverse inset of the ARR stitch (two labels → one line).
 >   - **On-slide honesty caveat (small):** "Illustrative numbers. Live, this fires on **LendBridge's** real interest-margin (a lender's 'gross margin', 58→62%) — shown in full, never ranked against a SaaS margin."
-> - **Slide 4.3 — title:** "Deterministic on purpose — cheap, fast, testable, offline, never invents a number; honestly not yet production-grade"
+> - **Slide 4.3 — title:** "Rules never invent a number — deterministic on purpose, not production-grade yet"
 >   - **On-slide anchors:** "single deterministic method, on purpose" · "cheap · fast · testable · offline · never invents" · "one method ≠ production-grade" · "Firecrawl first → errors + out of credit → switched (the right move for a trust tool)"
 >   - **Graphic:** a rules-engine icon with four property chips (cheap / fast / testable / offline) + a small honest footnote strip "Firecrawl → deterministic".
 >   - **Speak, don't slide:** the full Firecrawl story; "deterministic-first is genuinely right for a **trust** tool."
 >   - **On-slide honesty caveat (small):** "Any vendor accuracy % = the vendor's own claim, not our measured result."
-> - **Slide 4.4 — title:** "Same builder, two rounds — opposite trust postures"
+> - **Slide 4.4 — title:** "Same builder, opposite tools — speed for the deal partner, precision for Ops"
 >   - **On-slide anchors:** "R1 · deal partner → AI Scout: URL → scrape → summarize → Slack 'move forward?' → **LLM**, speed over precision" · "R2 · Operations → Concord: precision first, traceable, wrong answers **refused** → **deterministic**" · "same builder, two opposite trust postures"
 >   - **Graphic:** a two-column contrast card — left "Deal partner · speed (LLM)", right "Operations · precision (deterministic)".
 >   - **On-slide honesty caveat (small):** none.
@@ -407,7 +408,7 @@ control and the audit trail."*
 >   - **On-slide anchors:** "AI-first, human-decision-driven" · "AI is probabilistic — a likely answer, not a certain one" · "AI does the heavy work + suggests with reasons" · "the human makes every call that reaches a report"
 >   - **Graphic:** two-lane flow — an "AI / rules" lane (read → stitch → flag → suggest-with-reasons) feeding a single "Human decision gate" box (sign-off → the mark / IC). Arrow labelled "suggests"; gate labelled "decides."
 >   - **On-slide honesty caveat (small):** none.
-> - **Slide 5.2 — title:** "Who does what: machines do the grind; the human makes every call that reaches a report"
+> - **Slide 5.2 — title:** "Machines do the grind; the human makes every call that reaches a report"
 >   - **On-slide content:** render the **full 8-row table** (The work · Who does it · Why); **tint the two human-only rows** ("Is this number right enough for a report?" → Human sign-off; "the mark / LP figure / IC call" → Human only) so the eye lands on "Human only."
 >   - **Graphic:** the 3-column table itself is the graphic.
 >   - **On-slide honesty caveat (small):** "Concord normalizes units + scale (M/K) and **flags/refuses** a different currency — it does **NOT** convert. Readers are **redundant in production; one reader runs today.**"
@@ -467,7 +468,7 @@ them supply it. Never fabricate one.)*
 
 > 🔒 **DECISION — LOCKED (§7 The live demo):**
 > - **Slides:** exactly **1** — a live **TITLE slide only.** Do NOT build separate beat or caveat slides; the three beats and every honesty caveat are **spoken live** from the app.
-> - **Slide 7.1 — title:** "Live demo — Concord (run live from the app)"
+> - **Slide 7.1 — title:** "Live demo — Concord, run live and offline"
 >   - **On-slide anchors:** "Live demo" · "Concord" · "offline · deterministic · provenance-tagged" (minimal — a title slide; **no hard numbers printed**)
 >   - **Graphic:** full-bleed title — the Concord wordmark (original SVG mark) + one-line tagline, over a dimmed screenshot of the live app just after loading. Footer chips: "offline · deterministic · provenance-tagged." No numbers hard-coded on the slide.
 >   - **Speak, don't slide (the three beats, in spirit):** (1) **Pain on screen** — load 24 packs offline in ~1 second (screenshot the LIVE run; the "24/24 in ~0.958 s" figure comes from the run, never a fixed printed label). "Nothing left the machine." (2) **Two proofs** — (a) NovaCloud's hidden trend: one lonely dot to a naive tool; Concord stitches renamed labels into 5 quarters, **$24.1M → $34.2M (+42%)** across 2 source labels; (b) the refusal: a lender's 62% "gross margin" next to a SaaS 76%; the classifier tags the lender as credit and Concord **refuses to rank them, and says why.** (3) **Trust spine** — click any number → the provenance drawer shows source **file**, raw label, confidence, and the **exact source text.** "Every claim on screen is one click from proof."
@@ -512,16 +513,16 @@ unified · Reconciliation 22/22 agree **+ 7 in-document conflicts auto-resolved*
 > - **Ensemble-diversity venue citation + Google Document AI HITL year:** **never printed on a slide** — verify before quoting; speak/backup only.
 > - **Locked phrasing for ALL §8 slide copy:** say **"20+ packs," never "20+ companies"**; **never "0 false alarms" unqualified** (say "0 **sector-blind** false alarms, 15→0" — CarbonTrack + TalentVault false positives are *suppressed* on the grid, not eliminated); provenance is **file-level** (A5's PDF-crop/page number is future design, never shown live); **refuse-across-asset-classes is BUILT** (LendBridge live) but **intra-SaaS margin flagging is roadmap.**
 >
-> - **Slide 8.0 — Opener (SHOW) — title:** "The reliable Concord isn't 'more AI' — it's more agreement, more human judgment, and a full record of both"
+> - **Slide 8.0 — Opener (SHOW) — title:** "Reliability isn't more AI — it's more agreement, more human judgment, and a record of both"
 >   - **On-slide anchors:** "more agreement · more human judgment · full record" · "the ensemble raises warnings — a human decides" · "6 product improvements — all roadmap"
 >   - **Graphic:** 3-icon row — [handshake = agreement] → [person = human decides] → [ledger = permanent record].
 >   - **On-slide honesty caveat (small):** "Everything in this section is **designed, not built.**"
-> - **Slide 8.1 — Group A: redundant multi-reader source-of-truth (THE headline, SHOW) — title:** "Trust the source of truth: several *independent* readers vote — independence decides, not the count"
+> - **Slide 8.1 — Group A: redundant multi-reader source-of-truth (THE headline, SHOW) — title:** "Correlated readers can outvote the one that's right — so independence, not count, decides"
 >   - **On-slide anchors:** "3 reader families that fail differently — geometry parser · doc-AI · vision-LLM" · "correlated readers can outvote the one correct one" · "TIERED consensus → real disagreement goes to a human" · "designed, not built"
 >   - **Graphic:** fan-in pipeline — 3–4 reader boxes (deterministic parser · local Docling · vision-LLM · optional doc-AI) → orchestrator → {VALIDATED (green) / DISAGREE (amber → human queue)}. One clean pipeline, **not** the A0–A9 tables.
 >   - **Speak, don't slide:** the full depth — correlated-failure / RMS ~1/√M math, the Self-MoA hedge, the supervisor graph, the tiered-consensus table, the ClearPay A3 trace, cost/latency, confidence routing, the human-review queue.
 >   - **On-slide honesty caveat (small):** "Designed, not built — no auto-accept rate until it runs on real packs. Reducto ~99% and any vendor accuracy figure is the **vendor's own claim.**"
-> - **Slide 8.2 — Group C: the reading layer, LLM summaries (SHOW) — title:** "AI belongs *on top of* clean numbers — it writes the story as a **suggestion**, a human refutes it"
+> - **Slide 8.2 — Group C: the reading layer, LLM summaries (SHOW) — title:** "AI writes the interpretation, never the number — and a human can always refute it"
 >   - **On-slide anchors:** "reads only already-clean, provenance-tagged numbers" · "suggestion, never a decision — labelled 'AI suggestion — review'" · "human refute + comment loop → learns the house view next quarter" · "cites every number · no dollar-ROI claims"
 >   - **Graphic:** 3-step flow — [clean grid] → [AI note card: "AI suggestion — review"] → [human ✓ / ✎ / comment], loop arrow "next quarter reads last quarter's comments." **Include one short NovaCloud example card** ("compounding +42% ARR, but cash falling $29.5M→$19.6M — confirm the funding plan").
 >   - **On-slide honesty caveat (small):** "Roadmap feature — the AI note is not built; it can only get an *interpretation* wrong (the human refutes it), never inject a wrong number."
@@ -529,16 +530,16 @@ unified · Reconciliation 22/22 agree **+ 7 in-document conflicts auto-resolved*
 >   - **On-slide anchors:** "PeopleFlow flagged '£ · not comparable (GBP)' — kept off the dollar axis" · "today that's a **front-end human rule** (parser sees currency = null, not the £)" · "roadmap: a reader captures the symbol → captured data" · "convert *levels* only, dated auditable rate — never ratios/percentages"
 >   - **Graphic:** before/after — LEFT "today: front-end rule flags GBP, refuses the axis"; RIGHT "roadmap: a currency-reader captures £ → convert levels with dated FX (fx_rate / fx_source / fx_date), refuse to convert %."
 >   - **On-slide honesty caveat (small):** "The GBP flag is a front-end rulebook rule, **not parsed data** — the parser sees currency = null. **No FX conversion exists yet.**"
-> - **Slide 8.4 — Group G: auth, permissions & the audit trail (Sharon's spine, SHOW) — title:** "A compliance spine: never overwrite silently, maker-checker on every correction, an immutable exportable audit trail"
+> - **Slide 8.4 — Group G: auth, permissions & the audit trail (Sharon's spine, SHOW) — title:** "No silent overwrites, maker-checker on every fix, an audit trail that stands up to an LP challenge"
 >   - **On-slide anchors:** "never overwrite — original + every human action both kept" · "maker-checker / 4-eyes: suggester ≠ approver" · "least privilege — see only your assigned companies" · "append-only immutable log — exportable for an auditor / LP challenge"
 >   - **Graphic:** value-state flow — Extracted → Verified / Flagged → Suggest (user A) → Approve/Reject (user B) → Corrected, keeping *old → new → who → when → why*; a small audit-log ledger beside it.
 >   - **Speak, don't slide:** the full 4-role table; scope-based access; that this **overlaps `iv-system-design-and-scaling.md`.**
 >   - **On-slide honesty caveat (small):** "None of this exists yet — the next layer on top of provenance + refuse-to-compare, which **do** exist."
-> - **Slide 8.5 — Group B: change over time (BACKUP — build; show only if the room asks) — title:** "Two views worth building: rebase-to-100 (compare growth *shapes* across sizes) and a QoQ↔YoY switch"
+> - **Slide 8.5 — Group B: change over time (BACKUP — build; show only if the room asks) — title:** "Compare growth shapes, not sizes — rebase every company to 100, then switch QoQ↔YoY"
 >   - **On-slide anchors:** "rebase-to-100 — every company starts at 100 → compare shapes, not sizes" · "QoQ = recent momentum · YoY = annual trajectory" · "not in the demo"
 >   - **Graphic:** two mini line-charts — LEFT indexed-to-100 lines from a common start; RIGHT a QoQ/YoY toggle.
 >   - **On-slide honesty caveat (small):** "Roadmap — Concord shows %-change today (NovaCloud +42%), but these views aren't built; sparklines are self-scaled, so heights aren't comparable."
-> - **Slide 8.6 — Group F: intake, change-tracking & alerts (BACKUP — build; show only if the room asks) — title:** "Fit the existing habit: watch the shared drive read-only, re-run only when a file's fingerprint changes, alert a human — never act"
+> - **Slide 8.6 — Group F: intake, change-tracking & alerts (BACKUP — build; show only if the room asks) — title:** "Fit the team's habit: watch read-only, re-run only when a fingerprint changes, never act"
 >   - **On-slide anchors:** "read-only connector to the drive the team already uses (never writes back)" · "file-hash manifest — new = run · changed = re-run + flag 'restated' · same = skip" · "every run ties to a fingerprint + timestamp" · "alerts are a heads-up, never a verdict — no auto-action, ever"
 >   - **Graphic:** a 3-row manifest table (New→Run / Changed→Re-run+flag / Unchanged→Skip) beside an alert card labelled "AI read = hypothesis · number-moved = fact."
 >   - **On-slide honesty caveat (small):** "Roadmap — Concord is offline/manual today; a hash tells you *that* a file changed, not *what*."
@@ -875,7 +876,7 @@ history), **exportable** to survive an auditor or LP challenge.
 >   - **On-slide anchors:** "offline · in-memory · one deterministic extraction pass" · "no database, no login" · "76%→90% recall — real, but on 24 synthetic PDFs" · "0 wrong values"
 >   - **Graphic:** a two-column "What's real / What's not yet" honesty strip — real: the engine, the recall gain, refuse-to-compare, file-level provenance | not yet: durable store, job queue, the redundant ensemble, multi-tenant cloud.
 >   - **On-slide honesty caveat (small):** "The 24 PDFs are synthetic test fixtures, not real filings. The redundant ensemble is **designed, not built** — label it 'to add,' never present-tense."
-> - **Slide 9.2 — title:** "Two honest paths — harden in place first, cloud is the destination"
+> - **Slide 9.2 — title:** "Harden in place first — the cloud is the destination, when it's justified"
 >   - **On-slide anchors:** "Option 1 — Harden in place (low-risk, stays offline)" · "Option 2 — Cloud re-platform (highest ceiling)" · "do Option 1 first" · "Option 2 = data leaves on-prem"
 >   - **Graphic:** the two-column Option 1 vs Option 2 table, **condensed to 3 rows (What-it-is / Reliability / Risk)** — drop the Effort/Cost row — with an arrow "Option 1 → Option 2 (the destination)." *(Pull the cell text from the Option table in the section body below.)*
 >   - **On-slide honesty caveat (small):** "The redundant-extraction ensemble inside Option 1 is **designed, not built** — 'to add.'"
@@ -950,7 +951,7 @@ fact. The two-rounds speed-vs-precision story now lives in §4.2, not here.)*
 
 > 🔒 **DECISION — LOCKED (§11 Ask for questions / goodbye):**
 > - **Slides:** exactly **2**.
-> - **Slide 11.1 — title:** "That's Concord — now I'd love your questions"
+> - **Slide 11.1 — title:** "Comparability, provenance, a path forward — now, your questions"
 >   - **On-slide anchors:** "comparability is the product" · "every number one click from its source" · "a clear path to the reliable, redundant version" · "your questions — and I have a few for you"
 >   - **Graphic:** three small pillar icons (comparability · provenance · the path forward) — a clean recap, no numbers.
 > - **Slide 11.2 — title:** "Built with AI, decided by humans" (the punch card — the last thing on screen)
@@ -979,10 +980,10 @@ compare, provenance, humans-own-the-mark, all of it.)*
 
 > 🔒 **DECISION — LOCKED (§12 My questions for THEM):**
 > - **Slides:** exactly **2**.
-> - **Slide 12.1 — title:** "The three I most want your read on"
+> - **Slide 12.1 — title:** "Three questions I can't answer without you"
 >   - **On-slide anchors:** "Who actually owns the quarterly grind today?" (B1) · "Is Sagard AI-first but human-decision-driven — everywhere, or just the AI group?" (D2) · "Six months in, what did a successful FDE actually do?" (E1) · footer "the customer · the culture · the scorecard"
 >   - **Graphic:** a three-card cue layout — one card per question, labelled customer / culture / scorecard.
-> - **Slide 12.2 — title:** "And a few more — pick any thread" (a reference board)
+> - **Slide 12.2 — title:** "Five themes — pick any thread you like" (a reference board)
 >   - **On-slide anchors:** five group headers, one line each — "Validate my map" · "The real customer (Sharon)" · "Is this a real problem?" · "AI culture" · "The role (FDE)"
 >   - **Graphic:** a compact 5-panel menu board — headers only, so the room can point at a thread.
 > - **Speak, don't slide:** "I'll ask these throughout, not just at the end"; the full wording of every question is spoken, not printed; for A2 say "the solutions business — from the **Unigestion deal**, which I still need to re-verify."

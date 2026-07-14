@@ -13,7 +13,7 @@
 
 | # | Section (impactful title) | Slides | Running | ~Min |
 |---|---|---|---|---|
-| 0 | Builder first — then your world | 1 | 1 | 1 |
+| 0 | Understand your world first (the FDE job) | 1 | 1 | 1 |
 | 1 | One data layer, two opposite needs | 1 | 2 | 1 |
 | 2 | Here's my map — correct me | 5 | 7 | 7 |
 | 3 | The quarter-close hurts | 3 | 10 | 3 |
@@ -29,21 +29,21 @@
 
 ---
 
-## Section 0 — Builder first, then your world  ·  (1 slide)  ·  ~1 min
+## Section 0 — Understand your world first (the FDE job)  ·  (1 slide)  ·  ~1 min
 
-### Slide 0.1 — Builder first, then honest about what's hard
-- Xavier Medina — software engineer · 4+ yrs shipping production AI at ProsperaLabs (voice · chat · email)
-- how I work: unclear problem → first useful version → reliable enough to ship → real-user feedback
-- but here, most of my time went to learning YOUR world, not coding
-- [graphic: a two-step arrow — a **BUILDER** tile ("ships end-to-end: unclear problem → first useful version → reliable") → a **LISTENER** tile ("learned Sagard's world before touching code"); foreshadows the §10 time bar; **NO Concord wordmark here** — keep the intro about the person]
+### Slide 0.1 — An FDE starts in your world — not in the code
+- the FDE job: take an ambiguous problem → **understand your world** → solve the real one
+- Xavier Medina — software engineer · 4+ yrs shipping production AI (ProsperaLabs: voice · chat · email)
+- so here, most of my time went to understanding YOUR world, not coding
+- [graphic: a left-to-right **FDE arc** — "an ambiguous problem" → a **big, dominant UNDERSTAND YOUR WORLD** node (Sagard · PE · the Ops team) → "build the right thing"; the understand node is by far the largest, foreshadowing the §10 time bar; **NO Concord wordmark here**]
 - honest: "production-grade" = my ProsperaLabs work, **not** Concord (Concord's demo is one deterministic pass)
-- *(speak, don't slide: the full bio + humility-pivot quotes — only the four anchors appear)*
+- *(speak, don't slide: the full bio + humility-pivot quotes — the slide's point is understanding-first, the FDE job)*
 
 ---
 
 ## Section 1 — One data layer, two opposite needs  ·  (1 slide)  ·  ~1 min
 
-### Slide 1.1 — One data layer, two opposite readers
+### Slide 1.1 — Two opposite readers, one shared data layer
 - your deal partner + your valuations analyst open the SAME quarterly pack
 - they need OPPOSITE things from it (speed vs precision)
 - **the hook (printed verbatim):** *"When your deal partner and your valuations analyst open the same quarterly pack, they need opposite things from it — what if one clean, traceable data layer could serve both?"*
@@ -55,14 +55,14 @@
 
 ## Section 2 — Here's my map — correct me  ·  (5 slides)  ·  ~7 min
 
-### Slide 2.1 — One branch: we scoped Concord to the direct PE portfolio companies
+### Slide 2.1 — Four strategies, one focus — Concord starts with your direct PE portfolio companies
 - branches: VC · PE · Private Credit · Real Estate (+ a big solutions arm)
 - **PE = where Concord focuses today** — the packs in my demo
 - the rest = documented extensions, not v1
 - [graphic: four strategy tiles in a row — the **PE** tile enlarged + accent-ringed "← Concord focuses here today"; the other three **dimmed/greyed-out**, labelled "documented extensions, not v1"; **footnote:** "*re-verify Sagard's strategy line-up + scale figures on sagard.com the morning of; print NO AUM/portfolio-count/fund-size numbers as fact*"]
 - honest: "v1 = PE only; the other three branches are documented extensions, not built"
 
-### Slide 2.2 — Concord's home = HOLD / MONITOR (the quarter-by-quarter middle)
+### Slide 2.2 — Fundraise → invest → hold → exit: Concord lives in the quarter-by-quarter middle
 - a fund lives ~10 years: Fundraise → Invest → **HOLD / MONITOR** → Exit
 - Concord lives in stage 3 — the quarter-by-quarter job of watching every company
 - [graphic: horizontal 4-stage fund-cycle arrow — a glowing pin on stage 3 "HOLD / MONITOR = Concord's home"; caption "a fund lives ~10 years; monitoring is the quarter-by-quarter middle"]
@@ -75,7 +75,7 @@
 - [graphic: the 5-row persona table (those three columns), row #2 highlighted "⬅ our customer"]
 - honest: "these are my assumed roles — please correct me"
 
-### Slide 2.4 — Our customer is Reporting Operations + Controls — NOT Value Creation
+### Slide 2.4 — Controls, reconciliation, audit trail — that's our customer, not Value Creation
 - owns the quarterly monitoring, reconciliation & reporting grind
 - must **trust AND trace** every number · controls · source-of-truth · audit trail
 - NOT operating-partner / Value Creation
@@ -93,14 +93,14 @@
 
 ## Section 3 — The quarter-close hurts  ·  (3 slides)  ·  ~3 min
 
-### Slide 3.1 — The manual quarter-close — the Ops team hand-keys 20+ packs, by hand, every quarter
+### Slide 3.1 — Monitoring the portfolio means hand-keying 20+ packs — every quarter
 - stage 3 is Hold / Monitor — and the Ops team monitors by reading every company's Q report, manually
 - second week after close: 20+ PDF packs land (SaaS · lender · payments · freight)
 - open each · hunt for the numbers · hand-key into one master spreadsheet — this review IS the monitoring
 - [graphic: a stack of labelled PDF-pack icons (SaaS / lender / payments / freight) funnelling through a small human-with-keyboard into one spreadsheet grid; clock reading "DAYS · week 2 after close"]
 - honest: "synthetic test packs — 10 companies across 24 PDFs. Say '20+ **packs**', not '20+ companies.'"
 
-### Slide 3.2 — Four traps — each provable from the real packs
+### Slide 3.2 — Four traps in the manual close — each one provable in the packs
 - many names, one metric — NovaCloud ARR: "End-of-Period ARR" = "ARR (End of Period)"
 - one name, two meanings — SaaS delivery-margin vs LendBridge interest-margin (quietly wrong)
 - right number, wrong basis — ClearPay $38.4M incl. $6.2M client float = $32.2M spendable
@@ -118,7 +118,7 @@
 
 ## Section 4 — Comparability is the product  ·  (5 slides)  ·  ~5.5 min
 
-### Slide 4.1 — One click, one flow: load → classify → normalize → reconcile → refuse → click-to-source
+### Slide 4.1 — One offline click runs the flow — a human owns every number that leaves
 - load all packs offline in one click → classify (equity vs credit)
 - normalize onto one shared vocabulary → reconcile vs the company's own report
 - refuse unsafe **cross-class** comparisons (lender vs software) → click any number → source
@@ -133,7 +133,7 @@
 - [graphic: THESIS REVEAL (self-contained — do NOT fetch any external line reference) — two cards, each a bold "60% gross margin" **tagged "(illustrative)" inline**, one SAAS one LENDER, a big "=?" between; the merged column visibly SPLITS into two labelled lanes ("SaaS · delivery-margin" vs "lender · interest-margin"), the naive merge struck out; small inverse inset of the ARR stitch (two labels → one line)]
 - honest: "illustrative numbers. Live, this fires on **LendBridge's** real interest-margin (a lender's 'gross margin', 58→62%) — shown in full, never ranked against a SaaS margin"
 
-### Slide 4.3 — Deterministic on purpose — and honest about it
+### Slide 4.3 — Rules never invent a number — deterministic on purpose, not production-grade yet
 - for this demo: a single deterministic method (fixed rules) — cheap · fast · testable · offline · never invents a number
 - but one method is NOT production-grade — a lone reader can be wrong and you'd never know
 - honest Firecrawl story: my first build used a paid extraction service; I hit errors AND ran out of credit → switched to deterministic to prove the business case
@@ -141,7 +141,7 @@
 - [graphic: a rules-engine icon with four property chips (cheap / fast / testable / offline); a red banner "not production-grade yet"; a small "Firecrawl → errors + out of credit → deterministic" honesty footnote]
 - honest: "any vendor accuracy % = the vendor's own claim, not our measured result"
 
-### Slide 4.4 — Two rounds, opposite trust — that's why deterministic here
+### Slide 4.4 — Same builder, opposite tools — speed for the deal partner, precision for Ops
 - round 1 (first take-home) = the DEAL PARTNER's "AI Scout": company URL → scrape info + press → search + scrape founders → summarize → Slack "move forward?" — an LLM, because the deal partner needs SPEED
 - this round = PORTFOLIO OPERATIONS: needs PRECISION first — a number you'd sign, traceable, wrong answers REFUSED not guessed
 - same builder, two rounds, two opposite trust postures → that's WHY this one is deterministic
@@ -159,14 +159,14 @@
 
 ## Section 5 — AI suggests, humans decide  ·  (2 slides)  ·  ~2 min
 
-### Slide 5.1 — AI-first, but human-decision-driven — AI never decides
+### Slide 5.1 — Be AI-first, but human-decision-driven — AI never decides
 - we are an AI-FIRST company — but HUMAN-DECISION-DRIVEN
 - AI is probabilistic — a LIKELY answer, not a CERTAIN one — so we never let it DECIDE
 - AI does the heavy, repetitive work and SUGGESTS with reasons
 - the HUMAN makes every call that reaches a report
 - [graphic: two-lane flow — an "AI / rules" lane (read → stitch → flag → suggest-with-reasons) feeding a single "Human decision gate" box (sign-off → the mark / IC); arrow labelled "suggests", gate labelled "decides"]
 
-### Slide 5.2 — A human owns every shipped number
+### Slide 5.2 — Machines do the grind; the human makes every call that reaches a report
 - render the **full 8-row table** (The work · Who does it · Why); **tint the two human-only rows** so the eye lands on "Human only"
 - read PDFs / pull raw numbers → AI + rules (redundant in production; one reader today)
 - "numbers don't match / looks wrong" → cross-source reconciliation flags it (a redundant orchestrator is production-only)
@@ -190,7 +190,7 @@
 
 ## Section 7 — Watch it refuse (live demo)  ·  (1 slide)  ·  ~10 min
 
-### Slide 7.1 — Live demo — Concord (run live from the app)
+### Slide 7.1 — Live demo — Concord, run live and offline
 - I'll run this LIVE from the app — the three beats + the honest caveats are **spoken, not on slides**
 - ① the pain on screen (24 packs offline, ~1s) · ② two proofs (hidden trend + the refusal) · ③ the trust spine (click any number → source)
 - scripts: cockpit-frontend-guide.md (click-path) + demo-honesty-script.md (what to show vs. what to say)
@@ -204,14 +204,14 @@
 
 > **Slide roster (mirrors iii-1's §8 lock):** 8.0 opener · **8.1 Group A readers** · **8.2 Group C reading layer** · **8.3 Group E currency** · **8.4 Group G controls** · 8.5 Group B (backup) · 8.6 Group F (backup). Group A is **one** slide; A0–A9 depth is Q&A / whiteboard, never a slide. Everything here is **designed, not built.**
 
-### Slide 8.0 — The reliable Concord isn't "more AI" — it's more agreement, human judgment, and a full record  ·  SHOW
+### Slide 8.0 — Reliability isn't more AI — it's more agreement, more human judgment, and a record of both  ·  SHOW
 - more agreement · more human judgment · full record
 - the ensemble raises warnings — a human decides
 - 6 product improvements — all roadmap
 - [graphic: 3-icon row — [handshake = agreement] → [person = human decides] → [ledger = permanent record]]
 - honest: "everything in this section is **designed, not built**"
 
-### Slide 8.1 — Trust the source of truth: independent readers vote — independence decides, not the count  ·  Group A  ·  SHOW
+### Slide 8.1 — Correlated readers can outvote the one that's right — so independence, not count, decides  ·  Group A  ·  SHOW
 - today: one deterministic reader · next: 3–4 methods across "loud vs silent" (geometry parser · doc-AI · vision-LLM)
 - 3 copies of one model share blind spots (correlated failure) — use DIFFERENT mechanisms so errors decorrelate
 - TIERED consensus → real disagreement goes to a human
@@ -219,21 +219,21 @@
 - honest: "designed, not built — no auto-accept rate until it runs on real packs; Reducto ~99% and any vendor figure is the **vendor's own claim**"
 - *(speak, don't slide: the deep A0–A9 depth — correlated-failure / RMS ~1/√M math, Self-MoA hedge, supervisor graph, the ClearPay A3 trace, cost/latency, confidence routing, the human-review queue)*
 
-### Slide 8.2 — AI belongs on top of clean numbers — it writes the story as a suggestion, a human refutes it  ·  Group C  ·  SHOW
+### Slide 8.2 — AI writes the interpretation, never the number — and a human can always refute it  ·  Group C  ·  SHOW
 - after the numbers are clean: an LLM writes the "story" — per company + whole portfolio — explicitly a SUGGESTION
 - human accepts / corrects / comments → next quarter the LLM reads last quarter's comments first (learns the house view)
 - safe: it reads ONLY over normalized, provenance-tagged numbers — it can't inject a figure, only an interpretation the human refutes
 - [graphic: 3-step flow — [clean grid] → [AI note card "AI suggestion — review"] → [human ✓ / ✎ / comment], loop arrow "next quarter reads last quarter's comments"; **include one short NovaCloud card** ("compounding +42% ARR, but cash falling $29.5M→$19.6M — confirm the funding plan")]
 - honest: "roadmap feature — the AI note is not built; cites every number · no dollar-ROI claims"
 
-### Slide 8.3 — Currency: Concord flags, it never converts  ·  Group E  ·  SHOW
+### Slide 8.3 — Concord refuses to mix pounds and dollars — it flags, it never converts  ·  Group E  ·  SHOW
 - today: PeopleFlow "· not comparable (GBP)" is a FRONT-END rule (payload currency = null — the parser doesn't see the £)
 - one label reads "Net Pound Retention (NPR)" — the tell that its figures may be in pounds
 - roadmap: a reader captures the £ → captured data · convert LEVELS only (dated, sourced rate) · refuse RATIOS (a % in GBP stays a %) · refuse over convert
 - [graphic: before/after — LEFT "today: front-end rule flags GBP, refuses the axis"; RIGHT "roadmap: a currency-reader captures £ → convert levels with dated FX (fx_rate / fx_source / fx_date), refuse to convert %"]
 - honest: "the GBP flag is a front-end rulebook rule, **not parsed data** (parser sees currency = null). No FX conversion exists yet."
 
-### Slide 8.4 — A compliance spine Sharon can sign off on  ·  Group G  ·  SHOW
+### Slide 8.4 — No silent overwrites, maker-checker on every fix, an audit trail that stands up to an LP challenge  ·  Group G  ·  SHOW
 - overlaps the System Design doc (iv-…) — the deeper version lives there
 - never overwrite — a correction is a NEW state, the original is kept
 - maker-checker (suggester ≠ approver) · least privilege (see only your companies)
@@ -241,14 +241,14 @@
 - [graphic: value-state flow — Extracted → Verified / Flagged → Suggest (user A) → Approve/Reject (user B) → Corrected, keeping *old → new → who → when → why*; a small audit-log ledger beside it]
 - honest: "none of this exists yet — the next layer on top of provenance + refuse-to-compare, which **do** exist"
 
-### Slide 8.5 — Change over time: shapes, not just levels  ·  Group B  ·  BACKUP (build; show only if asked)
+### Slide 8.5 — Compare growth shapes, not sizes — rebase every company to 100, then switch QoQ↔YoY  ·  Group B  ·  BACKUP (build; show only if asked)
 - Concord shows %-change today (NovaCloud ARR +42%, in-cell sparkline)
 - roadmap view 1 — Rebase-to-100 (index): start every company at 100 → compare growth SHAPES despite size gaps
 - roadmap view 2 — QoQ vs YoY switch: QoQ = recent momentum · YoY = annual trajectory (need both lenses)
 - [graphic: two mini line-charts — LEFT indexed-to-100 lines from a common start; RIGHT a QoQ/YoY toggle]
 - honest: "roadmap — not built; today's sparklines are self-scaled, so heights aren't directly comparable"
 
-### Slide 8.6 — Fit the existing habit: intake, change-tracking & alerts  ·  Group F  ·  BACKUP (build; show only if asked)
+### Slide 8.6 — Fit the team's habit: watch read-only, re-run only when a fingerprint changes, never act  ·  Group F  ·  BACKUP (build; show only if asked)
 - intake: point Concord at the shared drive the team already uses (read-only, scoped — never writes back)
 - file hash (SHA-256): new = run · changed = re-run + "restated" flag · same = skip (content-based, not name-based)
 - alerts tied to the reading layer: when the AI summary reads "worse," push a heads-up — NEVER a verdict; human verifies first
@@ -266,7 +266,7 @@
 - [graphic: a two-column "What's real / What's not yet" honesty strip — real: the engine · the recall gain · refuse-to-compare · file-level provenance | not yet: durable store · job queue · the redundant ensemble · multi-tenant cloud; a "prototype, not production" stamp]
 - honest: "the 24 PDFs are synthetic test fixtures, not real filings; the redundant ensemble is **designed, not built** — 'to add', never present-tense"
 
-### Slide 9.2 — Two honest paths — harden in place first, cloud is the destination
+### Slide 9.2 — Harden in place first — the cloud is the destination, when it's justified
 - Option 1 — harden in place: keep the engine, add a durable store + job queue/retries + the redundant ensemble · stays offline · low risk (do this first)
 - Option 2 — cloud re-platform: event-driven, multi-tenant, auto-scales for quarter-end bursts · highest ceiling · but data leaves on-prem (the destination)
 - recommend Option 1 first; Option 2 only when volume/tenants/SLAs justify it AND data-residency is answered
@@ -277,7 +277,7 @@
 
 ## Section 10 — The hard part wasn't the code  ·  (1 slide)  ·  ~1 min
 
-### Slide 10.1 — Most of my time went to understanding your world  ·  (the emotional closer)
+### Slide 10.1 — Most of my time wasn't coding — it was understanding your world  ·  (the emotional closer)
 - most of my time was NOT coding — it was understanding Sagard, PE, the personas, and how the Ops team monitors via the Q-reports
 - only then did I scope the problem, plan / weigh trade-offs, and build — slides last
 - that's what an FDE does: take ambiguity → research → understand → get feedback → plan → weigh trade-offs → solve with software + AI
@@ -289,7 +289,7 @@
 
 ## Section 11 — That's Concord + the final punch  ·  (2 slides)  ·  ~1 min
 
-### Slide 11.1 — That's Concord — now I'd love your questions
+### Slide 11.1 — Comparability, provenance, a path forward — now, your questions
 - comparability is the product, not extraction
 - every number one click from its source
 - a clear path to the redundant, production-grade version
@@ -308,14 +308,14 @@
 
 ## Section 12 — Correct my map, read the room  ·  (2 slides)  ·  ~Q&A
 
-### Slide 12.1 — The three I most want your read on
+### Slide 12.1 — Three questions I can't answer without you
 - who owns the quarterly hand-keying today — person · team · vendor? (B1)
 - AI-first but human-driven — every team, or owned by the AI group? (D2)
 - 6 months in — what did a successful FDE actually do? (E1)
 - footer: the customer · the culture · the scorecard
 - [graphic: a three-card cue layout — one card per question, labelled customer / culture / scorecard]
 
-### Slide 12.2 — And a few more — pick any thread
+### Slide 12.2 — Five themes — pick any thread you like
 - five group headers, one line each: "Validate my map" · "The real customer (Sharon)" · "Is this a real problem?" · "AI culture" · "The role (FDE)"
 - [graphic: a compact 5-panel menu board — headers only, so the room can point at a thread]
 - honest: keep group headers only — **no asserted Sagard facts (Unigestion / solutions / AUM) on the slide**
@@ -342,7 +342,7 @@
 
 *Xavier's own delivery notes. None of this goes on a slide — it's how you carry the room.*
 
-- **Intro (Slide 0.1) — lead with the bio, confidently, then the FDE motivation, then humility.** Say the "4+ years building AI in production, end-to-end, across voice/chat/email" line with your chest out — it's what *earns* you the right to say, later, "one method is not production-grade." Then the FDE motivation (unclear problem → reasonable assumptions → first useful version → reliable enough to ship → real-user feedback). Then **pivot to humility**: "…but here, most of my time went to learning your world, not coding." Confidence first tells Parinaz you've shipped real AI (so the honesty reads as expertise, not hedging); humility second tells Sharon you took *her* world seriously. It plants the **time bar** you land in §10 — no longer a fun fact. Keep "production-grade" tied to ProsperaLabs, **never** to Concord.
+- **Intro (Slide 0.1) — the slide's POINT is understanding-first (the FDE job); in *delivery*, still open with the bio confidently, then the FDE motivation, then land the understanding-first pivot.** Say the "4+ years building AI in production, end-to-end, across voice/chat/email" line with your chest out — it's what *earns* you the right to say, later, "one method is not production-grade." Then the FDE motivation (unclear problem → reasonable assumptions → first useful version → reliable enough to ship → real-user feedback). Then **pivot to humility**: "…but here, most of my time went to learning your world, not coding." Confidence first tells Parinaz you've shipped real AI (so the honesty reads as expertise, not hedging); humility second tells Sharon you took *her* world seriously. It plants the **time bar** you land in §10 — no longer a fun fact. Keep "production-grade" tied to ProsperaLabs, **never** to Concord.
 
 - **Hook (Slide 1.1) — open with ONE question (hook #6), don't stack.** The hook is *"When your deal partner and your valuations analyst open the same quarterly pack, they need opposite things from it — what if one clean, traceable data layer could serve both?"* Ask it and stop — do **not** read the five alternate hooks (they live in the `iii-1` prose as backups only). Note: the **"same 60%" thesis reveal is NOT the hook anymore** — it now lands in §4 (Slide 4.2) as the thesis reveal. The hook is a *question*; the thesis is a *picture*.
 
