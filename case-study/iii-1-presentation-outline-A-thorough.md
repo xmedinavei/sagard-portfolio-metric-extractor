@@ -2,21 +2,22 @@
 ### Sagard "Concord" — the case-study talk, written out
 
 > **What this is.** Your full outline, in your order, with **each section filled in** — what to say, the key
-> lines, the honest caveats, and **every** future-improvement detailed (nothing left out; you choose what to
+> lines, the honest caveats, and **every** product improvement detailed (nothing left out; you choose what to
 > say live). This is the deep reference. **Version B (lean)** is the tight ~35-min running order in the
-> sibling file `iii-2-presentation-outline-B-lean.md`.
+> sibling file `iii-2-presentation-outline-B-lean.md`. The slide-by-slide build sheet (punchy titles + anchor
+> phrases + graphic placeholders, for **both** A and B) is `iii-3-slide-index-A-and-B.md`.
 >
-> **The room:** **Parinaz Sobhani** (Head of AI — rigor, trust, right-sized AI) + **Sharon Liu** (Head of
-> Operations, ex-Chief Compliance Officer — controls, audit trail, reconciliation, source-of-truth). One AI
-> judge, one operations/controls customer. **Not** finance-math judges — never drift into fund returns / NAV
-> math.
+> **The room:** **Parinaz Sobhani** (Head of AI — rigor, trust, right-sized AI, punishes hype and the
+> "prototype trap") + **Sharon Liu** (Head of Operations, ex-Chief Compliance Officer — controls, audit
+> trail, reconciliation, source-of-truth, data residency). One AI judge, one operations/controls customer.
+> **Not** finance-math judges — never drift into fund returns / NAV / waterfall math beyond light fluency.
 >
 > **The tool = Concord.** Deterministic, offline, provenance-tagged, refuses unsafe comparisons. Thesis:
 > *"Same label doesn't mean the same metric — comparability is the product, not extraction."*
 >
 > **Simple-language promise:** short sentences, plain words, jargon explained once.
 > **Honesty promise:** no invented numbers; time-savings stays qualitative; every demo figure is faithful to
-> `cockpit-frontend-guide.md`.
+> `cockpit-frontend-guide.md` and `demo-honesty-script.md`.
 
 ---
 
@@ -24,53 +25,75 @@
 
 | # | Section | ~Time | Its one job |
 |---|---|---|---|
-| 0 | Intro (you) | 0.5 min | Who you are, warmly |
-| 1 | The hook question | 1 min | Grab both minds in one question |
+| 0 | Intro (you) | 1 min | Who you are — builder first, then humble |
+| 1 | The hook question | 1 min | One question that makes both minds lean in |
 | 2 | Assumptions ("correct me") | 6–8 min | Show you learned their world; invite them to fix your map |
-| 3 | The problem | 3 min | The Operations team's painful quarter-close |
-| 4 | How we solve it | 5–6 min | The engine + the honest "why deterministic" + can we trust it |
-| 5 | What AI can automate vs not | 2 min | The principle: AI suggests, humans decide |
-| 6 | Time saved (qualitative) | 1 min | Days → minutes, no invented numbers |
-| 7 | **Live demo** | 8–10 min | The proof, told as a story |
-| 8 | Future improvements | 4–6 min | The reliable, production path (you curate; all are here) |
-| 9 | How to scale | 2 min | Honest: not production-ready, but here's the path |
-| 10 | Fun fact | 1 min | Relax the room; show you respect their world |
-| 11 | Ask for questions / goodbye | — | Hand over |
+| 3 | The problem | 3 min | The Operations team's manual quarter-close monitoring |
+| 4 | How we solve it | 5–6 min | The engine + why deterministic + the redundant path I'd build |
+| 5 | What AI can automate vs not | 2 min | AI-first, but human-decision-driven |
+| 6 | Time saved (qualitative) | 1 min | Trust first, hours second, no invented numbers |
+| 7 | **Live demo** | 8–10 min | The proof, run **live from the app** (one title slide) |
+| 8 | Future improvements (product only) | 4–6 min | The reliable, production path (you curate; all are here) |
+| 9 | How to scale | 2 min | Prototype → production; the depth lives in `iv-…` |
+| 10 | Where my time actually went | 1 min | The time bar: understanding dominates — that's the FDE job |
+| 11 | Ask for questions / goodbye | — | Hand over + the final punch |
 | 12 | My questions for them | in Q&A | Validate your map; learn the culture |
 
 *(This is long on purpose. Version B trims and re-orders it to land in ~35 min.)*
 
 ---
 
-## 0. Intro (you) — 30 seconds
+## 0. Intro (you) — ~1 minute
 
-Keep it short and human. Name, one line on your background, and one line that you spent real time learning
-Sagard's world (this plants the fun-fact you'll land later).
+Lead with the bio, **confidently** — it *earns* you the right to say, later, "one method is not production-grade."
+Then your FDE motivation. Then the humility pivot.
 
-> *"I'm Xavier. I build tools that sit close to the people who use them. For this, I spent most of my time
-> not coding — but learning how Sagard actually works, so I could point the tool at a real problem, not a
-> toy one."*
+> *"I'm Xavier. I'm a software engineer — for 4+ years I've **built AI-powered, production-grade systems,
+> end to end**. Today at ProsperaLabs I automate real customer workflows across **voice, chat, and email** —
+> for ecommerce, real-estate, legal, and customer-service teams — to create real value. I like **owning a
+> product end to end**: taking an **unclear problem**, making **reasonable assumptions**, shipping a **first
+> useful version** that can scale, making it **reliable enough to trust**, and then improving it from **real
+> user feedback.**"*
+
+Then the pivot — say it warmly:
+
+> *"That's the builder in me. But I want to be honest about this case study: **most of my time here did not go
+> into coding.** It went into learning **your** world — how Sagard makes money, who does what, and where a tool
+> like this could solve a real problem, not a toy one. So let me show you my map, and please correct me."*
+
+**Why this one-two matters (delivery note):** confidence first tells Parinaz you've shipped real AI, so your
+later honesty reads as *expertise, not hedging.* Humility second tells Sharon you took *her* world seriously
+before touching code. It also plants the **time bar** you land in §10.
 
 ---
 
 ## 1. The hook question — 1 minute
 
-Open with **one** short question that makes both people lean in. Pick one; here are six with why each works.
+Open with **one** short question that makes both people lean in. **Use hook #6** — it stages the whole talk
+(two personas, opposite needs, one shared data layer). The other five are kept below as **labelled
+alternates** in case the room's energy wants a different door.
+
+**THE hook (#6):**
+
+> ***"When your deal partner and your valuations analyst open the same quarterly pack, they need opposite
+> things from it — what if one clean, traceable data layer could serve both?"***
+> → It shows you understand the **personas** and the **speed-vs-precision** tension in one breath. Parinaz
+> hears *"meaning depends on who's reading"*; Sharon hears *"one source-of-truth serving many jobs."* It opens
+> straight into §2 (the personas) and sets up the whole talk.
+
+**Alternates (pick only if the room wants a different opening — do not stack them):**
 
 1. **"Two of your portfolio companies both report a 60% 'gross margin.' One is a SaaS business, one is a
    lender. Should they ever sit in the same column?"**
-   → Stages your whole thesis in one breath. Sharon hears *"a wrong comparison is a control failure"*;
-   Parinaz hears *"meaning depends on context"* (her NLP world). The answer is *no* — and Concord enforces
-   the *no*.
+   → Stages the thesis in one breath. *(Note: the **visual** for this now lives in §4 as the thesis reveal —
+   here it's just the spoken question.)*
 2. **"A number in one of your quarterly reports is wrong. Would you rather your tool told you loudly — or
    quietly filled the gap so the report still looks complete?"**
-   → Sets up *"a silent blank is more dangerous than a loud error."* Leads into refuse-to-compare + the
-   review queue.
-3. **"If I handed you a fully-automated dashboard that was 95% accurate, would you put its numbers straight
-   in front of your investment committee?"** *(keep "95%" clearly hypothetical — do not confuse it with your
-   real 76%→90% recall on 24 synthetic PDFs)*
-   → The answer is *no* from both — and that *no* **is your pitch** (human-in-the-loop, provenance,
-   refuse-to-compare). Disarms the "just automate it" reflex in 30 seconds. Very FDE.
+   → Sets up *"a silent blank is more dangerous than a loud error."*
+3. **"If I handed you a fully-automated dashboard that was 95% accurate, would you put its numbers straight in
+   front of your investment committee?"** *(keep "95%" clearly hypothetical — never confuse it with your real
+   76%→90% recall on 24 synthetic PDFs)*
+   → The answer is *no* from both — and that *no* **is your pitch** (human-in-the-loop, provenance, refuse).
 4. **"Everyone can build a demo that pulls numbers out of a PDF now. What makes a number one your team would
    actually sign their name to?"**
    → Names Parinaz's "prototype trap" and flips it to trust/provenance; Sharon hears *"sign-off."*
@@ -78,12 +101,6 @@ Open with **one** short question that makes both people lean in. Pick one; here 
    anyone has made a single decision?"**
    → Makes the pain felt in Sharon's exact world; quantifies the grind *without inventing a figure* (they
    answer).
-6. **"When your deal partner and your valuations analyst open the same quarterly pack, they need opposite
-   things from it. What if one clean, traceable data layer could serve both?"**
-   → Shows you understand the personas and the speed-vs-precision tension.
-
-> **Lean:** #1 (thesis in one breath) or #3 (disarms "just automate it"). Both serve Parinaz and Sharon at
-> once.
 
 ---
 
@@ -94,125 +111,114 @@ every day — so please stop me and correct me where I'm wrong."* That one sente
 feel like *teaching finance to finance experts* into an **invitation to engage** — which is exactly what an
 FDE does. Move fast; this is background fluency, not a lecture.
 
-### 2.1 What Sagard does + how a PE firm makes money (say it as fluency, not a math slide)
+### 2.1 Where Concord sits in Sagard's world (two pictures do the work)
 
-The money flows in one line: **LP → GP (Sagard) → portfolio company → exit → money back to LP.**
+Lead with **two simple pictures**. Everything else here is light supporting fluency.
 
-- **LP (Limited Partner)** = the outside investors who put money in (pension funds, insurers, endowments,
-  family offices). "Limited" = passive; they don't run anything.
-- **GP (General Partner) = Sagard** = raises the fund, picks the deals, manages the companies, sells them.
-  The GP **also puts its own money in** (the *GP commitment*, ~1–5% of the fund) — "skin in the game," so the
-  GP wins only if the LPs win.
-- **Portco (portfolio company)** = a company the fund bought. *Your 10 demo companies are portcos.*
+**Picture 1 — Sagard's branches (which one we're solving for):**
 
-**Sagard earns money two very different ways:**
+[graphic: four strategy tiles in a row — **VC · PE · Private Credit · Real Estate** — the **PE** tile enlarged and accent-ringed "← where Concord focuses today"; the other three shown as calmer "documented extensions, not v1"; small footnote "*re-verify Sagard's strategy line-up + scale figures on sagard.com the morning of"]
 
-| Income | Plain meaning | Roughly | The nuance you must get right |
+> *"Sagard invests through several branches — **venture (VC)**, **private equity (PE)**, **private credit
+> (PC)**, and **real estate** (plus a big 'solutions' / fund-of-funds arm). I scoped Concord to just one:
+> the **direct PE portfolio companies** — the packs in my demo. Credit and the rest are natural extensions,
+> not v1."*
+
+**Picture 2 — the fund cycle (which stage we live in):**
+
+[graphic: horizontal 4-stage fund-cycle arrow — **Fundraise → Invest → HOLD / MONITOR → Exit** — a glowing pin dropped on stage 3 "**HOLD / MONITOR = Concord's home**"; small caption "a fund lives ~10 years; monitoring is the quarter-by-quarter middle"]
+
+> *"A fund lives about **10 years** and moves through four stages: **raise** the money, **invest** it in
+> companies, **hold and monitor** those companies, then **exit** (sell) and return the cash. Concord lives in
+> **stage 3 — hold and monitor** — the quarter-by-quarter job of watching every company and reconciling its
+> numbers."*
+
+**Brief supporting fluency (say it quickly, don't dwell):**
+- **How the money flows:** **LP → GP (Sagard) → portfolio company → exit → money back to the LP.** *LP* =
+  the passive outside investors (pensions, insurers). *GP = Sagard* = raises the fund, picks the deals, runs
+  and sells the companies (and puts in its own money — "skin in the game"). *Portco* = a company the fund
+  bought (*your demo companies are portcos*).
+- **How Sagard earns:** the **"2 and 20"** — roughly a **2%** yearly management fee (keeps the lights on) plus
+  **~20%** *carried interest* (a share of the profits, the real upside, paid only **after** LPs get their
+  money back plus a preferred return). One line is enough here.
+- **One honest boundary:** between buying and selling there is no market price, so each quarter the GP
+  **estimates** each company's fair value — *"the mark."* **The mark is a human judgment, and it's audited.**
+  Concord **feeds** the inputs; it **never makes the mark.**
+
+### 2.2 Who reads the pack — and who this tool is for
+
+All these people read the **same** quarterly pack, for **opposite** jobs. Present it as a quick map — and
+**land hard on persona #2**, the customer.
+
+| # | Persona | What they DO (short) | Trust posture |
 |---|---|---|---|
-| **Management fee** ("the 2") | Yearly fee that keeps the lights on — salaries, rent | ~2%/yr | Charged on **committed capital** (money LPs promised), **not** on profits, **not** performance-linked. Paid whether the fund does well or badly. |
-| **Carried interest / "carry"** ("the 20") | The GP's share of the **profits** — the real wealth engine | ~20% of profit | Paid **only after** LPs get (1) all their money back **and** (2) a **preferred return / "hurdle"** (~8%/yr) first. That ordering is the **distribution waterfall.** |
+| 1 | **Deal Partner** | Led the deal, sits on the board; wants a fast, directional "on track vs plan?" read | **Speed over precision** |
+| 2 | **Portfolio / Reporting Operations + Controls** *(Sharon's world)* | **Owns the quarterly monitoring, reconciliation, and reporting grind** across the whole book; controls & audit trail | **Comparability + control ⬅ your customer** |
+| 3 | **Valuation Analyst** | Sets each company's quarterly **mark** → rolls into fund **NAV**; auditors challenge every figure | **Precision above all** |
+| 4 | **Investor Relations / LP-reporting** | Reports numbers **outward** to investors; every figure must tie to a source | **Precision (external)** |
+| 5 | **Risk / Credit Analyst** | For companies Sagard **lends to**, checks each borrower stays inside its loan **covenants** | **Precision + exact definitions** |
 
-- **"2 and 20"** = the shorthand (2% fee + 20% carry). Mid-market funds negotiate, but everyone shares this
-  model.
-- **Waterfall order:** return LP capital → pay the ~8% hurdle → GP "catch-up" → then split the rest (often
-  80% LP / 20% GP).
+> **This tool is for the Portfolio / Reporting Operations team (persona #2, Sharon's world).** They are the
+> people who hand-key the packs every quarter and must be able to **trust and trace** every number. Second-
+> hand, everyone else benefits: deal partners get a faster board read; valuations and LP-reporting get
+> cleaner, auditable inputs (they keep their own sign-off).
 
-**The fund lifecycle (a fund lives ~10 years):**
+> **CRITICAL tailoring note:** persona #2 is **controls + reporting operations** — reconciliation, source-of-
+> truth, audit trail, data governance. It is **NOT** the "Value Creation / operating-partner" job (growing a
+> company's revenue and cutting its cost). Telling Sharon her team "improves your portfolio companies'
+> operations" would misread her role to her face. She is the **controls + reporting** customer.
 
-| Stage | What happens | Where Concord lives |
-|---|---|---|
-| 1. Fundraise | Raise commitments from LPs | — |
-| 2. Investment (~yrs 1–5) | "Call" the money, buy companies | — |
-| 3. **Hold / monitor (~yrs 3–7)** | *Operating partners* improve the companies; the **ops/reporting team monitors + reconciles every quarter** | ⬅ **Concord's home** (the monitor/reconcile job) |
-| 4. Harvest / exit (~yrs 5–10) | Sell companies, return cash, GP earns carry | Feeds cleaner inputs; the exit is a judgment |
-
-- **J-curve:** a young fund often shows *negative* returns early (fees paid, nothing sold yet). Not
-  "failing."
-- **NAV / "the mark":** between buying and selling there's no market price, so each quarter the GP
-  **estimates** each company's fair value (*the mark*); the marks sum to **NAV** (the fund's estimated
-  worth). **The mark is a judgment call, and it's audited.** Concord *feeds* its inputs — it never makes the
-  mark.
-
-**Where Sagard specifically is different (say this so you sound prepared, not generic):**
-- **Multi-strategy, not a pure buyout shop:** PE, **private credit**, venture, real estate, wealth, **plus a
-  big "solutions" arm** (investing into/alongside other funds — primaries, secondaries, co-investments), much
-  of it from the **Unigestion acquisition** (*re-verify that it closed and when on sagard.com*). *"Sagard buys companies" is only half the story.*
-- **Scale (RE-VERIFY on sagard.com the morning of — these move, and some are post-acquisition):** ~US$46B
-  AUM (AUM = all money managed across all funds, not one fund), 190+ portfolio companies, 540+ staff, stated
-  goal ~US$100B by 2029, mid-market funds ~$500M–$4B.
-- **Your scope, said honestly:** Concord is scoped to the **direct PE portfolio companies** (your packs). The
-  credit book and the solutions/fund-of-funds business are documented extensions, not v1.
-
-### 2.2 The five personas — what each DOES and CARES about
-
-All five read the **same** quarterly pack, for **opposite** jobs. Present it as a map (neither interviewer is
-a finance-math judge).
-
-| # | Persona | What they DO | What they CARE about | Trust posture |
-|---|---|---|---|---|
-| 1 | **Deal Partner** | Sourced/led the deal; sits on the portco **board**; owns the relationship | "Is this company roughly on track vs the plan we underwrote?" A fast, **directional** read | **Speed over precision** |
-| 2 | **Portfolio / Reporting Operations + Controls** *(Sharon's world)* | **Owns the quarterly monitoring + reconciliation + reporting grind** across the whole book; controls & compliance | One **standardized, comparable, source-traced** view; audit trail; exception handling; maintainability | **Comparability + control** ⬅ **your primary customer** |
-| — | *(Value Creation / operating partners — a separate job)* | *Improve the companies after the deal (grow revenue, cut cost)* | *Operational levers inside a portco* | *(distinct from Sharon — don't merge)* |
-| 3 | **Valuation Analyst** | Sets each portco's quarterly **mark** → rolls into fund **NAV** | **Audit-ready, reconciled, traceable** numbers (auditors challenge each figure) | **Precision above all** |
-| 4 | **Investor Relations / LP-reporting** | Reports portco numbers **outward** to LPs (often the standard **ILPA** layout) | External exactness + consistency; every figure tie-able to a source | **Precision (external)** |
-| 5 | **Risk / Credit Analyst** | For companies Sagard **lends to** (not owns), checks each borrower stays inside its loan **covenants**; catches stress early | The **exactly-defined** ratio; early warning on shrinking headroom | **Precision + exact definitions** |
-
-> **CRITICAL tailoring note (the verifier flagged this):** persona #2 is **Sharon's controls/reporting-
-> operations world** — reconciliation, source-of-truth, audit trail, data governance. It is **NOT** the
-> "Value Creation / operating partner" job (improving companies' revenue and cost). Keep them separate.
-> Telling Sharon she's the team that "improves your portfolio companies' operations" would misread her role
-> to her face. She is the **controls + reporting** customer.
+> **Watch out (say it as your assumption):** *"I've assumed there's a team that owns this quarterly grind. I
+> don't know if that's one person, a team, or a vendor — that's one of my questions for you."* (Sagard doesn't
+> publicly advertise a named data/metrics function, so present this as an assumption, not a fact.)
 
 **The tension that ties them together (a great line):** *"The deal team wants a fast directional read;
 valuations, LP-reporting, and credit want an audited, reconciled number. The same messy PDF has to serve both
 — and a source-traced, refuse-when-unsure data layer is exactly what lets one tool do that."*
 
-### 2.3 Who this is for
-
-**Primary: the Portfolio / Reporting Operations team (Sharon's world)** — the people who hand-key the packs
-each quarter and must be able to trust and trace every number. Second-hand: deal partners (post-close board
-prep) and valuation/LP-reporting (cleaner, auditable inputs, keeping their own sign-off).
-
-> **Watch out (say it as your assumption):** *"I've assumed there's a team that owns this quarterly grind. I
-> don't know if that's one person, a team, or a vendor — that's one of my questions for you."* (Publicly
-> Sagard doesn't advertise a named data/metrics function, so present this as an assumption, not fact.)
-
 ---
 
-## 3. The problem (the Operations team's painful quarter-close) — 3 min
+## 3. The problem — the Operations team's manual quarter-close — 3 min
 
-Make it **felt**, in Sharon's exact world.
+**Frame it as the Operations team's own job**, not a generic "data-processing" problem.
 
-> It's the second week after quarter-close. 20+ company PDF packs have landed — a SaaS company, a lender, a
-> payments company, a freight marketplace. An analyst opens each, hunts for the numbers, and **hand-keys**
-> them into a master spreadsheet. Four things go wrong, and each is **provable from the real packs:**
+> *"Remember stage 3 — hold and monitor. The way the Operations team **monitors** the portfolio is by
+> **reviewing every company's quarterly (Q) report, by hand.** That manual quarter-close review is a core part
+> of their job — and it's the pain Concord is built to solve."*
+
+Then make it **felt**, in Sharon's exact world:
+
+> It's the second week after quarter-close. 20+ PDF packs have landed — a SaaS company, a lender, a
+> payments company, a freight marketplace. An analyst opens each one, hunts for the numbers, and **hand-keys**
+> them into a master spreadsheet. That review *is* the monitoring. And four things make it hard — each is
+> **provable from the real packs:**
 
 - **Same metric, many names (and it renames itself over time).** NovaCloud's ARR appears as "End-of-Period
   ARR" and "ARR (End of Period)"; its revenue line drifts *Total Billings → Recognized Revenue → Net
   Revenue*. Miss the footnote and the trend silently splits.
 - **Same name, different meaning.** A software "gross margin" (cost to deliver software) vs a lender's "gross
-  margin" (interest income minus cost of funds). Put them in one column and you're **quietly wrong**.
+  margin" (interest income minus cost of funds). Put them in one column and you're **quietly wrong.**
 - **The number is right, the basis is wrong.** ClearPay's "Cash & Restricted Cash $38.4M" includes $6.2M of
   client money it legally can't spend (true spendable cash = $32.2M). ConstructIQ reports burn *per quarter*,
   everyone else *per month*.
 - **You can't prove any of it.** The finished sheet is stale, retyped, and **no number links back to its
-  source** — so a partner asks *"where did this 78% come from?"* and the honest answer is *"let me re-open
-  the PDF."* Trust is low, so everything gets re-checked by hand.
+  source** — so a partner asks *"where did this 78% come from?"* and the honest answer is *"let me re-open the
+  PDF."* Trust is low, so everything gets re-checked by hand.
 
 > **The one line:** *"The pain isn't reading PDFs. It's **reconciliation, comparability, trust, and time** —
-> every quarter, forever. Reading the PDF is the easy 10%. The expensive 90% is knowing which numbers are
-> safe to compare, and being able to prove each one."*
+> every quarter, forever, for the Operations team. Reading the PDF is the easy 10%. The expensive 90% is
+> knowing which numbers are safe to compare, and being able to prove each one."*
 
 ---
 
 ## 4. How we solve it — 5–6 min
 
-### 4.1 What Concord does (plain, one flow)
+### 4.1 What Concord does (plain, one flow) — and the thesis
 
 > **Load all the packs offline in one click → classify each (equity vs credit) → normalize onto one shared
-> vocabulary → reconcile against the company's own report → refuse any comparison that isn't truly
-> like-for-like → and let you click any number to see its source.** A human owns every decision and every
-> number that leaves the building.
+> vocabulary → reconcile against the company's own report → refuse any comparison that isn't truly like-for-
+> like → and let you click any number to see its source.** A human owns every decision and every number that
+> leaves the building.
 
 Two promises, mapped to the pains:
 1. **Comparability you can trust** — renamed labels stitched into one series; differently-defined metrics
@@ -222,64 +228,88 @@ Two promises, mapped to the pains:
    one click shows the exact **source excerpt**. *(File-level today — the excerpt is shown, but not the page
    number; **page-level anchoring** is on the roadmap — say what's true.)*
 
-### 4.2 Why deterministic — the honest story (limited time), and why it's actually the right default
+**The thesis reveal (show it here):**
 
-Say this almost verbatim — it's your maturity moment:
+[graphic: THESIS REVEAL — two company cards side by side, each a bold "**60% gross margin**", one tagged **SAAS**, one tagged **LENDER**, a big "**=?**" between them; then the merged spreadsheet column visibly **SPLITS** into two labelled lanes ("SaaS · delivery-margin" vs "lender · interest-margin"), the naive merge struck out; caption "**same label ≠ same metric — comparability is the product, not extraction**"; small inset of the inverse — one metric under many names ("End-of-Period ARR" = "ARR (End of Period)") collapsing into one stitched line]
 
-> *"For this demo I used a **single deterministic method**, on purpose, because I had limited time — and
-> because fixed rules are cheap, fast, testable, and easy to show you. I want to be clear: **one method is not
+> *"This is the whole idea in one picture. Two companies both print '60% gross margin' — but a SaaS
+> delivery-margin and a lender's interest-margin are **different machines.** The product isn't pulling the
+> number out; the product is knowing when **not** to put them in the same column. Same label, different
+> metric. **Comparability is the product.**"*
+
+### 4.2 Why deterministic for *this* demo — the honest maturity moment
+
+Say this almost verbatim — it's where you earn Parinaz's respect:
+
+> *"For this demo I used a **single deterministic method** — fixed rules — on purpose. Rules are cheap, fast,
+> testable, offline, and they **never invent a number**. But I want to be clear: **one method is not
 > production-grade.** A single reader, however good, can be wrong and you'd never know."*
 
-Then the trade-off (this is the "a bit technical" part they'll want):
+**The honest Firecrawl story (own it — it's credibility, not an excuse):**
 
-| | **Deterministic (fixed rules) — today** | **A single AI/LLM reader** |
-|---|---|---|
-| Cost | Free to run | Pay per document |
-| Auditable (show *why*) | Yes — every step is a readable rule | Hard — reasoning is opaque |
-| Reproducible (same in → same out) | Always | No — can vary run to run |
-| Invents numbers? | Never | Can "hallucinate" a plausible-but-wrong value |
-| Data stays in-house? | Yes (offline) | Usually sent to an outside model |
-| Handles messy / brand-new layouts | Weak (only knows its rules) | Strong |
+> *"My first build actually used **Firecrawl**, a **paid extraction service**. I hit errors on it **and** ran
+> out of credit mid-build. So I switched to a deterministic method — and honestly that was the right move: it
+> let me prove the **business case** and show how I'd help the Operations team, with a design that's auditable
+> and stays offline. Deterministic-first is genuinely right for a **trust** tool."*
 
-**The design principle:** *"Rules for the bulk, AI only for the genuinely ambiguous tail, and a human
-approves. Right-sized AI."* — For Parinaz that's cost-aware engineering judgment; for Sharon it's reliable,
-testable, and the data never leaves the building.
+**Why deterministic here and not an LLM — the speed-vs-precision contrast (this is the growth story across
+the two rounds):**
 
-> **The Firecrawl footnote (optional, only if asked "why not an LLM?"):** *"Practically, I also hit the
-> credit ceiling on a paid extraction service mid-build — which turned out to be a gift: it forced the
-> auditable, offline design that's actually right for a trust tool."* Never lead with this; the headline is
-> "deterministic-first is the right call."
+> *"My **first take-home** solved the **deal partner's** need. It was an **'AI Scout'**: give it a company
+> URL, it scrapes the company's info and press/news, searches and scrapes the founders, summarizes everything,
+> and posts a suggestion in **Slack** — 'should we move forward?' I used an **LLM** there on purpose, because
+> the deal partner needs **speed** over precision — a fast, rough read keeps a deal moving.*
+>
+> *This round, the **Portfolio Operations** team needs the **opposite**: **precision first** — a number you'd
+> sign your name to, traceable, with a wrong answer **refused** rather than guessed. **That** is why this one
+> is deterministic. Same builder, two rounds, two opposite trust postures."*
 
-### 4.3 Can we trust the extraction? — the reliable path (this is your best answer to "is the source-of-truth worthy?")
+**What I'd do for real — the redundant-reader idea, at a high level:**
 
-This is the idea that wins the room. Introduce it here at a high level; the full detail is in §8 (Future
-improvements).
+> *"To make one reader trustworthy in production, you don't rely on one. You run **3–4 independent readers in
+> parallel** — methods that fail in **different** ways. A small orchestrator collects their answers: **when
+> they all agree, it validates the number**; **when any disagrees, it flags that metric with a warning and
+> sends it to a human to review**, with every reader's answer shown side by side. The disagreement *is* the
+> alarm. I'll show the deep architecture for this in §8 (Group A)."*
 
-> *"Here's how you make one reader trustworthy — and to be clear, this is the reliable path I'd **build
-> next**, not what today's demo runs: don't rely on one reader. Run **two to four independent methods that
-> fail in different ways**, and trust a number when they agree — **unanimously** for the green bar, or a
-> strict majority **only when the agreeing readers are genuinely independent**; count isn't enough,
-> independence decides. When they disagree, the tool doesn't guess — it raises a **warning** and sends it to a
-> **human**, with every method's answer shown side by side. The disagreement *is* the alarm."*
+**Honest caveats (say them):** *"This redundant ensemble is **designed, not built** — today's demo runs the
+single deterministic method. And 'independent' is never total — different readers can still be fooled the same
+way — so agreement is **strong evidence, not proof.**"*
 
-Why it lands for **both**: for Parinaz it's rigorous (independent methods, not "three LLMs voting"); for
-Sharon it's **an automated four-eyes control with a full audit trail** — the exact thing an auditor already
-trusts. *"The thing that makes the numbers more correct is the same thing that gives you the control and the
-audit trail."*
+### 4.3 Reliability — why deterministic is the right default, and what I'd change
+
+> *"The Operations team needs **reliability and precision first**, so a deterministic method is the right
+> **default** for a trust tool — every step is a readable rule, it reproduces exactly, and the data never
+> leaves the machine. The **redundant path** (§8 Group A) is what I'd **build for production**, and the
+> **scaling path** is in §9 and the system-design doc `iv-…`."*
+
+Be explicit and disarming:
+
+> *"I'll be honest: this demo showcases the **business** more than the technical — it proves I understand your
+> problem and can point software and AI at it. But I'll stay honest the whole way about what today's **single
+> method can't do**, and exactly **what I'd change** to make it production-grade."*
+
+Why the redundant path lands for **both** judges: for Parinaz it's rigorous (independent methods, not "three
+LLMs voting"); for Sharon it's **an automated four-eyes control with a full audit trail** — the exact thing an
+auditor already trusts. *"The thing that makes the numbers more correct is the same thing that gives you the
+control and the audit trail."*
 
 ---
 
 ## 5. What AI can automate vs not — 2 min
 
-**The one principle:** *AI is probabilistic — it gives a likely answer, not a certain one. So never let it
-**decide**. Let it do the heavy, repetitive, redundant work and make **suggestions with reasons** — a human
-makes every call that reaches a report.*
+**Make this impactful — it's the spine of the whole talk.**
+
+> *"Here's the principle I build by, and the one I'd want a tool at Sagard to follow: **be AI-first, but
+> human-decision-driven.** AI is **probabilistic** — it gives a **likely** answer, not a **certain** one — so
+> we **never let it decide.** AI does the **heavy, repetitive work** and **suggests with reasons.** The
+> **human is the center of every decision**, and makes **every call that reaches a report.**"*
 
 | The work | Who does it | Why |
 |---|---|---|
-| Read 20+ PDFs, pull the raw numbers | **AI / rules — redundantly** | High-volume, repetitive, mechanical |
+| Read 20+ PDFs, pull the raw numbers | **AI / rules (redundant in production; one reader today)** | High-volume, repetitive, mechanical |
 | Stitch renamed labels into one series; normalize **units + scale** | **Rules (human-owned rulebook)** | Deterministic and auditable |
-| Different currency (GBP vs USD) | **Flag / refuse — do NOT convert** | Concord does *not* convert today; a flagged blank beats a wrong mix |
+| A **different currency** (GBP vs USD) | **Flag / refuse — do NOT convert** | Concord does *not* convert; a flagged blank beats a wrong mix |
 | "These two labels *might* be the same metric" | **AI suggests → human confirms** | Judgment with consequences |
 | "These numbers don't match / this one looks wrong" | **AI / orchestrator flags it** | Machines are great at spotting disagreement |
 | "Is this number right enough for a report?" | **Human (sign-off)** | Consequential; a probabilistic model can't decide it |
@@ -293,106 +323,130 @@ makes every call that reaches a report.*
 
 ## 6. Time saved (qualitative only) — 1 min
 
-No invented numbers. Frame it as **decision quality first, time second.**
+Simple and impactful. **Decision quality first, time second.** No invented numbers.
 
-> *"Today the quarter-close is **days** of re-keying 20+ PDFs before anyone can even see the portfolio. With
-> Concord it's **one click** to a comparable, source-traced view — so the team spends its time on judgment,
-> not typing. And the bigger win isn't the hours saved: it's that the comparison is **trustworthy** and every
-> number is **one click from proof.** A wrong number caught before it reaches an investment committee is worth
-> more than any amount of typing saved."*
+> *"Today the quarter-close is **hours to days — often days** — of re-typing 20+ PDFs before anyone can even
+> see the portfolio. With Concord it's **one click** to a comparable, source-traced view — so the team spends
+> its time on **judgment, not typing.***
+>
+> *But the bigger win isn't the hours. It's that the comparison is **trustworthy**, and every number is **one
+> click from proof.** A wrong number **caught before it reaches an investment committee** is worth far more
+> than any typing saved."*
 
 *(If they ask for a number, turn it back: "How many hours does your team actually spend on this today?" — let
 them supply it. Never fabricate one.)*
 
 ---
 
-## 7. The live demo — 8–10 min
+## 7. The live demo — 8–10 min (one title slide; run it live)
 
-You don't need demo detail on the slides — it lives in `case-study/cockpit-frontend-guide.md`. Drive it as a
-**story with three beats** (all true on screen):
+**On the deck this is a single title slide.** The demo runs **live from the app** — the three beats and the
+honesty caveats are **spoken live**, not printed on slides. Your full scripts are:
+- **`cockpit-frontend-guide.md`** — the click-path and what each screen shows.
+- **`demo-honesty-script.md`** — what to *say* vs. what the screen *shows* (the wins to show confidently, and
+  the gaps to narrate honestly).
 
-1. **The pain, on screen:** load 24 packs offline in ~1 second. *"Nothing left the machine."*
-2. **Two proof moments:**
-   - **The hidden trend (comparability):** NovaCloud's ARR looks like **one lonely dot** to a naive tool;
-     Concord stitches the renamed labels into **five quarters, $24.1M → $34.2M (+42%)**. *"A silent blank is
-     more dangerous than a loud error."*
-   - **The refusal (a control):** a lender's 62% "gross margin" sits next to a SaaS 76%. Concord **refuses to
-     rank them and says why** (interest margin ≠ delivery margin) — *a deterministic classifier flags
-     LendBridge as credit from its loan-book / NIM / charge-off fingerprint, so the refusal is rule-driven,
-     not a guess.* *"A generic dashboard ranks these. Ours refuses — and that refusal is a control."*
-3. **The trust spine:** click **any** number → the provenance drawer shows source file, raw label,
-   confidence, and the exact sentence. *"Every claim on screen is one click from proof — that's the audit
-   trail."*
+**Quick reminder of the three beats (delivered live, not on slides):**
+1. **The pain, on screen:** load 24 packs offline in ~1 second (24/24 parsed in ~0.958s — screenshot the live
+   run at demo time, the figure comes from the run, not a fixed label). *"Nothing left the machine."*
+2. **Two proof moments:** (a) **the hidden trend** — NovaCloud's ARR looks like one lonely dot to a naive
+   tool; Concord stitches renamed labels into five quarters, **$24.1M → $34.2M (+42%)** across 2 source
+   labels. (b) **the refusal** — a lender's 62% "gross margin" next to a SaaS 76%; the classifier tags the
+   lender as **credit** and Concord **refuses to rank them and says why** (interest margin ≠ delivery margin).
+3. **The trust spine:** click **any** number → the provenance drawer shows source **file**, raw label,
+   confidence, and the exact sentence. *"Every claim on screen is one click from proof."*
 
-Extra true beats you can use: **ClearPay** restated $38.4M → $32.2M spendable (strips $6.2M client float);
-the four **trust panels** (Refused 5 · Exceptions 10 gaps · Breadth 29 labels unified · Reconciliation 22
-checked/22 agree **+ 7 intra-document conflicts auto-resolved**); **ConstructIQ** the retention laggard.
+Extra true beats if time allows: **ClearPay** $38.4M → **$32.2M** spendable (strips $6.2M client float);
+**ConstructIQ** the retention laggard; the four trust panels (Refused 5 · Exceptions 10 · Breadth 29 labels
+unified · Reconciliation 22/22 agree **+ 7 in-document conflicts auto-resolved**).
 
-> **Honesty caveats to own out loud (say them before they ask — they're credibility, not weakness):**
-> - PeopleFlow's **GBP** flag is a **front-end rule**, not captured data (the parser doesn't see the £).
-> - Provenance is **file-level** (the excerpt is shown, but no page number in the drawer yet).
-> - The raw **missing-metric flag has a couple of false positives** — CarbonTrack and TalentVault show
->   cash/headcount on screen yet log as "missing"; the sector-aware grid suppresses them on screen, and
->   tightening the raw flag is a roadmap item.
-> - The refusal handles the **loud cross-asset case** (a lender vs a SaaS margin). **Two SaaS companies**
->   computing "gross margin" on a silent, different basis is a **known, flagged roadmap limit** — so the
->   SaaS-margin heat colour is **directional, not an audited like-for-like**.
-> - The 22/22 reconciliation is a **second witness restating the same numbers**, so agreement is
->   **confirmation, not independent proof** — the real reconciliation work shows in the **7 in-document
->   conflicts** it caught and resolved.
-> - **LendBridge** is the one **credit** name on screen — it's there to show the **wall**: the classifier
->   tags it credit and **refuses to rank** its margin. That refusal is the **scope boundary working**, not a
->   scope violation.
+> **Honesty caveats — say them live before they ask** (they're in `demo-honesty-script.md`): PeopleFlow's GBP
+> flag is a **front-end rule**, not captured data; provenance is **file-level**; the raw missing-metric flag
+> has a couple of false positives (suppressed on the grid); the intra-SaaS margin case is a **roadmap** limit;
+> 22/22 reconciliation is a **second witness** (confirmation, not independent proof) — the real catch is the
+> **7 in-document conflicts**.
 
 ---
 
-## 8. Future improvements — the reliable path (ALL detailed; you curate what to say)
+## 8. Future improvements — **product** improvements only (you curate) — 4–6 min
 
-> You asked me to leave **nothing** out and detail every item — done. On the day, pick the 4–6 that tell the
-> best story; the rest is your backup. They're grouped so you can pick a whole group or one item.
+> **Scope note:** this section is about making the **product** more trustworthy and more useful. **Scaling and
+> system design live in §9 and in `iv-system-design-and-scaling.md`** — not here. Each group below is **one
+> improvement**, detailed. On the day, pick the 2–3 that tell the best story; the rest is your backup.
+>
+> **Group lettering:** A (redundant readers) · B (change over time) · C (reading layer) · E (currency) ·
+> F (intake) · G (permissions). *(There is **no Group D** — the earlier "Group D" idea was removed, subsumed
+> by the redundant readers in **Group A**. Currency picks up at **E**.)*
 
-### GROUP A — Trust the source-of-truth (the headline improvement)
+### GROUP A — Trust the source-of-truth: the redundant multi-reader architecture (the headline)
 
-**A1. Redundant, multi-method extraction ("2–4 independent readers").** Today: one deterministic method.
-Reliable path: run several **independent** methods that fail for **different** reasons, and trust a number
-**only when they agree.** The three families of methods:
+*(The high-level **concept** is in §4.2. This is the **deep architecture** — your Q&A / whiteboard material
+for Parinaz. All of it is **designed, not built.**)*
+
+**A0. The three reader families (why a *mix*, not clones).** Run several methods that fail for **different**
+reasons:
 
 | Family | How it reads a page | How it fails | Example tools |
 |---|---|---|---|
-| **Deterministic layout/table parsers** (local, free) | The PDF's own geometry (character/box positions) | **Loudly** — garbled/missing text, easy to spot | pdfplumber, Camelot, Tabula |
-| **Cloud document-AI** (trained-model APIs) | Trained OCR + table models on a vendor server | Quietly — usually right, can drift on odd layouts | AWS Textract, Google Document AI, Azure Document Intelligence, Reducto*, Nanonets |
-| **AI / LLM readers** (vision models) | "Looks at" the page and reads *meaning* | **Silently** — a plausible wrong number | Claude / GPT-4o** / Gemini vision; LlamaParse; unstructured.io |
+| **Deterministic layout/table parsers** (local, free) | The PDF's own geometry (character/box positions) | **Loudly** — garbled/missing text, easy to spot | pdfplumber, Camelot, Tabula; IBM **Docling** (local ML, offline) |
+| **Cloud document-AI** (trained-model APIs) | Trained OCR + table models on a vendor server | Quietly — usually right, can drift on odd layouts | AWS Textract, Google/Azure Document AI, Reducto*, Nanonets |
+| **AI / vision-LLM readers** | "Looks at" the page and reads *meaning* | **Silently** — a plausible wrong number | Claude / GPT-4o** / Gemini vision; LlamaParse |
 
-*\* Reducto reports ~99% field accuracy on dense financial tables — that's the vendor's own number, not
-independently measured. \*\* GPT-4o is a 2024-era model; newer vision models exist. IBM **Docling** is a
-**local ML** structural reader — offline, but model-based, not pure geometry — which is exactly why it makes a
-good **independent** second reader in the recommended stack below.*
+*\* Reducto reports ~99% field accuracy — the **vendor's own** number, not independently measured. \*\* GPT-4o
+is 2024-era; newer vision models exist.*
 
-> **Why a MIX, not three copies of one (the key insight for Parinaz):** three copies of the same LLM share
-> the same blind spots — they can all be confidently wrong the *same* way, so their agreement means nothing
-> (*correlated failure*). Independent methods fail on *different* pages — so when they agree, that's strong
-> evidence; when they disagree, you've caught an error a single method would have shipped silently.
-> **Honest caveat to say out loud:** independence is never total (different models share training data; an
-> ugly layout can fool several the same way) — so agreement is strong evidence, not proof.
+> **Why a mix, not three copies (the key point for Parinaz — this is well-supported theory):** three copies of
+> the same model share the **same blind spots**, so they can be **confidently wrong the same way** and their
+> agreement means nothing (this is **correlated failure**). The math you can defend: for M readers with
+> **independent** errors, the **error variance shrinks by roughly 1/M** (so the RMS error falls ~1/√M); with
+> **perfectly correlated** errors you get **zero benefit** — and group accuracy can even **drop** as you add
+> correlated voters. This is the **ensemble diversity / ambiguity decomposition** (*verify the exact citation
+> before you quote a venue*) and, classically, **Condorcet's Jury Theorem** (independent, better-than-random
+> voters → accuracy rises toward 1). So use **different mechanisms** — a geometry parser, an OCR/doc-AI engine,
+> a vision-LLM — whose errors are **decorrelated.** *Counter-intuitive but true: a couple of
+> weaker-but-different readers can help more than a second copy of your best one.*
+>
+> **But two honest hedges:** (1) **independence is never total** — real readers share training data and web
+> text, so correlation is >0 and the "1/M" is a **best case**, which is exactly why you keep a human on the
+> disagreements. (2) The 2025 **"Self-MoA"** result warns that mixing **different** LLMs can **lower** average
+> quality if some are weak — so **diversity only pays if each reader is individually strong.** Don't add a weak
+> model just for variety.
 
-**Recommended stack (spans the "loud vs silent" line):** ① a deterministic parser (today's Concord — the
-reference vote) + ② an **independent local** structural reader (IBM **Docling** — stays offline) + ③ a
-**vision LLM** for meaning (catches renamed labels; votes, never decides alone) + optionally ④ a specialist
-doc-AI (Reducto/Azure) as a tie-breaker on the numbers that matter most.
+**Recommended stack (spans the "loud vs silent" line):** ① today's deterministic parser (the reference vote) +
+② an **independent local** structural reader (IBM **Docling** — stays offline) + ③ a **vision-LLM** for meaning
+(catches renamed labels; votes, never decides alone) + optionally ④ a specialist doc-AI as a tie-breaker on
+the numbers that matter most.
 
 > **Offline-purity trade-off (say to Sharon):** ①+② are local; the strongest accuracy (③ hosted LLM, ④ cloud
-> doc-AI) means data leaves the machine. A **fully-offline** variant — pdfplumber + Docling + a *locally-
-> hosted* vision model — gives three independent local readers with **zero data egress**, trading a little
-> accuracy on the hardest pages. Offering that choice *is* the data-governance answer.
+> doc-AI) means **data leaves the machine** — a real data-residency question. A **fully-offline** variant —
+> parser + Docling + a *locally-hosted* vision model — gives three independent local readers with **zero data
+> egress**, trading a little accuracy on the hardest pages. Offering that choice *is* the data-governance
+> answer.
 
-**A2. The orchestrator (the "only trust when they agree" logic) — and why it's TIERED, not "all must
-agree."** The orchestrator never compares printed text. Each method outputs a **normalized tuple**
-`(canonical_metric, period, unit, basis, value)` and it compares **tuples** — so two readers that both say
-"62" but disagree on **basis** (quarterly vs monthly burn) **do not agree.** "Agree" for a number uses a
-**metric-family tolerance** (money: within ~0.5% or a small floor, to absorb rounding; percentage-points: an
-absolute ±0.1pt band). A **10× gap** (read "$3.4M" as "$34M") is never "within tolerance."
+**A1. The control structure — an orchestrator with parallel workers.** One small **orchestrator** plans the
+job, runs the readers **in parallel** as workers, then reconciles their answers (readers = workers, the
+validator = orchestrator). The mature, debuggable way to wire this is a **"supervisor" graph** (e.g.
+LangGraph): a supervisor node routes to specialist worker nodes over shared state, with an explicit stop
+condition.
 
-The consensus policy is **tiered** (present this — flat "all must agree" invites *"isn't that too strict?"*):
+> **Honest note on the "multi-agent" hype:** Anthropic's own multi-agent research write-up reports a big win on
+> *their* internal research eval — but it uses **~15× more tokens** than a chat and, in their words, fits
+> **breadth-first, parallelizable** work and is a **poor fit when all agents need the same shared context.**
+> Reading one document *is* mostly shared context — so **use the pattern (parallel readers + a reconciler),
+> but don't assume their headline number transfers to extraction.** A fixed *N-reader + one-judge* pipeline is
+> far cheaper than a chatty agent swarm.
+
+**A2. The orchestrator's decision — TIERED consensus, not "all must agree."** The orchestrator never compares
+printed text. Each reader outputs a **normalized tuple** `(canonical_metric, period, unit, basis, value)` and
+it compares **tuples** — so two readers that both say "62" but disagree on **basis** (quarterly vs monthly
+burn) **do not agree.** "Agree" for a number uses a **metric-family tolerance** (money: within ~0.5% or a
+small floor, to absorb rounding; percentage-points: an absolute ±0.1pt band). A **10× gap** (read "$3.4M" as
+"$34M") is never "within tolerance." *(This is field-level voting: classic majority-vote / self-consistency
+votes on one answer, but extraction outputs are records with many fields, so you **normalize then vote field
+by field**, not on the whole blob.)*
+
+The consensus policy is **tiered** (present this — a flat "all must agree" invites *"isn't that too
+strict?"*):
 
 | Tier | Rule | Result |
 |---|---|---|
@@ -401,169 +455,178 @@ The consensus policy is **tiered** (present this — flat "all must agree" invit
 | **DISAGREE (⚠ amber)** | No safe quorum, a 2–2 split, or the **most-trusted** thread dissents | → **human-review queue** |
 | **UNRESOLVED (grey)** | Too few threads produced any value | → human-review queue |
 
+**The decision rule, cheapest → richest (so you can defend the choice):** (1) plain majority per field; (2)
+**confidence-/reliability-weighted vote** — weight each reader by its track record (classically, the log-odds
+of each source's reliability is the **optimal weight *under conditional independence***); (3) an **LLM
+aggregator/judge** only for the messy free-text cases where values don't match exactly; (4)
+**abstain-and-escalate** on real disagreement — the most defensible move for a *validator*, because it trades
+coverage for trust. **Recommended composite:** field-level weighted vote → agreement check → emit if consensus,
+else **abstain and send to a human**; reserve the LLM judge for the **split cases only** (keeps cost down).
+
+> **If you use an LLM as the judge, design around its known biases** (all documented, peer-reviewed): **position
+> bias** (favors whichever answer is shown first), **verbosity bias** (favors longer answers), and
+> **self-preference bias** (rates its own model family higher). Mitigations: swap the order and average, hide
+> which model produced which answer, control for length — and, best of all, **make the judge cite the source
+> span and check it against the document** rather than judge on style. That last one ties the judge straight
+> to Concord's provenance.
+
 > **The headline for Parinaz:** *"Count isn't enough — **independence** decides. Two correlated readers can
-> outvote the one correct one, so I weight independence and per-method trust, not just the vote."* This is the
-> answer to "isn't 'all agree' too strict?" **And be honest about what's measured:** *"This ensemble is
-> **designed, not yet built** — so I can't quote a real auto-accept rate until I run it. Measuring how often
-> independent readers agree on your packs, and how big the human-review queue is each quarter (and who staffs
-> it), is the first thing the run-alongside stage produces."*
+> outvote the one correct one, so I weight independence and per-method trust, not just the vote."* **And be
+> honest about what's measured:** *"This ensemble is **designed, not yet built** — so I can't quote a real
+> auto-accept rate until I run it on your packs. Measuring how often independent readers agree, and how big the
+> human-review queue is each quarter (and who staffs it), is the first thing the run-alongside stage
+> produces."*
 
 **A3. One concrete "complex thread" end-to-end (have this ready if they push for detail).** Trace ClearPay
 spendable cash: the deterministic thread ingests the PDF → finds "Cash & Restricted Cash …… 38.4" → scales
 ×1M → sees **"Restricted"** → finds the companion "of which restricted … 6.2" → computes **operating = 38.4 −
 6.2 = 32.2M**, keeps **both** + a note, scores high confidence, emits its record. The vision-LLM thread reads
-the same page image and also lands on 32.2; the OCR thread agrees → **VALIDATED $32.2M.** *The instructive
-failure:* if the LLM **missed** the restriction and returned 38.4, the threads disagree **on exactly the
-number that matters** → ⚠ → human review. That's the system catching, automatically, the one mistake a naive
-tool makes silently.
+the same page image and also lands on 32.2; the doc-AI thread agrees → **VALIDATED $32.2M.** *The instructive
+failure:* if the LLM **missed** the restriction and returned 38.4, the threads disagree **on exactly the number
+that matters** → ⚠ → human review. That's the system catching, automatically, the one mistake a naive tool
+makes silently.
 
 **A4. The all-methods sidebar (extends today's provenance drawer).** Today: click a number → one provenance
-record. Future: the drawer shows an **append-only array of thread records** — each method's value,
-confidence, snippet — plus a consensus header (which threads agreed, which value was chosen, why). For Sharon
-this is an auditor's dream: *exactly* what each independent method saw and **why** the tool trusted (or
-refused) the number.
+record. Future: the drawer shows an **append-only array of thread records** — each method's value, confidence,
+snippet — plus a consensus header (which threads agreed, which value was chosen, why). For Sharon this is an
+auditor's dream: *exactly* what each independent method saw and **why** the tool trusted (or refused) the
+number.
 
-**A5. A real PDF screenshot in the sidebar (future design — label it clearly).** In the review sidebar, show
-a **crop of the metric inside the PDF** so a human (or auditor) can eyeball it against the extraction.
-**Honesty flag:** this is **future design** — today provenance is file-level (no page number, no screenshot).
-Never show a page number or a PDF crop in the *live* demo as if it's real; label it "future design."
+**A5. A real PDF screenshot in the sidebar (future design — SUPER important, label it clearly).** In the review
+sidebar, show a **crop of the metric inside the PDF** so a human (or auditor) can eyeball it against the
+extraction. **Honesty flag:** this is **future design** — today provenance is file-level (no page number, no
+screenshot). **Never** show a page number or a PDF crop in the *live* demo as if it's real; label it "future
+design."
 
-**A6. The WARNING signal in the current UI — a small, honest demo you can BUILD to show them (a TODO).** You
-can inject **one synthetic disagreement** into the live cockpit so you can *show* the warning working, safely
-and offline:
+**A6. The WARNING signal in the current UI — a small, honest demo you can BUILD (a TODO).** You can inject
+**one synthetic disagreement** into the live cockpit so you can *show* the warning working — safely, offline,
+and **additively** (backend stays byte-identical):
 - Add an **optional** `consensus` field to the metric type (nothing else reads it → fully backwards-
-  compatible; the backend stays byte-identical). The `IssueRow` already has a `"warning"` severity slot.
-- Attach a `consensus: { state: "disagree", threads: [...] }` block to **one neutral cell** (a plain SaaS cash
-  cell — *not* a flagship like NovaCloud/LendBridge/ClearPay). Two threads say $17.9M, the LLM says $17.0M.
-  Keep the grid's shown value = the deterministic value (grid still looks correct); the icon only *flags* it.
+  compatible). The `IssueRow` already has a `"warning"` severity slot.
+- Attach `consensus: { state: "disagree", threads: [...] }` to **one neutral cell** (a plain SaaS cash cell —
+  *not* a flagship like NovaCloud/LendBridge/ClearPay). Two threads say $17.9M, the LLM says $17.0M. Keep the
+  grid's shown value = the deterministic value (the grid still looks correct); the icon only *flags* it.
 - Render a small **⚠** on that cell; clicking it opens the existing drawer, now with an **"Independent
   methods"** section + a **"Sent to human review"** line, headed **"Prototype of the redundant-consensus
   design (synthetic data)."**
 - **What you say live:** *"See this warning triangle? Behind this number I ran three independent methods — two
-  agreed, one disagreed. I click it, and the same drawer now shows every method's answer and tells me it's
-  gone to a human. This one's synthetic — I injected the disagreement so you can see the signal — but this is
-  the exact control that makes it production-grade."*
+  agreed, one disagreed. I click it, and the same drawer shows every method's answer and tells me it's gone to
+  a human. This one's **synthetic** — I injected the disagreement so you can see the signal — but this is the
+  exact control that makes it production-grade."*
 
-### GROUP B — Understanding over time (change, not just levels)
+**A7. Confidence — deciding auto-accept vs human.** Don't trust one model's raw probability. The stronger
+practice combines signals — model logits + semantic consistency + **agreement across the independent readers**
++ self-consistency — into one per-field score, then routes three ways: **auto-accept / review / reject.** The
+honest, load-bearing point: **agreement across independent readers is usually a *stronger* "should a human
+look?" signal than any single model's self-reported confidence,** which is often poorly calibrated. Vendor
+thresholds you'll hear quoted (Azure Document Intelligence "target ≥0.80, near-1.0 for financial"; AWS Textract
+route to a human below ~90%) are **vendor examples — recalibrate them on your own labeled pilot set.** The
+vendors say this themselves.
 
-**B1. %-change over time — already on screen (two live examples):**
-- **NovaCloud ARR $24.1M → $34.2M = +42%** across 5 quarters, one clean line — the caption notes it spans **2
-  source labels** stitched together. *One dot became five.*
-- **In-cell "Trend" toggle:** each cell keeps its latest number + a sparkline + a plain change line (the
-  format: **"▲ +8% vs Q1 2025 · latest Q2 2025"** — that's a *quarter-over-quarter* change). For **percent
-  metrics the change is in *points***; over NovaCloud's **full 5 quarters**, NRR 115%→123% = **+8.0 pts** and
-  churn 7.8%→5.8% = **−2.0 pts** (falling churn is good, but the naive colour paints it red — a flagged
-  exception). A third easy one: **LendBridge revenue $10.1M → $12.7M (+26%)** even though its margin is
-  refused.
-- **Honest catch:** each sparkline is **self-scaled**, so two lines' heights aren't comparable — magnitude
-  stays the job of the number + the peer heat colour.
+**A8. The human-review queue (the four-eyes control, made real).** Disagreements land in a queue with three
+buckets: **auto-accept** (write straight through) / **review** (value pre-filled, a human confirms or edits) /
+**manual entry** (too low, a human types it in). A good queue row is self-contained: the **document view** +
+every field with its **confidence** + green/yellow/red flags + per-field **confirm/correct** + one "approve
+all"; financial fields get a higher bar (~0.95+). **Every correction is saved and loops back as training
+data.** The reference implementation is **AWS Textract + A2I** — a rule fires the human loop on per-field
+confidence, a missing field, or a random audit %, and the output **bundles the human's correction + the
+original model answer + metadata** (that bundle is the retraining signal). *(Honest flag: I believe Google's
+Document AI HITL was deprecated — **verify before asserting the year**; don't present it as a current option.)*
 
-**B2. Timeline improvements (roadmap ideas):**
+**A9. Cost and latency (so no one thinks this is slow or expensive):** run the readers **in parallel**, so
+wall-clock ≈ the **slowest single reader + one aggregation pass**, not the sum. Cost is roughly **linear in the
+number of readers** (4 readers ≈ 4× read tokens) plus the aggregator — far below a chatty agent swarm.
+**Diminishing returns:** gains flatten as you add readers while cost keeps climbing, so **3–4 diverse readers
+is the defensible sweet spot**; 8+ usually buys little. A cheaper variant is a **cascade** — run one reader,
+and only spin up the others when its confidence is low.
 
-| Idea | What it does | Why it helps this room |
+> **Maturity one-liner (say this so nothing is over-claimed):** *"Mature and safe to lean on — OCR voting
+> ensembles, confidence-threshold routing, cross-field + tolerance-band checks, vendor human-review queues, and
+> the ensemble-diversity theory. Bleeding-edge, so I'd hedge — multi-signal LLM confidence engines,
+> self-consistency **applied to extraction** (proven on reasoning tasks, not extraction), and agentic
+> orchestrators that reconcile heterogeneous readers automatically. Promising, 2026-era, not yet
+> battle-tested. And every vendor accuracy number is the **vendor's own claim** — I'd re-measure on a labeled
+> pilot before trusting it."*
+
+### GROUP B — Understanding change over time (two views worth building)
+
+Concord already shows %-change on screen (NovaCloud ARR +42%, in-cell sparkline + change line). Two **roadmap
+views** are worth building because they answer questions the current trend can't — even though they're **not in
+the demo:**
+
+| View | What it does | Why it matters |
 |---|---|---|
-| **Shared-axis toggle** for sparklines | Optional "same scale" mode so two mini-trends *are* height-comparable | Fixes the self-scaled honest catch |
-| **Quarter-alignment / stale-lag marker** | Line everyone up on the same calendar quarters; mark who's behind (**FleetLink is a quarter behind, Q1 2025**) | A quarter-old number must never read as current |
-| **Rebase-to-100 ("index") view** | Start every company at 100; show *relative* growth | Compares growth *shapes* despite size gaps |
-| **Event markers on the line** | Flag where a label was **renamed** (NovaCloud ARR) or a value **restated** (ClearPay 38.4→32.2) | An audit trail *on the chart* |
-| **Gaps drawn as gaps** | Keep 1–2 quarter companies as **dots, not fake lines**; show missing middle quarters as breaks | Honest — don't imply data that isn't there |
-| **QoQ vs YoY switch** | Quarter-over-quarter vs year-over-year | "Recent momentum" vs "annual trajectory" |
-| **Confidence on the line** | Shade points by extraction confidence (90.4–99.5%) | Ties the trend back to trust |
+| **Rebase-to-100 (index) view** | Start every company at 100 in its first quarter; plot *relative* growth from there | Lets you compare **growth *shapes*** even when companies are very different **sizes** — a $10M and a $100M company become directly comparable lines |
+| **QoQ vs YoY switch** | Toggle between **quarter-over-quarter** and **year-over-year** change | QoQ shows **recent momentum** (is it speeding up or slowing this quarter?); YoY shows the **annual trajectory** (smooths out seasonal noise) — you need both lenses |
+
+> **Honest note:** the current sparklines are **self-scaled**, so two mini-lines' heights aren't directly
+> comparable — magnitude stays the job of the number + the peer heat colour. The **index view** is one clean
+> way to fix that.
 
 ### GROUP C — The reading layer (LLM summaries — a suggestion you can argue with)
 
-**C1. Per-company summary.** After the numbers are clean and comparable, an LLM reads one company's time
-series and writes a short *"here's the story"* note — explicitly a **suggestion.** The human accepts,
-corrects, or rejects, and can comment. **Next quarter the LLM reads last quarter's human comments first**, so
-it learns the house view. Why it's safe: it reads **over already-normalized, provenance-tagged numbers** — it
-can't inject a wrong figure, only a wrong *interpretation*, which the human immediately refutes.
+**One improvement:** after the numbers are clean and comparable, an LLM writes a short *"here's the story"*
+note — for **each company** and for the **whole portfolio** — explicitly a **suggestion.** The human
+**accepts, corrects, or comments**, and **next quarter the LLM reads last quarter's human comments first**, so
+it learns the house view. **Why it's safe:** it reads **only over already-normalized, provenance-tagged
+numbers** — it can't inject a wrong figure, only a wrong *interpretation*, which the human immediately refutes.
 
 Real examples (faithful to the demo):
-> **NovaCloud:** *"Compounding well — ARR $24.1M → $34.2M (+42%), margin 74%→78%, churn 7.8%→5.8%, NRR
-> 115%→123%. The one caution: cash fell every quarter, $29.5M → $19.6M — healthy P&L, shrinking runway;
-> confirm the funding plan."*
-> **Human comment (feeds next quarter):** *"Cash drop is a planned strategic outlay, not operating burn — don't flag as a
-> runway risk again."* → next quarter the AI already knows this.
-> **ConstructIQ:** *"The retention laggard — NRR 112% (lowest), churn 6.3% (highest), still healthy in
-> absolute terms. Burn is reported quarterly, so runway is shown as not-captured rather than guessed."*
+> **NovaCloud (per-company):** *"Compounding well — ARR $24.1M → $34.2M (+42%), margin 74%→78%, churn
+> 7.8%→5.8%, NRR 115%→123%. The one caution: cash fell every quarter, $29.5M → $19.6M — healthy P&L, shrinking
+> runway; confirm the funding plan."*
+> **Human comment (feeds next quarter):** *"Cash drop is a planned strategic outlay, not operating burn —
+> don't flag as a runway risk again."* → next quarter the AI already knows this.
 > **ClearPay:** *"Headline cash $38.4M, but $6.2M is restricted client float — comparable operating cash is
 > $32.2M. Use the restated figure for any runway comparison."*
+> **Portfolio-level:** *"Retention broadly strong (most NRR 115–123%); NovaCloud the standout grower (+42% ARR)
+> but cash trending down; ConstructIQ trails on retention; ClearPay's real liquidity is $32.2M not the $38.4M
+> headline; LendBridge's 'gross margin' is excluded on purpose (a lender's interest margin — not comparable).
+> Two follow-ups: 10 expected-but-missing metrics, and FleetLink is a quarter behind."*
 
-**C2. Overall-portfolio summary (one level up):**
-> *"Across the equity book: retention broadly strong (most NRR 115–123%); NovaCloud the standout grower
-> (+42% ARR) but cash trending down; ConstructIQ trails on retention; ClearPay's real liquidity is $32.2M not
-> the $38.4M headline; LendBridge's 'gross margin' is excluded on purpose (a lender's interest margin, not
-> comparable). Two follow-ups: 10 expected-but-missing metrics, and FleetLink is a quarter behind."*
+> **Guardrails to say out loud:** it's a **suggestion, never a decision** (label it on screen "AI suggestion —
+> review"); it reads **only over clean, provenance-tagged numbers**; there's a **human refute + comment loop**;
+> it **cites the numbers it used** (every claim links back to a source); **no dollar-ROI or fund-return
+> claims.**
 
-**Guardrails to say out loud:** it's a **suggestion, never a decision** (label it on screen "AI suggestion —
-review"); it reads **only over clean, provenance-tagged numbers**; **human refute + comment loop**; it
-**cites the numbers it used** (every claim links back to a source); **no dollar-ROI or fund-return claims.**
-
-### GROUP D — Label-drift, made smarter (3 options + trade-offs)
-
-Today Concord uses three deterministic layers (a canonical registry of 8 metrics + a per-company alias map +
-footnote-equivalence stitching). The gap: **undeclared renames** (NovaCloud's *Total Billings → Recognized
-Revenue* has no footnote) and **brand-new labels**. Three ways to attack that tail — **all suggest-only, a
-human always ratifies:**
-
-| Option | How it works | Best at | Trade-offs |
-|---|---|---|---|
-| **A. Fuzzy / string similarity** | Compare letters ("Contracted ARR" vs "Contract ARR" → 95%); queue if similar **and** same unit/basis | Near-miss spellings | Cheap, inspectable score; but "gross margin" (SaaS) vs "gross margin" (lender) look identical → **must** gate by unit + basis |
-| **B. Embedding / semantic similarity** | Turn each label into a vector (captures *meaning*, not spelling); find nearest metric | Same-meaning-different-words ("Annual Recurring Revenue" ↔ "Yearly Subscription Value") | Harder for a human to eyeball; can pull in a *related but different* metric → gate hard |
-| **C. Constrained-LLM** | Ask an LLM: *"which of these 8 canonical IDs — or 'unknown'?"*, must quote the source sentence | Prose-only / never-seen labels | Non-deterministic, slower, per-call cost; safe *only* if constrained to the registry + human-approve |
-
-> **The thread that ties them (a *learning rulebook*):** none is trusted alone — each only ever *suggests.*
-> When a human approves a suggestion, it's written into the versioned rulebook **once** and never asked again.
-> *"The AI proposes; the human decides; the **decision** — not the AI — becomes the durable, auditable rule."*
-> **One-line framing:** *"The deterministic layers do the heavy lifting; fuzzy/embedding/LLM only ever raise
-> their hand and say 'this might be the same — a human should look.' The tool would rather ask than silently
-> merge."*
-
-### GROUP E — Currency (the PeopleFlow GBP example + the honest roadmap)
+### GROUP E — Currency (the PeopleFlow GBP example → captured data)
 
 **On screen:** PeopleFlow carries a **"· not comparable (GBP)"** flag — one label reads "Net Pound Retention
-(NPR)," the tell that its figures may be in British pounds. So the tool **refuses** to put it on a dollar
-axis.
+(NPR)," the tell that its figures may be in British pounds. So the tool **refuses** to put it on a dollar axis.
 
-> **The honest limit you MUST own:** this flag is a **front-end rulebook rule, not captured data.** In the
-> live payload PeopleFlow's `currency` is `null` and every row is `comparable` — **the parser does not see the
-> £.** Say it plainly: *"today's parser doesn't capture the currency symbol, so a human-owned rule catches it
+> **The honest limit you MUST own:** this flag is a **front-end rulebook rule, not captured data.** In the live
+> payload PeopleFlow's `currency` is `null` and every row is `comparable` — **the parser does not see the £.**
+> Say it plainly: *"today's parser doesn't capture the currency symbol, so a human-owned rule catches it
 > instead — the same rulebook pattern used everywhere in the tool."*
 
-**Roadmap (how currency becomes real, honestly):**
-1. **Parser captures the currency** (read £/GBP into the payload instead of `null`) → move the flag from a
-   front-end rule to captured data.
+**How it becomes real — and note it ties straight to Group A:** currency capture is **not** in the demo, but it
+is exactly the kind of thing the **independent redundant readers** can tackle. **A reader whose job is to
+capture the £/currency symbol turns today's front-end rule into captured data.** Then the honest roadmap:
+1. **Capture the currency** (read £/GBP into the payload instead of `null`) → move the flag from a front-end
+   rule to captured data.
 2. **Convert *levels* only, with a dated rate** — FX-convert Revenue/ARR using a dated FX table, recording
    `fx_rate`, `fx_source`, `fx_date`. *(A converted figure traces to pack + external rate → not purely
    file-traceable; say so.)*
-3. **Refuse to convert *ratios*** — an NRR of 118% is an LTM ratio computed in GBP; tag it, don't touch it.
+3. **Refuse to convert *ratios*** — an NRR of 118% is a ratio computed in GBP; tag it, don't touch it.
    Converting a percentage is nonsense.
 4. **Refuse over convert (the philosophy)** — where the rate/basis is unknown, **flag** rather than guess.
 
-> **One line:** *"Concord refuses to mix pounds and dollars — it does not convert them yet. Capturing the
-> symbol and adding a dated, auditable FX rate for *levels only* (never percentages) is the roadmap."*
+> **One line:** *"Concord refuses to mix pounds and dollars — it does not convert them yet. A dedicated reader
+> that captures the symbol, plus a dated, auditable FX rate for *levels only* (never percentages), is how it
+> becomes real."*
 
 ### GROUP F — Intake, change-tracking, and alerts
 
-**F1. Intake — get the packs in the way the team already saves them.**
-
-| Option | Effort | How automatic | Trust / control | Best when |
-|---|---|---|---|---|
-| **A. Cloud-storage connector** *(Azhar's idea — start here)* | Low–Med | High (auto-pickup) | Good (read-only, scoped) | The team already saves packs to one shared drive (SharePoint/OneDrive/Drive/Box/S3) |
-| **B. Secure upload portal** (behind Sagard SSO) | Med | Low (manual) | **Highest** (every upload logged) | You want an explicit, audited "I'm submitting this" action |
-| **C. Email-forwarding inbox** (`q-reports@…`) | Low | Med | **Weakest** (needs sender allow-list) | Packs already arrive as email attachments |
-| SFTP / drop folder | Med | High | Good | A counterparty sends machine-to-machine |
-| Data-room / monitoring-system integration | High | High | Highest | The long-term "single source of truth" — do this later |
-
-> **Recommendation:** ship **A** first (fits the existing habit, no behavior change); keep **B** as the
-> controlled fallback; treat **C** and deep integrations as later phases. *"Whatever the door, intake is
-> read-only and scoped — Concord never writes back to the source."*
+**F1. Intake — a read-only cloud-storage connector (start here).** Point Concord at the one shared drive the
+team **already** saves packs to (SharePoint / OneDrive / Google Drive / Box / S3). It **auto-picks-up** new
+files, **read-only and scoped** — Concord never writes back to the source. This wins because it fits the
+existing habit with **no behaviour change** from the team.
 
 **F2. Change-tracking with a file hash (new = run, changed = re-run).** A **hash** (e.g. SHA-256) is a short
-fingerprint of the whole file. Same file → same fingerprint; change one digit → a completely different
-fingerprint. It's **content-based, not name-based** (a company can keep the same filename but upload corrected
-content — the hash catches it; a pure rename gives the same hash → no pointless re-run). Concord keeps a small
-**manifest** (company+period, filename, hash, last-run, run-id) and on each check:
+fingerprint of the whole file: same file → same fingerprint; change one digit → a completely different one.
+It's **content-based, not name-based** (a company can keep the same filename but upload corrected content — the
+hash catches it; a pure rename gives the same hash → no pointless re-run). Concord keeps a small **manifest**
+(company+period, filename, hash, last-run, run-id):
 
 | Case | What it sees | What Concord does |
 |---|---|---|
@@ -572,44 +635,39 @@ content — the hash catches it; a pure rename gives the same hash → no pointl
 | **Unchanged** | Same hash | **Skip** — save the compute |
 
 > **Why it fits the room:** for Sharon, every run ties to a fingerprint + timestamp — *"which exact version of
-> the pack produced this number?"* is answerable precisely; a re-run records that the source **changed**, it
-> doesn't silently overwrite history. For Parinaz it's deterministic and cheap — no AI to decide "did the file
-> change." **Honest limit:** a hash tells you *that* a file changed, not *what* — Concord still re-parses to
-> show the "was $38.4M, now $32.2M" difference.
+> the pack produced this number?"* is answerable precisely, and a re-run **records** that the source changed,
+> it doesn't silently overwrite history. For Parinaz it's deterministic and cheap. **Honest limit:** a hash
+> tells you *that* a file changed, not *what* — Concord still re-parses to show the "was $38.4M, now $32.2M"
+> difference.
 
-**F3. Alerts (Email / Slack / Teams) — a heads-up, never a verdict.** When a fresh run makes the AI summary
-read *"Company X worsened — ARR down, churn up, cash falling,"* push a notification so the right person sees
-it fast (not three weeks later at close). **The non-negotiable rule:** the alert **never triggers an action.**
-It says *"something looks worse — a human should look,"* and links straight to that number's provenance
-drawer. A human confirms the source-of-truth before anything moves.
+**F3. Alerts (Email / Slack / Teams) — a heads-up, never a verdict (tied to Group C).** When a fresh run makes
+the **Group C AI summary** read *"Company X looks worse — ARR down, churn up, cash falling,"* push a
+notification so the right person sees it fast (not three weeks later at close). **The non-negotiable rule:** the
+alert **never triggers an action.** It says *"something looks worse — a human should look,"* and links straight
+to that number's provenance drawer. A human confirms the source-of-truth before anything moves.
 
-- **What's in the message:** a plain headline (*"NovaCloud Q2 2025 — cash has fallen every quarter,
-  $29.5M → $19.6M"*), the **AI reason clearly labelled as AI** (*"AI read: worsening because burn outpaced
-  new ARR"*), a confidence/basis note, a **"Verify in Concord"** link, and *"Please confirm the source before
-  flagging to the deal team."*
-- **Channels:** Slack/Teams for the *"look now"* nudge (add a ✅ Reviewed reaction for a light human sign-off);
-  Email for the durable record + weekly digest. Both carry the same "verify before you act" line.
-- **Guardrails:** thresholds not chatter (alert only on meaningful moves / restatements) to avoid alert
-  fatigue; the AI cause is a **hypothesis**, the number-moved is the **fact** — always separate them; **no
+- **In the message:** a plain headline (*"NovaCloud Q2 2025 — cash has fallen every quarter, $29.5M →
+  $19.6M"*), the **AI reason clearly labelled as AI** (*"AI read: worsening because burn outpaced new ARR"*), a
+  confidence/basis note, a **"Verify in Concord"** link, and *"Please confirm the source before flagging to the
+  deal team."*
+- **Guardrails:** thresholds not chatter (alert only on meaningful moves / restatements, to avoid alert
+  fatigue); the AI cause is a **hypothesis**, the number-moved is the **fact** — always separate them; **no
   auto-action, ever**; this is roadmap (Concord is offline/manual today).
 
-**F4. Download + email the report (with AI comments + human sign-off).** Once a run is human-validated,
-export a clean report (the comparable table + the provenance + the AI summary **marked as a suggestion** +
-the human's confirming note) and email it to the right people. Same rule: nothing goes out until a human has
-signed off; the export carries the audit trail so the recipient can trace every number.
+### GROUP G — Auth, permissions, and the correction workflow *(overlaps the system-design doc)*
 
-### GROUP G — Auth, permissions, and the human-in-the-loop correction workflow
-
-Built for a **compliance-minded** operations team (Sharon's world). None of this exists yet — it's the
-natural next layer on top of two controls Concord **already** has (provenance + refuse-to-compare).
+Built for a **compliance-minded** operations team (Sharon's world). None of this exists yet — it's the natural
+next layer on top of two controls Concord **already** has (provenance + refuse-to-compare). **Note:** this
+group **overlaps the System Design part** (`iv-system-design-and-scaling.md`), which goes deeper on the same
+controls — reference that doc if they push.
 
 **Design principles (the compliance spine):**
-- **Never overwrite silently.** The extracted value and every human action are **both** kept — a correction
-  is a *new state*, not a replacement. The original never disappears.
+- **Never overwrite silently.** The extracted value and every human action are **both** kept — a correction is
+  a *new state*, not a replacement. The original never disappears.
 - **Human-in-the-loop.** The machine only **flags** (disagreement, low confidence, refused); a **human
   decides.** It never quietly "fixes" a number.
-- **Segregation of duties (maker-checker / 4-eyes).** Whoever *suggests* a change is **not** whoever
-  *approves* it — the classic control a Chief Compliance Officer expects.
+- **Segregation of duties (maker-checker / 4-eyes).** Whoever *suggests* a change is **not** whoever *approves*
+  it — the classic control a Chief Compliance Officer expects.
 - **Least privilege.** Users see only the companies they're assigned to (information barriers between deal
   teams).
 
@@ -618,88 +676,99 @@ natural next layer on top of two controls Concord **already** has (provenance + 
 | Role | Can do | Cannot do |
 |---|---|---|
 | **Viewer** (e.g. LP-reporting reader) | Read metrics, provenance, comments; export the audit report | Change anything |
-| **Analyst / Submitter** | Run extraction; **suggest** a correction; **add comments** ("NovaCloud is doing well because…"); flag a value | Approve their own suggestion; edit source data |
-| **Reviewer / Approver** (ops lead) | Accept/reject suggestions; **correct a flagged (warning) metric and send it to revision**; resolve exceptions | Rewrite audit history; manage users |
+| **Analyst / Submitter** | Run extraction; **suggest** a correction; **add comments**; flag a value | Approve their own suggestion; edit source data |
+| **Reviewer / Approver** (ops lead) | Accept/reject suggestions; **correct a flagged (warning) metric**; resolve exceptions | Rewrite audit history; manage users |
 | **Admin / Data governance** | Manage roles; own the alias & currency rulebook + thresholds | Silently edit values — any edit is logged like everyone else's |
 
 Plus **scope-based access** (per company / fund / strategy).
 
-**The correction workflow (states of a value):** `Extracted` → **Verified** (ensemble agrees) *or* **Flagged
-/ Warning** (disagree / low-confidence / refused). A human can then: **Suggest** (value doesn't change; gets a
+**The correction workflow (states of a value):** `Extracted` → **Verified** (ensemble agrees) *or* **Flagged /
+Warning** (disagree / low-confidence / refused). A human can then **Suggest** (value doesn't change; gets a
 "suggestion pending" badge) → **Approve/Reject** by a *different* user (maker-checker) → value moves to
-**Corrected**, keeping *old → new → who → when → why*. **Comments** are timestamped, authored, and kept
+**Corrected**, keeping *old → new → who → when → why.* **Comments** are timestamped, authored, and kept
 **separate from the number** (a note is not data).
 
-**The audit trail (the heart of it, for Sharon):** an **append-only, immutable log** — who, which field, old
-→ new, when, why — plus full lineage per number (original extracted value + provenance + human edit history),
-**exportable** to survive an auditor or LP challenge.
+**The audit trail (the heart of it, for Sharon):** an **append-only, immutable log** — who, which field,
+old → new, when, why — plus full lineage per number (original extracted value + provenance + human edit
+history), **exportable** to survive an auditor or LP challenge.
 
-| Sharon's control | How Concord provides it |
-|---|---|
-| Segregation of duties (4-eyes) | Suggest and approve are different permissions, different people |
-| Immutable audit trail | Append-only log of who/what/when/why |
-| Source-of-truth preserved | Values never overwritten; original + provenance retained |
-| Least privilege / information barriers | Per-company / per-fund scoped access |
-| Human sign-off gate | Nothing reaches a report as "corrected" without an approver |
-
-> **The honest bottom line:** *"The reliable version of Concord isn't 'more AI.' It's **more agreement, more
-> human judgment, and a complete record of both** — the ensemble raises warnings, a human decides, and every
-> decision is permanently traceable."*
+> **The honest bottom line for the whole section:** *"The reliable version of Concord isn't 'more AI.' It's
+> **more agreement, more human judgment, and a complete record of both** — the ensemble raises warnings, a
+> human decides, and every decision is permanently traceable."*
 
 ---
 
-## 9. How to scale — 2 options (honest: not production-ready) — 2 min
+## 9. How to scale — brief (the depth is in the system-design doc) — 2 min
+
+> **Where the depth lives:** the full "how would you architect and scale this" material — the ensemble
+> orchestrator, queues / retries / idempotency / dead-letter queues, partitioning, multi-tenancy, monitoring,
+> data-residency — is in **`case-study/iv-system-design-and-scaling.md`**, your Q&A / whiteboard reference.
+> Keep this section short and point there. *(The recruiter flagged scalability as a focus of the round — study
+> that doc and pull from it live.)*
 
 Say it plainly first: *"Concord today is a **prototype, not a production system.** It runs offline in memory,
-one deterministic method, no database, no login. The 76%→90% recall is real but measured on 24 synthetic PDFs
-— enough to prove the idea, not to promise production reliability."*
->
-> **How recall was measured (have this ready — Parinaz will ask):** recall = values captured correctly ÷ the
-> **128 numbers physically printed** across the 24 PDFs; the **76%→90%** jump came from a **backend parser
-> fix**, not a changed test set; and recall paired with **0 wrong values** is the right measure because *a
-> confidently-wrong number is worse than a flagged-missing one.*
+one deterministic method, no database, no login. The 76%→90% recall is real but measured on **24 synthetic
+PDFs** — enough to prove the idea, not to promise production reliability."*
 
-Then:
+> **How recall was measured (have this ready — Parinaz will ask):** recall = values captured correctly ÷ the
+> **128 numbers physically printed** across the 24 synthetic PDFs; the **76%→90%** jump came from a **backend
+> parser fix**, not a changed test set; and recall paired with **0 wrong values** is the right measure because
+> *a confidently-wrong number is worse than a flagged-missing one.*
+
+Then, the two honest paths:
 
 | Dimension | **Option 1 — Harden in place** (incremental, low-risk) | **Option 2 — Cloud re-platform** (event-driven, multi-tenant) |
 |---|---|---|
-| What it is | Keep the working engine; add a **durable store**, a **job queue + retries**, and the **redundant-extraction ensemble**; keep it offline/on-prem; grow the test set + measure recall continuously | PDFs land in object storage → file event → queue fans out one job per PDF → managed doc-AI workers → database → publish → notify; multi-tenant, auto-scales for quarter-end bursts |
-| Reliability | High gain fast (the ensemble is the biggest single lever; queue+store remove "one crash loses everything") | Highest *ceiling* — but only after real hardening + monitoring; more parts to watch |
-| Effort | Medium (reuses the engine; weeks) | High (new infra, tenancy, security review; months) |
-| Cost | Low–Med (mostly engineering; LLM only on the ambiguous tail) | Med–High (always-on cloud + per-page doc-AI + storage + ops) |
-| Risk | Low (every step additive + reversible; deterministic core stays as a canary) | Med–High (bigger blast radius; **data leaves on-prem** — a real compliance/data-residency question; vendor lock-in) |
+| What it is | Keep the working engine; add a **durable store**, a **job queue + retries**, and the **redundant-extraction ensemble**; stay offline/on-prem | PDFs land in object storage → file event → queue fans out one job per PDF → managed workers → database → publish → notify; auto-scales for quarter-end bursts |
+| Reliability | High gain fast (the ensemble is the biggest single lever) | Highest *ceiling* — but only after real hardening + monitoring |
+| Effort / Cost | Medium; low–med cost (reuses the engine) | High; med–high cost (new infra, tenancy, security review) |
+| Risk | Low (additive + reversible; deterministic core stays as a canary) | Med–High (bigger blast radius; **data leaves on-prem** — a real data-residency question) |
 
-> **Recommendation:** *"Do Option 1 first; treat Option 2 as the destination. Option 1 buys the reliability
-> that matters — agreement-based trust + retries + a real store — at low risk, and keeps the offline posture.
-> Its decoupled stages are also the on-ramp to Option 2. Move to Option 2 only when volume, bursts, tenants,
-> or SLAs justify it — and only after the data-residency question is answered."*
+> **Recommendation:** *"Do **Option 1 first**; treat **Option 2** as the destination. Option 1 buys the
+> reliability that matters — agreement-based trust + retries + a real store — at low risk, and keeps the
+> offline posture. Move to Option 2 only when volume, bursts, tenants, or SLAs justify it — and only after the
+> data-residency question is answered. The depth is in `iv-…`."*
 
 ---
 
-## 10. Fun fact — 1 min (relax the room)
+## 10. Where my time actually went — 1 min (the honest FDE picture)
 
-> *"I should confess where my time actually went. The **least** of it was building the tool. Most went to
-> **learning your world** — what Sagard does, how a PE firm actually makes money, the financial vocabulary,
-> and figuring out what a tool like this could *really* solve. The hardest part wasn't the code — it was
-> learning enough of your world to point the code at the right problem."*
+Replace the old "fun fact" with **one honest picture of where your time went.** It makes the FDE point better
+than any sentence.
 
-**The contrast that makes it memorable (and shows growth across the two rounds):**
-- **My first take-home solved the *deal partner's* need:** scrape a company off the web → a signal in Slack.
-  That job is **speed over precision** — keep a deal moving, a rough read is fine.
-- **This round, the *operations* team needs the opposite: precision** — a number you'd sign your name to,
-  traceable to its source, with a wrong answer **refused** rather than guessed.
-- **Same builder, two rounds, two opposite trust postures** — speed for the deal team, precision for
-  operations. Realizing *that* — not writing the parser — was the real work.
+[graphic: ONE horizontal **stacked bar** = 100% of Xavier's time, sized so **UNDERSTANDING dominates** — a big block for "understand Sagard · their business · VC/PE/PC · how PE works · the personas · how the portfolio-ops team works + its problems · how they monitor via the Q-reports", then a thin slice "scope the problem", then "plan / trade-offs / build", then a small "slides"; the understanding block reads ~70%+, build ~20%, slides small; small-print caption "Xavier's own rough estimate — self-reported, not measured"]
 
-Say it with a smile: it tells Parinaz you respect the problem over the toy, and tells Sharon you took *her*
-world seriously before touching code.
+> *"I should be honest about where my time actually went. **Most of it was not coding.** It went into
+> **understanding your world** — what Sagard is and how it makes money, the difference between VC, PE, and
+> private credit, how PE actually works, who the personas are (the deal partner, the portfolio team, and the
+> rest), how the **portfolio operations team** works and what problems they have, and how they **monitor the
+> portfolio using the quarterly reports.** Only after all of that did I **scope the problem**, then **plan and
+> weigh trade-offs and build**, and last, make these slides."*
+
+> *"That's on purpose — because **that is what a Forward Deployed Engineer does.** You take something
+> **ambiguous**, you research it, you **understand** it, you get **feedback and insights**, you plan, you weigh
+> the trade-offs, and then you **solve the problem with software and AI.** The hardest part wasn't the code —
+> it was learning enough of your world to point the code at the **right** problem."*
+
+*(Note: these percentages are your **own rough self-estimate** — present them as "roughly," not as a measured
+fact. The two-rounds speed-vs-precision story now lives in §4.2, not here.)*
 
 ---
 
 ## 11. Ask for questions / goodbye
 
-> *"That's Concord — comparability as the product, every number one click from its source, and a clear path
-> to the reliable, redundant version. I'd love your questions — and I have a few for you."*
+> *"That's Concord — comparability as the product, every number one click from its source, and a clear path to
+> the reliable, redundant version. I'd love your questions — and I have a few for you."*
+
+**The final punch (stage it — this is the very last beat):** after the section above, **pause**, bring up the
+Concord punch card, and let the heart line **land** — read it slowly.
+
+> *"Concord — one comparable, source-traced view of every portfolio company. Built with AI, decided by humans.
+> **Made with love, with AI — but human-first on every decision ❤️.** Thanks."*
+
+Hold the card — the Concord mark, the slogan, the heart line, and a quiet **"Thanks."** — **on screen through
+Q&A.** Don't talk over it. *("Human-first on every decision" is your whole thesis in six words — refuse-to-
+compare, provenance, humans-own-the-mark, all of it.)*
 
 ---
 
@@ -714,8 +783,8 @@ world seriously before touching code.
   the sharper pain elsewhere?"*
 
 **B. The real customer (Sharon):**
-- *"I assumed the team that hand-keys these packs is Portfolio / Reporting Operations. **Who actually owns
-  that today** — one person, a team, offshore, a vendor? And how many companies × packs per quarter?"*
+- *"I assumed the team that hand-keys these packs is Portfolio / Reporting Operations. **Who actually owns that
+  today** — one person, a team, offshore, a vendor? And how many companies × packs per quarter?"*
 - *"What breaks trust **first** for that team — a wrong number, a missing number, a slow refresh, or a number
   they can't trace to its source?"*
 - *"What would this have to prove before your team let its numbers reach an investment committee or an
@@ -754,23 +823,34 @@ world seriously before touching code.
   **NOT** convert. PeopleFlow's GBP flag is a **front-end rule**; the parser doesn't see the £.
 - **Provenance is file-level** today (no page number/screenshot in the drawer). The PDF-screenshot sidebar is
   **future design** — never show a page number or crop live as if real.
-- **Consensus is tiered**, not "all must agree" — say "unanimous is the green bar; 2-of-3 *with independence*
-  is the practical rule." Independence is never total — say so.
+- **The redundant multi-reader ensemble + tiered consensus + human-review queue is DESIGNED, NOT BUILT.** Never
+  imply it runs today. **Consensus is tiered**, not "all must agree" — say "unanimous is the green bar; 2-of-3
+  *with independence* is the practical rule." **Independence is never total** — say so; agreement is strong
+  evidence, not proof.
 - **"Deterministic because of limited time; one method is not production-grade"** — keep this honest register;
   don't over-sell the current build.
-- **No invented ROI/dollar numbers.** Time-savings stays qualitative. Recall = **76%→90%, 0 wrong values,
-  0 *sector-blind* false alarms (15→0)**, measured on **24 synthetic PDFs** (denominator = the **128 numbers
+- **No invented ROI/dollar numbers.** Time-savings stays qualitative. Recall = **76%→90%, 0 wrong values, 0
+  *sector-blind* false alarms (15→0)**, measured on **24 synthetic PDFs** (denominator = the **128 numbers
   physically printed** across them; the jump came from a **backend parser fix**, not a changed test set). Say
   "synthetic" every time. **Never say "0 false alarms" unqualified** — the raw missing-metric flag still has a
   couple of false positives (CarbonTrack/TalentVault) suppressed on the grid.
+- **Refuse-to-compare** (lender interest-margin vs SaaS product-margin) is **BUILT**; the **intra-SaaS** margin
+  refusal is **roadmap** — the SaaS-margin heat colour is directional, not an audited like-for-like.
 - **Hook #3's "95% accurate" is hypothetical** — keep it clearly separate from your real 76%→90%.
+- **Vendor accuracy numbers are VENDOR CLAIMS** (Reducto ~99%, the "68% of errors are hallucinated numbers"
+  line, Anthropic's multi-agent eval) — flag them as claims and lean on the *mechanism*, not the number. **None
+  of the research headline numbers were measured on structured financial extraction** — say so if pushed.
+- **Confidence range:** if asked "what's the confidence range?" live, quote **one** figure — reconcile the
+  audit-guardrail's ~84%–99.5% with `cockpit-frontend-guide.md`'s 90.4%–99.5% **before** the room so you don't
+  give two numbers. The corpus is **10 companies / 24 packs** — say "20+ packs," never "20+ companies."
 
-**Re-verify on sagard.com the morning of (don't hard-assert):** AUM (~US$46B), portfolio-company count
-(190+), staff (540+), **mid-market fund sizes** (~$500M–$4B), the "$100B by 2029" goal, and the **Unigestion acquisition** (that it closed, and
-when). Say "roughly" and "as of their latest public figures."
+**Re-verify on sagard.com the morning of (don't hard-assert):** the strategy line-up (VC / PE / private credit
+/ real estate / solutions), AUM (~US$46B), portfolio-company count (190+), staff (540+), **mid-market fund
+sizes** (~$500M–$4B), the "$100B by 2029" goal, and the **Unigestion acquisition** (that it closed, and when).
+Say "roughly" and "as of their latest public figures."
 
-**Vendor facts to state carefully:** IBM **Docling / Granite-Docling** is **2025** (drop the exact month
-unless you check); the "**68%** of extraction errors are hallucinated numbers" is a **vendor analysis, not a
-peer-reviewed study** — lean on the *mechanism* (LLMs fail silently; deterministic parsers fail loudly), not
-the number; **Reducto ~99%** is the **vendor's own** benchmark; **GPT-4o** is 2024-era (newer vision models
-exist).
+**Vendor facts to state carefully:** IBM **Docling / Granite-Docling** is **2025** (drop the exact month unless
+you check); **Reducto ~99%** is the **vendor's own** benchmark; **GPT-4o** is 2024-era (newer vision models
+exist); Google's **Document AI HITL — believed deprecated; verify the year before asserting it** — don't
+present it as a current option; the ensemble-diversity math (**error variance ~1/M under independence, RMS
+~1/√M**; Condorcet's Jury Theorem) is sound, but **verify the exact paper/venue before quoting one**.
