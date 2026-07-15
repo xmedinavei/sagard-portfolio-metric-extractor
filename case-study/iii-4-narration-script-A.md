@@ -2,7 +2,7 @@
 ### Sagard "Concord" — a BUSINESS CASE talk: what to SAY, slide by slide, out loud
 
 > **What this is.** This is the talk written the way you will *speak* it — not the way you read it.
-> It follows the built deck (`slides.pdf`), **26 slides, in order**. For every slide you get one
+> It follows the built deck (`slides.pdf`), **25 slides, in order**. For every slide you get one
 > line you must never forget, the full words to say, a
 > bridge into the next slide, and small stage directions in `[brackets]`. Read it out loud in front
 > of a mirror. First read it word for word. Then, once it feels natural, keep only the **bold anchor
@@ -22,8 +22,8 @@
 
 Two parts of this talk still need their own spoken script. They are **NOT written yet**:
 
-1. **The live-demo script** — the exact words + clicks for **Slide 15 (the live demo)**, built from
-   `case-study/cockpit-frontend-guide.md`. Slide 15 below has only the *beats* (a skeleton); it
+1. **The live-demo script** — the exact words + clicks for **Slide 14 (the live demo)**, built from
+   `case-study/cockpit-frontend-guide.md`. Slide 14 below has only the *beats* (a skeleton); it
    still needs the full word-for-word, click-by-click walk-through.
 2. **The "scale it up" script** — the words for the scaling questions, built from
    `case-study/iv-system-design-and-scaling.md`. In a past interview they took a candidate's
@@ -35,7 +35,7 @@ Two parts of this talk still need their own spoken script. They are **NOT writte
    - many requests at the same time (concurrency)
    - reliability, security, monitoring, and cost limits
 
-   Slides 22–23 (prototype → production, then harden-before-cloud) *touch* this, but the full spoken
+   Slides 21–22 (prototype → production, then harden-before-cloud) *touch* this, but the full spoken
    answer to a live "now make it 100× bigger" curveball is still to write.
 
 ---
@@ -49,7 +49,7 @@ Two parts of this talk still need their own spoken script. They are **NOT writte
 4. **Pass 3 — with the clock.** Use the timing table below. If a section runs long, cut words, keep
    the anchor.
 5. **Record yourself once.** Play it back. You will hear the two or three lines that need work.
-6. **The demo (Slide 15) needs its own reps.** Practice the clicks with the words until your hands
+6. **The demo (Slide 14) needs its own reps.** Practice the clicks with the words until your hands
    and mouth move together. Keep screenshots ready as a backup.
 
 ---
@@ -80,19 +80,19 @@ understands their world and is being straight with them. When you say a limit ou
 | 1 | Intro — who you are | ~1 min | 1 |
 | 2–4 | Here's my map — correct me | ~3.5 min | 4.5 |
 | 5 | Two rounds, two tools | ~1.5 min | 6 |
-| 6–8 | The quarter-close hurts (the problem) | ~3.5 min | 9.5 |
-| 9–12 | Comparability is the product (how we solve it) | ~5 min | 14.5 |
-| 13 | AI suggests, humans decide | ~1.5 min | 16 |
-| 14 | Caught before the IC beats hours | ~1 min | 17 |
-| 15 | **LIVE DEMO** | ~8–10 min | ~26 |
-| 16–21 | The path to production trust (roadmap, incl. the one-picture summary) | ~6 min | ~32 |
-| 22–24 | Prototype → production + where my time went | ~3 min | ~35 |
-| 25 | That's Concord — recap + open the floor | ~1 min | ~36 |
-| 26 | Thank-you card + Q&A (your questions to them) | ~1.5 min | ~37.5 |
+| 6–8 | The grind, the machine, and the traps | ~4 min | 10 |
+| 9–11 | Comparability is the product (how we solve it) | ~4 min | 14 |
+| 12 | AI suggests, humans decide | ~1.5 min | 15.5 |
+| 13 | Caught before the IC beats hours | ~1 min | 16.5 |
+| 14 | **LIVE DEMO** | ~8–10 min | ~25 |
+| 15–20 | The path to production trust (roadmap, incl. the one-picture summary) | ~6 min | ~31 |
+| 21–23 | Prototype → production + where my time went | ~3 min | ~34 |
+| 24 | That's Concord — recap + open the floor | ~1 min | ~35 |
+| 25 | Thank-you card + Q&A (your questions to them) | ~1.5 min | ~36.5 |
 
-> If you are running long, the demo and the roadmap (**slides 16–21**) are where you cut. Show fewer
-> demo extras; on the roadmap, **keep slide 18 — the one-picture summary — and trim a detail group
-> (19, 20, or 21) instead**. Never cut the anchor lines.
+> If you are running long, the demo and the roadmap (**slides 15–20**) are where you cut. Show fewer
+> demo extras; on the roadmap, **keep slide 17 — the one-picture summary — and trim a detail group
+> (18, 19, or 20) instead**. Never cut the anchor lines.
 
 ---
 
@@ -104,10 +104,10 @@ only hear what you *do* say. Keep going.
 
 ---
 
-## One-page cheat sheet — the 26 anchors
+## One-page cheat sheet — the 25 anchors
 
 **Open (1)**
-1. **Ownership + FDE** — "I solve unclear problems end to end and take ownership — and an FDE starts in your world, not in the code."
+1. **Ownership + FDE** — "I'm a software engineer who likes solving hard problems and owning them end to end — and an FDE starts in your world, not in the code."
 
 **My map (2-4)**
 2. **PE scope** — "Concord is scoped to your direct PE portfolio companies — the other three branches are documented, not built."
@@ -117,42 +117,41 @@ only hear what you *do* say. Keep going.
 **Two rounds (5)**
 5. **Speed vs precision** — "Same builder, two rounds — speed for the deal partner, precision for Ops."
 
-**The problem (6-8)**
+**The grind, the machine, the traps (6-8)**
 6. **Hand-keying packs** — "Operations hand-keys 20-plus packs into one spreadsheet, every quarter."
-7. **Four traps** — "Four traps — same metric different names, same name different meaning, right number wrong basis, and you can't prove any of it."
-8. **Easy 10 / hard 90** — "Reading the number is the easy 10%; the expensive 90% is comparability and trust."
+7. **How Concord works today** — "One offline click: read → understand → cross-check → the comparability gate → the cockpit — a human owns every number that leaves."
+8. **Four traps** — "Four traps — same metric different names, same name different meaning, right number wrong basis, and you can't prove any of it."
 
-**How we solve it (9-12)**
-9. **One offline click** — "One click runs the whole flow offline, and a human owns every number that leaves."
-10. **Comparability is the product** — "Same label doesn't mean the same metric — comparability is the product."
-11. **Deterministic on purpose** — "I used fixed rules on purpose — cheap, honest, offline — but one method isn't production-grade."
-12. **Redundant readers** — "In production you don't trust one reader — you run several, and the disagreement is the alarm."
+**Comparability is the product (9-11)**
+9. **Comparability is the product** — "Same label doesn't mean the same metric — comparability is the product."
+10. **Deterministic on purpose** — "I used fixed rules on purpose — cheap, honest, offline — but one method isn't production-grade."
+11. **Redundant readers** — "In production you don't trust one reader — you run several, and the disagreement is the alarm."
 
-**AI + human (13)**
-13. **AI never decides** — "AI suggests, with reasons. The human decides. AI never decides — and the mark is always human."
+**AI + human (12)**
+12. **AI never decides** — "AI suggests, with reasons. The human decides. AI never decides — and the mark is always human."
 
-**The win (14)**
-14. **Caught before the IC** — "The real win isn't saved hours — it's a wrong number caught before the IC."
+**The win (13)**
+13. **Caught before the IC** — "The real win isn't saved hours — it's a wrong number caught before the IC."
 
-**DEMO (15)**
-15. **Live demo** — "Load everything offline, compare only what's safe, and click any number to see its source."
+**DEMO (14)**
+14. **Live demo** — "Load everything offline, compare only what's safe, and click any number to see its source."
 
-**Roadmap (16-21)**
-16. **More agreement** — "The reliable version isn't more AI — it's more agreement, more human judgment, and a record of both."
-17. **Independence, not votes** — "Three copies of the same AI share the same blind spots — so we weigh independence, not votes."
-18. **The architecture in one picture** — "PDF → three AI readers → the referee → agree = auto-accept / disagree = a person with the real PDF → one trusted number."
-19. **AI writes the story** — "The AI writes the interpretation, never the number — and a human can always refute it."
-20. **Flag, never convert** — "Concord flags a different currency and refuses to mix it — it never converts."
-21. **Controls & audit trail** — "No silent overwrites, maker-checker on every fix, an audit trail that survives an LP challenge."
+**Roadmap (15-20)**
+15. **More agreement** — "The reliable version isn't more AI — it's more agreement, more human judgment, and a record of both."
+16. **Independence, not votes** — "Three copies of the same AI share the same blind spots — so we weigh independence, not votes."
+17. **The architecture in one picture** — "PDF → three AI readers → the referee → agree = auto-accept / disagree = a person with the real PDF → one trusted number."
+18. **AI writes the story** — "The AI writes the interpretation, never the number — and a human can always refute it."
+19. **Flag, never convert** — "Concord flags a different currency and refuses to mix it — it never converts."
+20. **Controls & audit trail** — "No silent overwrites, maker-checker on every fix, an audit trail that survives an LP challenge."
 
-**Scale + time (22-24)**
-22. **Prototype, not production** — "Concord today is an honest prototype — the engine is real, the rest is roadmap."
-23. **Harden, then cloud** — "Harden in place first; the cloud is the destination, only when it's justified."
-24. **Time = understanding** — "Most of my time went into understanding your world, not writing code."
+**Scale + time (21-23)**
+21. **Prototype, not production** — "Concord today is an honest prototype — the engine is real, the rest is roadmap."
+22. **Harden, then cloud** — "Harden in place first; the cloud is the destination, only when it's justified."
+23. **Time = understanding** — "Most of my time went into understanding your world, not writing code."
 
-**Close + Q&A (25-26)**
-25. **Comparability + open the floor** — "That's Concord — comparability, provenance, a path forward — and I have three questions for you: the customer, the culture, the scorecard."
-26. **Thank-you + five threads** — "Concord — built with AI, decided by humans. Pick any of five threads and lead."
+**Close + Q&A (24-25)**
+24. **Comparability + open the floor** — "That's Concord — comparability, provenance, a path forward — and I have three questions for you: the customer, the culture, the scorecard."
+25. **Thank-you + five threads** — "Concord — built with AI, decided by humans. Pick any of five threads and lead."
 
 ## The 60-second version
 
@@ -238,65 +237,62 @@ Concord lives in stage **three** — hold and monitor. That's the quarter-by-qua
 
 ---
 
-## The quarter-close hurts — slides 6-8
+## The grind, the machine, and the traps — slides 6-8
 
 ### Slide 6 — Monitoring the portfolio means hand-keying 20+ packs — every quarter  ·  ~70s
 **If I blank, say only this:** "Operations monitors the portfolio by hand-keying 20-plus packs into one spreadsheet, every quarter."
 **Say it:**
 [click] Remember stage three — hold and monitor. How does Operations actually monitor? They read every company's report **by hand**. [pause] Picture it. It is the second week after quarter-close. Twenty-plus PDF packs arrive. A software firm, a lender, a payments firm, a freight marketplace. [slow down] An analyst opens each one. Finds the numbers. Then hand-keys them — types them in by hand — into one big spreadsheet. [let it land] That spreadsheet review **is the monitoring**. [pause] One honest note. These are **synthetic** test packs. Ten companies across twenty-four PDFs. So it's twenty-plus packs, not twenty-plus companies. And "SaaS" just means subscription software.
-**Then move on:** "So what makes this hand-keying so risky? Four traps."
+**Then move on:** "That hand-keying is exactly what Concord replaces — so here's the whole machine, end to end."
 
-### Slide 7 — Four traps in the manual close — each one provable in the packs  ·  ~80s
+### Slide 7 — How Concord works today, end to end (the whole machine)  ·  ~90s
+> **Picture to build this slide from:** the full architecture diagram is in
+> `case-study/vi-concord-architecture-today.md` (the "today / built" twin of the orchestrator
+> picture). Build the slide from that diagram; the words below are what you *say* over it.
+**If I blank, say only this:** "One offline click: read → understand → cross-check → the comparability gate → the cockpit — and a human owns every number that leaves."
+**Say it:**
+[click] This is the whole machine on one screen — everything Concord does today, in one offline click. Let me walk it top to bottom. [pause] [point to the top] All the PDF packs go in at once — offline, on my laptop, nothing leaves the machine. [pause] [point to box 1] Step one, **read**: a deterministic parser — fixed rules, same input gives the same answer, and it never invents a number. [point to box 2] Step two, **understand each number**: sort the company into equity or credit, map the many different labels onto **one shared vocabulary**, and line up the unit and scale. [point to box 3] Step three, **cross-check**: reconcile the company's report against the portfolio summary, resolve conflicts inside a file, and keep the company's own report as the source of truth. [slow down] [point to box 4] Step four is the heart — the **comparability gate**, the moat. One question: is this number safe to compare, like-for-like? If yes, rank it inside its own sector. If no, still **show** the number, but **refuse to rank** it — a lender's margin is not a SaaS margin, pounds are not dollars, restricted cash gets restated. [point to box 5] Then step five, the **cockpit** — one page, click any number to see its exact source. [pause] [slow down] And notice the shape: **reading is the easy ten percent — that's step one. Everything below it — the comparability and the trust — is the expensive ninety percent.** [pause] [point to the bottom band] Two things run down the whole pipeline: **provenance** — every number keeps its source file, label, confidence, and exact quoted line — and a **human** owns every number that leaves. [pause] One honest line: this is what runs **today**, and it's deterministic — one method. Later I'll show how I'd make it redundant.
+**Then move on:** "Now the hard part this machine has to survive — four traps hiding in the packs."
+
+### Slide 8 — Four traps in the manual close — each one provable in the packs  ·  ~80s
 **If I blank, say only this:** "Four traps — same metric different names, same name different meaning, right number wrong basis, and you can't prove any of it."
 **Say it:**
 [click] Four things make this hard. Each one is real in the packs. [pause] First, one word. "ARR" means annual recurring revenue — the yearly subscription income. [pause] Trap one: the same number wears different names. NovaCloud's ARR shows up as "End-of-Period ARR" and as "ARR, End of Period." Miss the relabel, and the trend **silently splits**. [pause] Trap two: the same word means different things. A software delivery-margin is not a lender's interest-margin. Put them in one column, and you are **quietly wrong**. [pause] Trap three: right number, wrong basis. ClearPay's cash reads thirty-eight point four million. But six point two million is client money — it legally can't spend it. True spendable cash is thirty-two point two million. [pause] One more, not on the slide. ConstructIQ reports cash-burn per quarter. Everyone else reports per month. [pause] Trap four: you **can't prove it**. No number links back to its source. A partner asks, "where did this seventy-eight percent come from?" and the honest answer is — "let me re-open the PDF." [let it land]
-**Then move on:** "Step back, and all four traps point to one thing."
-
-### Slide 8 — Reading the PDF is the easy 10%. The expensive 90% is comparability + trust  ·  ~45s
-**If I blank, say only this:** "Reading the number is the easy 10%; the expensive 90% is comparability and trust."
-**Say it:**
-[click] So here is the real shape of the pain. [pause] It is not reading PDFs. [slow down] Reading the number is the **easy ten percent**. [pause] The expensive ninety percent is **comparability and trust** — knowing which numbers are safe to compare, and being able to prove each one. [pause] So the pain is not extraction. It is reconciliation, comparability, trust, and time. [let it land] And it comes back **every quarter, forever**.
-**Then move on:** "So how do we fix it? One offline click runs the whole flow."
+**Then move on:** "Step back — all four traps are really the same trap: same label doesn't mean the same metric."
 
 ---
 
-## Comparability is the product — slides 9-12
+## Comparability is the product — slides 9-11
 
-### Slide 9 — One offline click runs the flow — a human owns every number that leaves  ·  ~55s
-**If I blank, say only this:** "One offline click runs the whole flow, and a human owns every number that leaves."
-**Say it:**
-[click] One click starts everything. And it runs **offline** — on my laptop, no data leaves the machine. [pause] First, it loads all the packs. Then it sorts each company — equity, or credit? Next, it lines the numbers up on one shared vocabulary. That's what "normalize" means: different names, one shared name. [pause] Then it checks each number against the company's own report. Then it refuses any compare that isn't truly like-for-like. And last, you can click any number to see its **source file**. [point to banner] A **human** owns every number that leaves the building.
-**Then move on:** "So here's the one core idea this whole tool is built on."
-
-### Slide 10 — Same label != same metric — comparability is the product, not extraction  ·  ~80s
+### Slide 9 — Same label != same metric — comparability is the product, not extraction  ·  ~80s
 **If I blank, say only this:** "Same label doesn't mean the same metric — comparability is the product."
 **Say it:**
 [slow down] This is the whole idea in one picture. [pause] Two companies both print "60% gross margin." [point] These two numbers are just examples. But a software company's margin and a lender's margin are **different machines**. [pause] A software margin is a delivery margin. A lender's margin is an interest margin. [pause] A naive tool drops them in one column — and misleads you. [pause] Concord splits them into two lanes, and refuses to rank one against the other. [click] On screen, this fires for real on LendBridge. Its labelled "gross margin," 58 to 62%, is really an interest margin. We show it in full. We never rank it against a software margin. [pause] And the reverse is also true — one number can hide under many names. We stitch those into one clean line. [let it land] Same label, different metric. **Comparability is the product.**
 **Then move on:** "Now, how does it actually read the numbers? Let me be honest about that."
 
-### Slide 11 — Rules never invent a number — deterministic on purpose, not production-grade yet  ·  ~70s
+### Slide 10 — Rules never invent a number — deterministic on purpose, not production-grade yet  ·  ~70s
 **If I blank, say only this:** "I used fixed rules on purpose — cheap, honest, offline — but one method isn't production-grade."
 **Say it:**
 For this demo I used one set of **fixed rules**, on purpose. [pause] Fixed rules means: same input, same answer, every time. [pause] Rules are cheap, fast, testable, and offline. And they never invent a number — a flagged blank beats a confident guess. [pause] But let me be clear. [slow down] One method is **not** production-grade. A single reader, however good, can be wrong — and you'd never know. [pause] Here's the honest Firecrawl story. My first build used Firecrawl, a paid extraction service. I hit errors, and I ran out of credit mid-build. So I switched to fixed rules. [smile] And honestly, that was the right move for a trust tool — it stays offline, and it proved the business case.
 **Then move on:** "So what would I build for real, in production? Here it is."
 
-### Slide 12 — What I'd build for real: redundant readers — the disagreement is the alarm  ·  ~80s
+### Slide 11 — What I'd build for real: redundant readers — the disagreement is the alarm  ·  ~80s
 **If I blank, say only this:** "In production you don't trust one reader — you run several, and the disagreement is the alarm."
 **Say it:**
-Here's what I'd build for real. [pause] In production, you don't trust just one reader. You run **two to four** readers that fail in different ways. [point to boxes] Firecrawl, an AI parser. A vision model that reads meaning. A document-AI that reads letters. [pause] A small **orchestrator** — just a coordinator — collects their answers. The more they agree, the higher the confidence. Any disagreement flags that number and sends it to a human — with every reader's answer side by side, and a **screenshot of the real PDF**. [let it land] The **disagreement is the alarm**. [pause] Now the honest caveat. This is designed, not built. Today's demo runs the single method. And "independent" is never total — all three are AI, so agreement is strong evidence, not proof. That's exactly why a **human** decides every disagreement. [pause] Why does it land for both of you? For Parinaz, it's rigorous — real different methods, not three copies of one AI voting. For Sharon, it's an automatic four-eyes check, with a full audit trail. [breathe] The thing that makes the numbers more correct is the same thing that gives you the control.
+Here's what I'd build for real. [pause] In production, you don't trust just one reader. You run **two to four** readers that fail in different ways. [point to boxes] Firecrawl, an AI parser. A vision model that reads meaning. A document-AI that reads letters. [pause] A small **orchestrator** — just a coordinator — collects their answers. The more they agree, the higher the confidence. Any disagreement flags that number and sends it to a human — with every reader's answer side by side, and a **screenshot of the real PDF**. [let it land] The **disagreement is the alarm**. [pause] Now the honest caveat. This is designed, not built. Today's demo runs the single method. And "independent" is never total — all three are AI, so agreement is strong evidence, not proof. That's exactly why a **human** decides every disagreement. [breathe] The thing that makes the numbers more correct is the same thing that gives you the control.
 **Then move on:** "And that — powerful AI, but a human makes the call — is exactly where I want to go next."
 
 ---
 
-## AI suggests, humans decide + the win — slides 13-14
+## AI suggests, humans decide + the win — slides 12-13
 
-### Slide 13 — Be AI-first, but human-decision-driven — AI never decides, and the mark is human  ·  ~80s
+### Slide 12 — Be AI-first, but human-decision-driven — AI never decides, and the mark is human  ·  ~80s
 **If I blank, say only this:** "AI suggests, with reasons. The human decides. AI never decides — and the mark is always human."
 **Say it:**
 [slow down] This is the core idea of my whole talk. My rule is simple. Be AI-first. But **human-decision-driven**. [pause] AI is probabilistic — it gives a likely answer, not a sure one. So we never let it decide. [point to left] The machine does the heavy, repeated work. It reads the packs. It pulls the numbers. It flags where they disagree. And it suggests — always with reasons. [point to right] But the human sits at the center of every decision that reaches a report. [pause] Two calls are **human only**. One — is this number right enough for a report? Two — the valuation mark, the LP figure, the IC call. "IC" is the investment committee, the group that makes the big calls. A model cannot decide those. [pause] And one honest detail. The tool lines up units and scale — millions versus thousands, it just makes them match. But a different **currency** — pounds versus dollars? It **flags** it, or refuses. It never converts. [slow down] A flagged blank beats a wrong mix. And the mark is always the value a human signs off on — never the machine. [let it land] AI suggests. Humans decide.
 **Then move on:** "So what's the real win here?"
 
-### Slide 14 — The win isn't the hours — it's a wrong number caught before the IC  ·  ~55s
+### Slide 13 — The win isn't the hours — it's a wrong number caught before the IC  ·  ~55s
 **If I blank, say only this:** "The real win isn't saved hours — it's a wrong number caught before the IC."
 **Say it:**
 [point to left] Today, the quarter-close takes hours to days. Someone re-types 20-plus packs by hand — and that's before anyone can even see the portfolio. [point to right] With Concord, it's one click. You get a comparable, source-traced view. So the team spends its time on **judgment**, not typing. [pause] But hear me. The bigger win is not the hours. [slow down] The real win is a comparison you can **trust**. Every number is one click from its source. A wrong number **caught** before it reaches the committee — that is worth far more than any typing saved. [pause] And if you ask me for a number, I'll ask you first: how many hours does your team really spend on this today?
@@ -304,12 +300,12 @@ Here's what I'd build for real. [pause] In production, you don't trust just one 
 
 ---
 
-## THE LIVE DEMO — slide 15
+## THE LIVE DEMO — slide 14
 
 > ⏳ **This section is a skeleton (beats only).** The full word-for-word demo script is still to
 > write, from `case-study/cockpit-frontend-guide.md`. See the PENDING block at the top.
 
-### Slide 15 — LIVE DEMO (Concord, run live and offline)  ·  ~8-10 min
+### Slide 14 — LIVE DEMO (Concord, run live and offline)  ·  ~8-10 min
 
 **If I blank, say only this:** "Load everything offline, compare only what's safe, and click any number to see its source."
 
@@ -352,39 +348,39 @@ Then, the beats:
 
 ---
 
-## The path to production trust — slides 16-21
+## The path to production trust — slides 15-20
 
-### Slide 16 — Reliability isn't more AI — it's more agreement, more human judgment, and a record of both  ·  ~40s
+### Slide 15 — Reliability isn't more AI — it's more agreement, more human judgment, and a record of both  ·  ~40s
 **If I blank, say only this:** "The reliable version of Concord isn't more AI — it's more agreement, more human judgment, and a record of both."
 **Say it:**
 The reliable version of Concord isn't "more AI." [pause] It's three things. More **agreement** between independent readers. More **human judgment** on the hard calls. And a full record of both. [breathe] The machine raises a warning. A person decides. Every decision stays traceable. [slow down] One honest note before I start: everything in this section is **designed, not built**. It's the roadmap. [let it land]
 **Then move on:** "Let me start with agreement."
 
-### Slide 17 — Correlated readers can outvote the one that's right — so independence, not count, decides  ·  ~80s
+### Slide 16 — Correlated readers can outvote the one that's right — so independence, not count, decides  ·  ~80s
 **If I blank, say only this:** "Three copies of the same AI share the same blind spots — so we use different readers and weigh independence, not votes."
 **Say it:**
 This is the key point for Parinaz. [pause] Imagine you run the same AI three times. They agree. Sounds safe, right? [pause] But three copies share the same blind spots. So they can be **wrong** the same way, with full confidence — and then their agreement means nothing. We call that "correlated failure." [breathe] So instead, you use different kinds of readers. Firecrawl, an AI parser. A document-AI that reads letters. A vision model that reads meaning. [click] "OCR" just means software that reads text off an image. [pause] Now the orchestrator — the part that compares them — doesn't just count votes. It weighs **independence**. Two readers that copy each other don't get two votes. [slow down] If they all agree, we auto-trust. If they really disagree, it goes to a human queue. [pause] Honest: this is designed, not built. And "independent" is never total — all three are AI. Strong agreement is good evidence, not proof. I can't quote a real accept rate until it runs on real packs. And any vendor's 99% is that vendor's own claim, not a number I measured.
 **Then move on:** "Let me put that whole future on one picture."
 
-### Slide 18 — The architecture in one picture (the whole future flow)  ·  ~75s
+### Slide 17 — The architecture in one picture (the whole future flow)  ·  ~75s
 **If I blank, say only this:** "PDF in, three AI readers, a referee, then agree goes straight through and disagree goes to a person — one trusted number out."
 **Say it:**
 [click] This one slide is the whole future design on one screen. Let me walk it top to bottom. [pause] At the top, one quarterly PDF pack comes in — say ClearPay, Q2 2025. [point down] Three AI readers read it at the same time — Firecrawl the parser, a vision model that reads meaning, and OCR that reads the letters. Three different engines, so they make **different** mistakes. [pause] They hand three answers for the same number to the **orchestrator** — the referee. [point to the middle box] It does two things. First, it lines up the **same fact** — same company, metric, period, unit, and basis. Then it asks one question: are the numbers **close enough**? Rounding is fine. A ten-times gap, never. [pause] Then the path splits. [point to the left box] They agree — the number is auto-accepted, highest trust. [point to the right box] They disagree — and a **person** decides. That person sees every reader's answer side by side, plus a **screenshot of the real PDF**, and validates or corrects it. A different person approves — four-eyes — and the whole thing is logged. [pause] Either way, [point to the bottom box] one trusted number flows to the cockpit, still traceable to its source. [slow down] And the honest line is right there on the slide: all three readers are AI, so their agreement is **strong evidence, not proof** — that is exactly why the disagree path ends at a person. Every fix is also saved, and it teaches the readers. [let it land] Designed, not built — but this is the shape.
 **Then move on:** "That handles the numbers. Next — the story around them."
 
-### Slide 19 — AI writes the interpretation, never the number — and a human can always refute it  ·  ~60s
+### Slide 18 — AI writes the interpretation, never the number — and a human can always refute it  ·  ~60s
 **If I blank, say only this:** "The AI writes the interpretation, never the number — and a human can always refute it."
 **Say it:**
 Once the numbers are clean, an AI could write a short note — a "here's the story" note. [pause] But only as a **suggestion**. Here's why that's safe. It reads only over clean, source-tagged numbers, so it can't inject a wrong number. It can only get the story wrong — and the human refutes it right there. [click] Look at the example. "NovaCloud: growth compounding, but cash is falling — confirm the funding plan." That's a prompt for a person. It is not a fact. [breathe] The human accepts, corrects, or comments. Next quarter, the AI reads last quarter's comments first — so it learns the house view. [slow down] It's labelled "AI suggestion — review." It cites every number. And it makes **no dollar claims**. [let it land]
 **Then move on:** "Now a rule that already runs today — taken further."
 
-### Slide 20 — Concord refuses to mix pounds and dollars — it flags, it never converts  ·  ~60s
+### Slide 19 — Concord refuses to mix pounds and dollars — it flags, it never converts  ·  ~60s
 **If I blank, say only this:** "Concord flags a different currency and refuses to mix it — it never converts."
 **Say it:**
 Concord refuses to mix pounds and dollars. [pause] It flags. It never **converts**. Let me be honest about today. You saw PeopleFlow marked "not comparable, pounds." [pause] That flag is a human-owned rule in the front end. The parser doesn't see the pound symbol yet — it reads the currency as empty. So a person wrote the rule that catches it. [breathe] Now the roadmap. A reader that actually captures the currency. Then we convert **levels** only — like revenue — with a dated, auditable rate. [slow down] But never a percentage. Converting a ratio makes no sense — a pounds percentage stays a percentage. And where the rate or the basis is unknown, we **flag** rather than guess. [let it land]
 **Then move on:** "Last piece — and this one is for Sharon: controls."
 
-### Slide 21 — No silent overwrites, maker-checker on every fix, an audit trail that stands up to an LP challenge  ·  ~70s
+### Slide 20 — No silent overwrites, maker-checker on every fix, an audit trail that stands up to an LP challenge  ·  ~70s
 **If I blank, say only this:** "No silent overwrites, maker-checker on every fix, and an audit trail that survives an LP challenge."
 **Say it:**
 This one is for Sharon's world. [pause] Controls. Four rules. [click] One: never overwrite silently. The original stays. Every human action stays too. [breathe] Two: **maker-checker**. Whoever suggests a change is not whoever approves it — the classic "four-eyes" check. Three: least privilege. You see only the companies you're assigned. Four: an append-only log — it can be added to, never edited. Who changed what. Old value to new. When. And why. [point to ledger] Here — 38.4 million became 32.2 million, because someone stripped a restricted client float. You can export that. It survives an auditor. Or an **LP challenge**. [slow down] "LP" means the outside investors the fund reports to. [pause] Honest: none of this exists yet. It's the next layer on two controls that **do** exist today — source-tracing, and refuse-to-compare. [let it land]
@@ -392,22 +388,22 @@ This one is for Sharon's world. [pause] Controls. Four rules. [click] One: never
 
 ---
 
-## Prototype to production + where my time went — slides 22-24
+## Prototype to production + where my time went — slides 21-23
 
-### Slide 22 — Concord today is a prototype, not a production system  ·  ~60s
+### Slide 21 — Concord today is a prototype, not a production system  ·  ~60s
 **If I blank, say only this:** "Concord today is an honest prototype — the engine is real, the rest is roadmap."
 **Say it:**
 Let me be plain and honest. [pause] Concord today is a **prototype**. Not a production system. It runs offline, in memory, in one fixed pass. Deterministic means the same input always gives the same answer. No database. No login. [pause] Here is what is real. The engine works. Recall went from **76% to 90%**, with **0 wrong values** — measured on 24 synthetic test PDFs I made, not real Sagard filings. Refuse-to-compare is live, and it runs on LendBridge. File-level source-tracing is live too — source file, original label, confidence, and the exact quoted text. It doesn't show a page or a sentence yet. [pause] Here is what is **not** built yet. A durable store. A job queue with retries. The redundant readers. And a multi-tenant cloud. [let it land]
 [if Parinaz asks how recall was measured] Recall means one thing: of all the numbers on the page, how many did we catch. We take the numbers we got right, and divide by the 128 numbers printed across those 24 PDFs. The jump came from a backend parser fix — the test set didn't change. And I pair recall with 0 wrong values on purpose: a confidently wrong number is worse than a flagged-missing one.
 **Then move on:** "So how would I get from prototype to production? Two honest paths."
 
-### Slide 23 — Harden in place first — the cloud is the destination, when it's justified  ·  ~60s
+### Slide 22 — Harden in place first — the cloud is the destination, when it's justified  ·  ~60s
 **If I blank, say only this:** "Harden in place first; the cloud is the destination, only when it's justified."
 **Say it:**
 Two honest paths forward. [pause] Option one — harden in place. Keep the working engine. Add a durable store. Add a job queue with retries. Add the redundant readers. Stay offline, on your own machines. [pause] The risk is low — every change is additive and reversible. The deterministic core stays a canary. And the redundant readers are the **biggest single lever** for reliability. But to be clear: that design is designed, not built yet. Today the demo runs one deterministic method, and one method is not production-grade. [pause] Option two — move to the cloud. Highest ceiling. It auto-scales for quarter-end bursts, when everyone reports at once. But data leaves the building — a real **data-residency** question, meaning where your data is allowed to live. [pause] My advice: do option one first. Treat the cloud as the destination — go there only when volume and demand justify it, and only after data-residency is answered. [breathe] The deep design lives in a separate system-design doc. I can open it if you want.
 **Then move on:** "That's the roadmap. Now let me be honest about where my time actually went."
 
-### Slide 24 — Most of my time wasn't coding — it was understanding your world  ·  ~60s
+### Slide 23 — Most of my time wasn't coding — it was understanding your world  ·  ~60s
 **If I blank, say only this:** "Most of my time went into understanding your world, not writing code."
 **Say it:**
 Let me be honest about where my time went. [pause] Most of it was **not** coding. Most of it went into understanding your world. What Sagard is, and how it makes money. The difference between venture, private equity, and private credit. Who the people in this room are. How the operations team works — and how they watch performance through the quarterly reports. [pause] Only after all that did I scope the problem. Then I planned, weighed trade-offs, and built. The slides came last. [pause] These percentages are my own rough guess — not measured. [slow down] And this shape is on purpose. Because that is the Forward Deployed Engineer job. Take something unclear. Understand it. Get feedback. Then solve it with software and AI. [pause] The hardest part wasn't the code. It was learning enough of your world to point the code at the **right** problem. [let it land]
@@ -415,15 +411,15 @@ Let me be honest about where my time went. [pause] Most of it was **not** coding
 
 ---
 
-## That's Concord + open the floor — slides 25-26
+## That's Concord + open the floor — slides 24-25
 
-### Slide 25 — Comparability, provenance, a path forward — now, your questions  ·  ~70s
+### Slide 24 — Comparability, provenance, a path forward — now, your questions  ·  ~70s
 **If I blank, say only this:** "That's Concord — comparability, provenance, a path forward — and I have three questions for you: the customer, the culture, the scorecard."
 **Say it:**
 [click] Let me bring it home in three lines. First — **comparability** is the product, not extraction. The tool knows when **not** to put two numbers in one column. Second — every number is **one click** from its source; today that source is file-level. Third — there's a clear **path** to a more reliable, redundant version — designed, not built yet. [pause] [smile] That's Concord. [pause] And I have three questions for **you** — I'd love to ask them all the way through, not just at the end. [slow down] One, the **customer**: who owns the quarterly hand-keying today — one person, a team, offshore, a vendor? Two, the **culture**: is it AI-first but humans decide everywhere, or does the AI group own AI and the business teams just consume it? Three, the **scorecard**: six months in, what did a great FDE actually do? [pause] These matter to me — I care about your world, not just my demo.
 **Then move on:** "So let me leave you with one card."
 
-### Slide 26 — Thank-you card (the close, then Q&A)  ·  ~60s
+### Slide 25 — Thank-you card (the close, then Q&A)  ·  ~60s
 **If I blank, say only this:** "Concord — built with AI, decided by humans. Here are five threads — pick any one and lead."
 **Say it:**
 [pause] [click — the thank-you card] [slow down] Concord. One comparable, source-traced view of every portfolio company. [breathe] Built with AI. Decided by humans. Made with love, with AI — but **human-first** on every decision. [let it land — do NOT talk over the card] Thanks. [Hold the card on screen.] [pause] [smile] And to open our talk, here's a simple menu — five threads I'm most curious about. Pick any one and lead. One — check my map; correct my finance and my PE scope. Two — the real customer; who owns it, and what breaks trust first? Three — is this a real problem, worth solving, or already handled? Four — your AI culture; excited, cautious, or burned before? Five — the role itself; what does a great **FDE** do here? [pause] **Pick any one** you like. I'm all ears. [If they ask where a number comes from: today it's file-level — the source file, its own label, its confidence, and the exact quoted line. Page or sentence is roadmap; never point to a page number.]

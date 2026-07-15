@@ -9,57 +9,54 @@
 
 ---
 
-**Slide index — 33 slides, 13 sections (0–12), ~45 min capable.** Present most of the 33 (curate §8 to the 5 "SHOW" slides) to protect 10+ min of Q&A. The demo (§7) is **one title slide** run live from the app.
+**Slide index — 25 slides, 11 live sections (0, 2–11), ~40 min capable.** *(Synced to the final 25-slide deck; the authoritative slide **order** is the FINAL DECK table in `iii-1-presentation-outline-A-thorough.md`.)* Curate §8 to the 6 "SHOW" slides to protect 10+ min of Q&A. The demo (§7) is **one title slide** run live from the app. **Cut since the first build: §1 hook · §2.4 · §2.5 · §3.3 (10/90) · §4.1 (one offline click) · §5.2 (grind table) · §12's own slides. Added: §3.2 "How Concord works today" · §8.1a "the architecture in one picture."**
 
 | # | Section (impactful title) | Slides | Running | ~Min |
 |---|---|---|---|---|
-| 0 | Understand your world first (the FDE job) | 1 | 1 | 1 |
-| 1 | One data layer, two opposite needs | 1 | 2 | 1 |
-| 2 | Here's my map — correct me | 5 | 7 | 7 |
-| 3 | The quarter-close hurts | 3 | 10 | 3 |
-| 4 | Comparability is the product | 5 | 15 | 5.5 |
-| 5 | AI suggests, humans decide | 2 | 17 | 2 |
-| 6 | Caught before the IC beats hours | 1 | 18 | 1 |
-| 7 | Watch it refuse (live demo) | 1 | 19 | 10 |
-| 8 | The path to production trust | 7 built · show 5 | 26 | 6 |
-| 9 | Prototype → production | 2 | 28 | 2 |
-| 10 | The hard part wasn't the code | 1 | 29 | 1 |
-| 11 | That's Concord + the final punch | 2 | 31 | 1 |
-| 12 | Correct my map, read the room | 2 | 33 | Q&A |
+| 0 | Understand your world first (**business case**) | 1 | 1 | 1 |
+| 1 | ~~One data layer, two opposite needs~~ — **CUT** (folded into §4.4) | 0 | 1 | — |
+| 2 | Here's my map — correct me | 3 | 4 | 5–6 |
+| 3 | The problem, the machine, the traps | 3 | 7 | 4 |
+| 4 | Comparability is the product | 4 | 11 | 5 |
+| 5 | AI suggests, humans decide | 1 | 12 | 1.5 |
+| 6 | Caught before the IC beats hours | 1 | 13 | 1 |
+| 7 | Watch it refuse (live demo) | 1 | 14 | 10 |
+| 8 | The path to production trust | 8 built · show 6 | 20 | 6 |
+| 9 | Prototype → production | 2 | 22 | 3 |
+| 10 | The hard part wasn't the code | 1 | 23 | 1 |
+| 11 | That's Concord + open the floor (absorbs §12) | 2 | 25 | 1.5 |
+| 12 | ~~Correct my map, read the room~~ — **folded into §11** | 0 | 25 | Q&A |
+
+*(Running = cumulative slide count, **not** deck position — the two-rounds slide (§4.4) is presented early as **deck slide 5**; the true deck order is the FINAL DECK table in `iii-1`.)*
 
 ---
 
-## Section 0 — Understand your world first (the FDE job)  ·  (1 slide)  ·  ~1 min
+## Section 0 — Understand your world first (business case)  ·  (1 slide)  ·  ~1 min
 
-### Slide 0.1 — An FDE starts in your world — not in the code
-- the FDE job: take an ambiguous problem → **understand your world** → solve the real one
-- Xavier Medina — software engineer · 4+ yrs shipping production AI (ProsperaLabs: voice · chat · email)
-- so here, most of my time went to understanding YOUR world, not coding
-- [graphic: a left-to-right **FDE arc** — "an ambiguous problem" → a **big, dominant UNDERSTAND YOUR WORLD** node (Sagard · PE · the Ops team) → "build the right thing"; the understand node is by far the largest, foreshadowing the §10 time bar; **NO Concord wordmark here**]
+### Slide 0.1 — A business case for Concord (I start in your world, not in the code)
+- header chip **"BUSINESS CASE PRESENTATION"**; sub-line "I'm Xavier — a software engineer who likes **solving hard problems** and **owning them end to end**"
+- the **5-step ownership loop:** 1 unclear problem → 2 reasonable assumptions → 3 ship a useful v1 (built to scale) → 4 make it reliable to trust → 5 ↻ improve from real feedback
+- footer bio: Xavier Medina — software engineer · 4+ yrs shipping production AI · ProsperaLabs (voice · chat · email · ecommerce, real-estate, legal, customer-service)
+- so here, most of my time went to understanding YOUR world, not the code
+- [graphic: a left-to-right **5-step ownership loop** — five numbered boxes, step 5 with a ↻ feedback arrow back to step 1; this IS the intro visual (how Xavier works: own the whole loop); it foreshadows the §10 time bar; **NO Concord or Sagard wordmark here** — the brand first appears in §2]
 - honest: "production-grade" = my ProsperaLabs work, **not** Concord (Concord's demo is one deterministic pass)
-- *(speak, don't slide: the full bio + humility-pivot quotes — the slide's point is understanding-first, the FDE job)*
+- *(speak, don't slide: the full bio + humility-pivot quotes — the slide's point is ownership + understanding-first, the FDE job)*
 
 ---
 
-## Section 1 — One data layer, two opposite needs  ·  (1 slide)  ·  ~1 min
+## Section 1 — ~~One data layer, two opposite needs~~ — **CUT** (spoken opener only, no slide)
 
-### Slide 1.1 — Two opposite readers, one shared data layer
-- your deal partner + your valuations analyst open the SAME quarterly pack
-- they need OPPOSITE things from it (speed vs precision)
-- **the hook (printed verbatim):** *"When your deal partner and your valuations analyst open the same quarterly pack, they need opposite things from it — what if one clean, traceable data layer could serve both?"*
-- [graphic: two persona silhouettes (deal partner ↔ valuations analyst) reaching from opposite sides toward ONE shared data-layer bar under a single quarterly pack — "speed" one side, "precision" the other; **do NOT** use the "same 60%" column visual here — that reveal is §4]
-- honest: "traceable" = **file-level** provenance (not page/sentence)
-- *(backup, never a slide: the 5 alternate hooks — #6 is the only hook that reaches a slide; never stack two)*
+**Cut from the deck.** The "two opposite readers / one shared data layer" hook is now a **spoken opener** only — you may still ask hook #6 as a warm question into §2, but it is **not a slide.** Its deal-partner-speed / one-data-layer idea now lives on the **two-rounds slide (§4.4, deck slide 5)**, and the "one messy PDF serves both" tension (old §2.5) lands there too.
 
 ---
 
-## Section 2 — Here's my map — correct me  ·  (5 slides)  ·  ~7 min
+## Section 2 — Here's my map — correct me  ·  (3 slides)  ·  ~5–6 min
 
 ### Slide 2.1 — Four strategies, one focus — Concord starts with your direct PE portfolio companies
 - branches: VC · PE · Private Credit · Real Estate (+ a big solutions arm)
 - **PE = where Concord focuses today** — the packs in my demo
 - the rest = documented extensions, not v1
-- [graphic: four strategy tiles in a row — the **PE** tile enlarged + accent-ringed "← Concord focuses here today"; the other three **dimmed/greyed-out**, labelled "documented extensions, not v1"; **footnote:** "*re-verify Sagard's strategy line-up + scale figures on sagard.com the morning of; print NO AUM/portfolio-count/fund-size numbers as fact*"]
+- [graphic: four strategy tiles in a row — the **PE** tile enlarged + accent-ringed "← Concord focuses here today"; the other three **dimmed/greyed-out**, labelled "documented extensions, not v1"; **the Sagard logo appears top-right** (these strategies are Sagard's core business); **footnote:** "*re-verify Sagard's strategy line-up + scale figures on sagard.com the morning of; print NO AUM/portfolio-count/fund-size numbers as fact*"]
 - honest: "v1 = PE only; the other three branches are documented extensions, not built"
 
 ### Slide 2.2 — Fundraise → invest → hold → exit: Concord lives in the quarter-by-quarter middle
@@ -68,30 +65,17 @@
 - [graphic: horizontal 4-stage fund-cycle arrow — a glowing pin on stage 3 "HOLD / MONITOR = Concord's home"; caption "a fund lives ~10 years; monitoring is the quarter-by-quarter middle"]
 - honest: "Concord feeds the inputs to *the mark* — it never makes the mark (a human, audited judgment)"
 
-### Slide 2.3 — Five people read the same pack — for opposite jobs
+### Slide 2.3 — Five people read the same pack — for opposite jobs (row two is our customer)
 - render the **5-row persona table**, columns: **Persona · What they DO (short) · Trust posture**
-- **row #2 (Reporting Operations + Controls) highlighted** and tagged "⬅ our customer"
+- **row #2 (Reporting Operations + Controls) highlighted** and tagged "⬅ our customer" — with a folded-in call-out "reconcile · trace · sign-off — **NOT** Value Creation / operating-partner" (old §2.4)
 - speed (deal partner) vs precision (valuations / IR / credit)
-- [graphic: the 5-row persona table (those three columns), row #2 highlighted "⬅ our customer"]
-- honest: "these are my assumed roles — please correct me"
-
-### Slide 2.4 — Controls, reconciliation, audit trail — that's our customer, not Value Creation
-- owns the quarterly monitoring, reconciliation & reporting grind
-- must **trust AND trace** every number · controls · source-of-truth · audit trail
-- NOT operating-partner / Value Creation
-- [graphic: a single customer-spotlight card for persona #2 (three control words: reconcile · trace · sign-off) with a struck-through "Value Creation / operations" chip]
-- honest: "(my assumption — one person, a team, or a vendor? one of my questions for you.)"
-
-### Slide 2.5 — One messy PDF must serve speed AND audit — that's the whole problem
-- deal team wants a fast directional read
-- valuations / LP-reporting / credit want an audited, reconciled number
-- one source-traced, refuse-when-unsure layer serves both
-- [graphic: two arrows (speed / precision) converging into one "source-traced · refuse-when-unsure data layer" box; echoes hook #6, hands into §3]
-- *(speak, don't slide: the money flow LP→GP→portco→exit→LP · "2 and 20" · "the mark" — all spoken, never printed; say the branch line-up "roughly — I'll re-verify on sagard.com")*
+- [graphic: the 5-row persona table (those three columns), row #2 highlighted "⬅ our customer" with a small spotlight badge "reconcile · trace · sign-off — not Value Creation"]
+- honest: "these are my assumed roles — please correct me (who owns the grind — one person, a team, or a vendor?)"
+- *(speak, don't slide: the money flow LP→GP→portco→exit→LP · "2 and 20" · "the mark" — all spoken, never printed; the "**NOT** Value Creation" clarification for persona #2 (old §2.4); the "one messy PDF must serve speed AND audit" tension (old §2.5 — now carried onto the two-rounds slide §4.4); say the branch line-up "roughly — I'll re-verify on sagard.com")*
 
 ---
 
-## Section 3 — The quarter-close hurts  ·  (3 slides)  ·  ~3 min
+## Section 3 — The problem, the machine, the traps  ·  (3 slides)  ·  ~4 min
 
 ### Slide 3.1 — Monitoring the portfolio means hand-keying 20+ packs — every quarter
 - stage 3 is Hold / Monitor — and the Ops team monitors by reading every company's Q report, manually
@@ -100,7 +84,14 @@
 - [graphic: a stack of labelled PDF-pack icons (SaaS / lender / payments / freight) funnelling through a small human-with-keyboard into one spreadsheet grid; clock reading "DAYS · week 2 after close"]
 - honest: "synthetic test packs — 10 companies across 24 PDFs. Say '20+ **packs**', not '20+ companies.'"
 
-### Slide 3.2 — Four traps in the manual close — each one provable in the packs
+### Slide 3.2 — How Concord works today, end to end (the whole machine)  ·  NEW
+- the 5-stage pipeline: 1 READ (deterministic parser) → 2 UNDERSTAND (classify equity/credit · one vocabulary · unit+scale) → 3 CROSS-CHECK (reconcile · keep own report) → 4 THE COMPARABILITY GATE (safe, like-for-like? **YES** rank in sector / **NO** show but REFUSE) → 5 THE COCKPIT (click any number → source)
+- one offline click · a human owns every number that leaves
+- reading = the easy 10%; everything below the gate = the expensive 90% (comparability + trust)
+- [graphic: the **today/built architecture diagram** — build it from `case-study/vi-concord-architecture-today.md` (the pixel-aligned box diagram: PDF packs → read → understand → cross-check → the comparability gate (fork: rank / refuse) → cockpit, with a PROVENANCE + "a human owns every number" band under the whole pipeline); the "today / built" twin of the future orchestrator picture (§8.1a / deck 17)]
+- honest: "this is what runs **today** — one deterministic pass · provenance is **file-level** · the redundant / orchestrator version is the future (§8.1a / deck 17)"
+
+### Slide 3.3 — Four traps in the manual close — each one provable in the packs
 - many names, one metric — NovaCloud ARR: "End-of-Period ARR" = "ARR (End of Period)"
 - one name, two meanings — SaaS delivery-margin vs LendBridge interest-margin (quietly wrong)
 - right number, wrong basis — ClearPay $38.4M incl. $6.2M client float = $32.2M spendable
@@ -108,23 +99,10 @@
 - [graphic: 2×2 grid of trap cards, ONE real example each; the naive "one shared column" struck through on traps 2 and 3]
 - *(speak, don't slide: trap 3's second example — ConstructIQ reports burn per quarter while everyone else is per month)*
 
-### Slide 3.3 — Reading the PDF is the easy 10%. The expensive 90% is comparability + trust.
-- reading the PDF = the easy 10%
-- knowing what's safe to compare + proving each number = the expensive 90%
-- reconciliation · comparability · trust · time — every quarter, forever
-- [graphic: a 10 / 90 split bar — a thin "reading" slice against a fat "comparability + trust" slice]
-
 ---
 
-## Section 4 — Comparability is the product  ·  (5 slides)  ·  ~5.5 min
-
-### Slide 4.1 — One offline click runs the flow — a human owns every number that leaves
-- load all packs offline in one click → classify (equity vs credit)
-- normalize onto one shared vocabulary → reconcile vs the company's own report
-- refuse unsafe **cross-class** comparisons (lender vs software) → click any number → source
-- a human owns every number that leaves the building
-- [graphic: a left-to-right pipeline of 6 labelled stages (load · classify · normalize · reconcile · refuse · click-to-source), ending in a click-to-source drawer icon, a human badge over the exit gate]
-- honest: "provenance is **file-level** today (file · label · confidence · exact excerpt), not page/sentence; refuse fires **across asset classes** today, intra-sector margin flagging is next"
+## Section 4 — Comparability is the product  ·  (4 slides)  ·  ~5 min
+*(§4.1 "one offline click" is CUT — folded into the §3.2 architecture slide. §4.4 two-rounds is presented EARLY as deck slide 5.)*
 
 ### Slide 4.2 — Same label ≠ same metric — comparability is the product, not extraction
 - two companies, both "60% gross margin" (illustrative) — SaaS delivery-margin vs lender interest-margin = different machines
@@ -141,38 +119,34 @@
 - [graphic: a rules-engine icon with four property chips (cheap / fast / testable / offline); a red banner "not production-grade yet"; a small "Firecrawl → errors + out of credit → deterministic" honesty footnote]
 - honest: "any vendor accuracy % = the vendor's own claim, not our measured result"
 
-### Slide 4.4 — Same builder, opposite tools — speed for the deal partner, precision for Ops
+### Slide 4.4 — Same builder, opposite tools — speed for the deal partner, precision for Ops  ·  (presented EARLY = deck slide 5)
 - round 1 (first take-home) = the DEAL PARTNER's "AI Scout": company URL → scrape info + press → search + scrape founders → summarize → Slack "move forward?" — an LLM, because the deal partner needs SPEED
 - this round = PORTFOLIO OPERATIONS: needs PRECISION first — a number you'd sign, traceable, wrong answers REFUSED not guessed
 - same builder, two rounds, two opposite trust postures → that's WHY this one is deterministic
-- [graphic: two-column contrast card — LEFT "Deal partner · speed (LLM)", RIGHT "Operations · precision (deterministic)"; one figure between labelled "same builder"]
+- folded-in framing (old §1 hook + §2.5 tension): "same messy PDF must serve **both** — speed AND audit"
+- [graphic: two-column contrast card — LEFT "Deal partner · speed (LLM)", RIGHT "Operations · precision (deterministic)"; a thin top banner "one messy PDF → two opposite needs"; one figure between labelled "same builder"]
 
 ### Slide 4.5 — Trust one reader by not trusting one
 - **designed, not built — today's demo runs the single deterministic method**
 - for production: run 2–4 INDEPENDENT readers in parallel that fail differently
 - more agreement → higher confidence (tiered) · any disagreement → flag + send to a human (answers side by side)
-- for Parinaz: rigorous, not "three LLMs voting" · for Sharon: an automated four-eyes control + audit trail
 - [graphic: 3–4 reader lanes converging on an orchestrator that branches to ✔ (agree → higher confidence) and ⚠ (disagree → human review); pointer "→ §8 Group A (deep architecture)"]
 - honest: "'independent' is never total — agreement is strong evidence, not proof"
+- *(speak, don't slide — the "for Parinaz / for Sharon" framing is now spoken, NOT on the slide: for Parinaz rigorous, not "three LLMs voting"; for Sharon an automated four-eyes control + audit trail)*
 
 ---
 
-## Section 5 — AI suggests, humans decide  ·  (2 slides)  ·  ~2 min
+## Section 5 — AI suggests, humans decide  ·  (1 slide)  ·  ~1.5 min
 
-### Slide 5.1 — Be AI-first, but human-decision-driven — AI never decides
+### Slide 5.1 — Be AI-first, but human-decision-driven — AI never decides, and the mark is human
 - we are an AI-FIRST company — but HUMAN-DECISION-DRIVEN
 - AI is probabilistic — a LIKELY answer, not a CERTAIN one — so we never let it DECIDE
 - AI does the heavy, repetitive work and SUGGESTS with reasons
-- the HUMAN makes every call that reaches a report
+- the HUMAN makes every call that reaches a report — two human-only calls: "is this number right enough for a report?" · the mark / LP figure / IC call
+- units + scale it matches; a different currency it **flags**, never converts
 - [graphic: two-lane flow — an "AI / rules" lane (read → stitch → flag → suggest-with-reasons) feeding a single "Human decision gate" box (sign-off → the mark / IC); arrow labelled "suggests", gate labelled "decides"]
-
-### Slide 5.2 — Machines do the grind; the human makes every call that reaches a report
-- render the **full 8-row table** (The work · Who does it · Why); **tint the two human-only rows** so the eye lands on "Human only"
-- read PDFs / pull raw numbers → AI + rules (redundant in production; one reader today)
-- "numbers don't match / looks wrong" → cross-source reconciliation flags it (a redundant orchestrator is production-only)
-- different currency → flag / refuse · NOT convert · "right for a report?" / the mark / LP figure / IC call → human only
-- [graphic: the 3-column table itself; the two human-only rows tinted]
 - honest: "Concord normalizes units + scale (M/K) and flags/refuses a different currency — it does NOT convert. Readers are redundant in production; one reader runs today."
+- *(speak, don't slide — folded from the old §5.2 grind-table slide: the full 8-row work / who / why table, landing on the two human-only rows and "the mark is always human")*
 
 ---
 
@@ -199,10 +173,10 @@
 
 ---
 
-## Section 8 — The path to production trust  ·  (7 built · SHOW 5)  ·  ~6 min
-*(Roadmap Groups A–G — **PRODUCT** improvements only. SHOW: opener 8.0 + A · C · E · G. BACKUP: B, F. There is no Group D.)*
+## Section 8 — The path to production trust  ·  (8 built · SHOW 6)  ·  ~6 min
+*(Roadmap Groups A–G — **PRODUCT** improvements only. SHOW: opener 8.0 + A (8.1 + 8.1a) · C · E · G. BACKUP: B, F. There is no Group D.)*
 
-> **Slide roster (mirrors iii-1's §8 lock):** 8.0 opener · **8.1 Group A readers** · **8.2 Group C reading layer** · **8.3 Group E currency** · **8.4 Group G controls** · 8.5 Group B (backup) · 8.6 Group F (backup). Group A is **one** slide; A0–A9 depth is Q&A / whiteboard, never a slide. Everything here is **designed, not built.**
+> **Slide roster (mirrors iii-1's §8 lock):** 8.0 opener · **8.1 Group A readers** · **8.1a the architecture in one picture (NEW)** · **8.2 Group C reading layer** · **8.3 Group E currency** · **8.4 Group G controls** · 8.5 Group B (backup) · 8.6 Group F (backup). Group A is **two** slides (8.1 correlated-readers + 8.1a the one-picture future flow); A0–A9 depth is Q&A / whiteboard, never a slide. Everything here is **designed, not built.**
 
 ### Slide 8.0 — Reliability isn't more AI — it's more agreement, more human judgment, and a record of both  ·  SHOW
 - more agreement · more human judgment · full record
@@ -218,6 +192,13 @@
 - [graphic: fan-in pipeline — 3–4 reader boxes (deterministic parser · local Docling · vision-LLM · optional doc-AI) → orchestrator → {VALIDATED green / DISAGREE amber → human queue}; ONE clean pipeline, not the A0–A9 tables]
 - honest: "designed, not built — no auto-accept rate until it runs on real packs; Reducto ~99% and any vendor figure is the **vendor's own claim**"
 - *(speak, don't slide: the deep A0–A9 depth — correlated-failure / RMS ~1/√M math, Self-MoA hedge, supervisor graph, the ClearPay A3 trace, cost/latency, confidence routing, the human-review queue)*
+
+### Slide 8.1a — The architecture in one picture (the whole FUTURE flow)  ·  Group A  ·  SHOW  ·  NEW  ·  deck 17
+- the full future flow: one PDF pack → 3 AI readers (Firecrawl · vision-LLM · OCR/Doc-AI) → the ORCHESTRATOR (the referee: line up the SAME fact · are the numbers close enough?) → AGREE = auto-accept / DISAGREE = a person decides
+- the human-review sidebar: all readers side by side + a **screenshot of the real PDF** + four-eyes + full audit trail → one trusted number → the cockpit
+- all three readers are AI, so agreement is **strong evidence, not proof** — the disagree path ends at a person; every fix is logged and teaches the readers
+- [graphic: the **future-flow orchestrator diagram** — build it from `case-study/v-redundant-extraction-orchestrator.md` (its "architecture in one picture" ASCII box diagram); the "future / designed" twin of the today-architecture picture (§3.2 / deck 7)]
+- honest: "**future expansion — designed, not built** · the PDF-screenshot review sidebar is part of this future; today provenance is file-level"
 
 ### Slide 8.2 — AI writes the interpretation, never the number — and a human can always refute it  ·  Group C  ·  SHOW
 - after the numbers are clean: an LLM writes the "story" — per company + whole portfolio — explicitly a SUGGESTION
@@ -287,14 +268,15 @@
 
 ---
 
-## Section 11 — That's Concord + the final punch  ·  (2 slides)  ·  ~1 min
+## Section 11 — That's Concord + open the floor (absorbs §12)  ·  (2 slides)  ·  ~1.5 min
 
 ### Slide 11.1 — Comparability, provenance, a path forward — now, your questions
 - comparability is the product, not extraction
 - every number one click from its source
 - a clear path to the redundant, production-grade version
-- over to you — and I have a few questions for you
+- over to you — and I have **three** questions for you: the **customer** · the **culture** · the **scorecard**
 - [graphic: clean closing card — three small pillar icons (comparability · provenance · the path forward); "over to you", no numbers]
+- *(speak, don't slide — folded from §12: (1) customer — who owns the quarterly grind today (person / team / offshore / vendor)? (2) culture — AI-first but human-decision-driven everywhere, or does the AI group own AI and the business teams just consume it? (3) scorecard — six months in, what did a great FDE actually do?)*
 
 ### Slide 11.2 — Built with AI, decided by humans  ·  (the very last beat — hold through Q&A)
 - Concord — one comparable, source-traced view of every portfolio company
@@ -302,24 +284,13 @@
 - "Made with love, with AI — but human-first on every decision ❤️"
 - Thanks.
 - [graphic: full-bleed punch card — the Concord mark (two overlapping rings = convergence / agreement) centred above "Concord" and its slogan "One comparable, source-traced view of every portfolio company"; one warm line "Made with love, with AI — but human-first on every decision ❤️"; a big quiet "Thanks." at the foot; the "Prepared for Sagard" mark small in the corner; one accent colour, deep whitespace, no data — hold this card up through Q&A]
-- *(speak, don't slide: pause before the card; read the heart line slowly; if pressed on "its source," provenance is file-level)*
+- *(speak, don't slide: pause before the card; read the heart line slowly; if pressed on "its source," provenance is file-level; then offer the **five threads** menu — folded from §12 — "1 check my map · 2 the real customer (who owns it / what breaks trust first) · 3 is this a real problem · 4 your AI culture · 5 the role (what does a great FDE do)"; "pick any one and lead")*
 
 ---
 
-## Section 12 — Correct my map, read the room  ·  (2 slides)  ·  ~Q&A
+## Section 12 — ~~Correct my map, read the room~~ — **FOLDED into §11** (0 own slides)
 
-### Slide 12.1 — Three questions I can't answer without you
-- who owns the quarterly hand-keying today — person · team · vendor? (B1)
-- AI-first but human-driven — every team, or owned by the AI group? (D2)
-- 6 months in — what did a successful FDE actually do? (E1)
-- footer: the customer · the culture · the scorecard
-- [graphic: a three-card cue layout — one card per question, labelled customer / culture / scorecard]
-
-### Slide 12.2 — Five themes — pick any thread you like
-- five group headers, one line each: "Validate my map" · "The real customer (Sharon)" · "Is this a real problem?" · "AI culture" · "The role (FDE)"
-- [graphic: a compact 5-panel menu board — headers only, so the room can point at a thread]
-- honest: keep group headers only — **no asserted Sagard facts (Unigestion / solutions / AUM) on the slide**
-- *(speak, don't slide: the full wording of every question; "I'll ask these throughout, not just at the end")*
+**Folded into §11.** §12 no longer renders its own slides. The **three questions** live on the recap slide (§11.1) and the **five threads** live on the thank-you card slide (§11.2) — both **spoken** as you open the floor. If you only ask three: **B1** (who owns the grind) · **D2** (AI-first but human-driven?) · **E1** (what does a successful FDE do) — the customer, the culture, the scorecard. *(Full question wording lives in `iii-1` §12.)*
 
 ---
 
@@ -344,17 +315,17 @@
 
 - **Intro (Slide 0.1) — the slide's POINT is understanding-first (the FDE job); in *delivery*, still open with the bio confidently, then the FDE motivation, then land the understanding-first pivot.** Say the "4+ years building AI in production, end-to-end, across voice/chat/email" line with your chest out — it's what *earns* you the right to say, later, "one method is not production-grade." Then the FDE motivation (unclear problem → reasonable assumptions → first useful version → reliable enough to ship → real-user feedback). Then **pivot to humility**: "…but here, most of my time went to learning your world, not coding." Confidence first tells Parinaz you've shipped real AI (so the honesty reads as expertise, not hedging); humility second tells Sharon you took *her* world seriously. It plants the **time bar** you land in §10 — no longer a fun fact. Keep "production-grade" tied to ProsperaLabs, **never** to Concord.
 
-- **Hook (Slide 1.1) — open with ONE question (hook #6), don't stack.** The hook is *"When your deal partner and your valuations analyst open the same quarterly pack, they need opposite things from it — what if one clean, traceable data layer could serve both?"* Ask it and stop — do **not** read the five alternate hooks (they live in the `iii-1` prose as backups only). Note: the **"same 60%" thesis reveal is NOT the hook anymore** — it now lands in §4 (Slide 4.2) as the thesis reveal. The hook is a *question*; the thesis is a *picture*.
+- **Hook — SPOKEN opener only, NO slide (the old Slide 1.1 is cut).** If you open with a question, use hook #6 — *"When your deal partner and your valuations analyst open the same quarterly pack, they need opposite things from it — what if one clean, traceable data layer could serve both?"* — ask it and stop; do **not** read the five alternate hooks (they live in the `iii-1` prose as backups only). Its deal-partner-speed / one-data-layer idea now lands on the **two-rounds slide (§4.4, deck 5)**. The **"same 60%" thesis reveal** is the §4 (Slide 4.2) picture, not the hook. The hook is a *question*; the thesis is a *picture*.
 
 - **Live demo (Slide 7.1) — one title slide, run it live.** The demo is a single title card; you switch to the app. The three beats (pain → two proofs → trust spine) and the honesty caveats are **spoken, not printed.** Your scripts: `demo-honesty-script.md` (what to *say* vs. what the screen *shows*) + `cockpit-frontend-guide.md` (the click-path). Don't rebuild the beats as slides.
 
-- **§8 is PRODUCT improvements only — SHOW 5, keep 2 backup.** Scaling / system design is **not** here — it lives in §9 and `iv-system-design-and-scaling.md`. Roster: **8.0 opener · 8.1 Group A readers · 8.2 Group C reading layer · 8.3 Group E currency · 8.4 Group G controls** are the SHOW slides; **8.5 Group B** and **8.6 Group F** are BACKUP (build them, promote live only if the room asks). **Group A is ONE slide** — the deep A0–A9 architecture is Q&A / whiteboard depth, never a slide. There is **no Group D** (subsumed by the redundant readers, Group A). The **A6 synthetic-warning demo is NOT built and NOT shown live** — describe it verbally only if Parinaz pushes. The PDF-crop / page-number sidebar (A5) is **future design** — never show a page number or crop in the live demo as if real.
+- **§8 is PRODUCT improvements only — SHOW 6, keep 2 backup.** Scaling / system design is **not** here — it lives in §9 and `iv-system-design-and-scaling.md`. Roster: **8.0 opener · 8.1 Group A readers · 8.1a the architecture in one picture · 8.2 Group C reading layer · 8.3 Group E currency · 8.4 Group G controls** are the SHOW slides; **8.5 Group B** and **8.6 Group F** are BACKUP (build them, promote live only if the room asks). **Group A is TWO slides (8.1 correlated-readers + 8.1a the one-picture future flow)** — the deep A0–A9 architecture is Q&A / whiteboard depth, never a slide. There is **no Group D** (subsumed by the redundant readers, Group A). The **A6 synthetic-warning demo is NOT built and NOT shown live** — describe it verbally only if Parinaz pushes. The PDF-crop / page-number sidebar (A5) is **future design** — never show a page number or crop in the live demo as if real.
 
 - **§10 (Slide 10.1) is the TIME-ALLOCATION BAR, not the two-rounds fun fact.** The message: most of your time went to **understanding** their world — that's the FDE job. The **two-rounds speed-vs-precision story moved to §4** (Slide 4.4). The bar's percentages are your **own rough self-estimate** — say "roughly," never present them as a measured fact.
 
 - **Final punch (Slide 11.2) — stage it, don't rush it.** After the **time bar**, **pause before the punch card comes up**. Let the room settle. Bring up the card and let the heart line *land* — read it slowly: "Made with love, with AI — but human-first on every decision." The line **"human-first on every decision" is your entire thesis in six words** — refuse-to-compare, provenance, humans-own-the-mark, all of it. Say "Thanks," and leave the card on screen through Q&A. Don't talk over it.
 
-- **Section 12 ("My questions for THEM") still needs your review.** The two question slides (12.1 / 12.2) are drafted but **not yet finalized by you** — reread them the morning of, cut to the 3 you actually want, and make sure they match the room (Parinaz = AI rigor, Sharon = controls/reporting-ops).
+- **§12's questions are FOLDED into §11 (no own slides).** The **three questions** go on the recap slide (§11.1), the **five threads** on the thank-you card (§11.2) — both spoken as you open the floor. Still **finalize them the morning of** — cut to the 3 you actually want and make sure they match the room (Parinaz = AI rigor, Sharon = controls/reporting-ops).
 
 - **System-design / scaling defense lives in a SEPARATE doc — not the slides.** The deep "how would you scale / architect this" material (Option 1 harden-in-place vs Option 2 cloud re-platform, the ensemble orchestrator, queues / retries / idempotency / dead-letter queue, partitioning, data-residency) lives in **`case-study/iv-system-design-and-scaling.md`** — your **Q&A / whiteboard** reference, kept off the deck on purpose so the slides stay clean. The recruiter flagged scalability as a focus of the round, so study that doc and pull from it live if they push on architecture. §8 is product-only; §9 points to `iv-…`.
 
