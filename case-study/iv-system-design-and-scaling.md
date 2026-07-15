@@ -10,7 +10,7 @@ One honesty anchor for the whole doc, stated once so nothing below contradicts i
 
 > Concord today is a **prototype, not a production system**. It runs offline, in memory, one deterministic method, no database, no login. The **76%→90% recall is real but measured on 24 synthetic PDFs** — enough to prove the idea, not to promise production reliability. The recall jump came from a **backend parser fix, not a changed test set**, and it is paired with **0 wrong values**, because a confidently-wrong number is worse than a flagged-missing one.
 
-**Where to look:** §8 answers the recruiter’s likely questions out loud (options + trade-off + my pick); **§12 is the full decision catalog** — every scale-up choice side by side; **Appendix A** has the five whiteboard sketches to practice.
+**Where to look:** §8 answers the recruiter’s likely questions out loud (options + trade-off + my pick); **§12 is the full decision catalog** — every scale-up choice side by side; **§14 is my final architecture** — fully cloud-native, fully detailed, one diagram; **§13 is the on-prem fallback branch** — same shape, for when residency is non-negotiable; **Appendix A** has the five whiteboard sketches to practice.
 
 ---
 
@@ -25,7 +25,7 @@ The round explicitly grades **two axes**:
 
 **The canonical prompt:** *"Your prototype works for 20 documents. What happens with 500 portfolio companies and MILLIONS of documents?"*
 
-They will change the scenario **mid-sentence** and expect me to redraw the architecture verbally. Requirements they may inject live: more users / more portcos · larger volumes · **real-time** processing · **multiple** data sources · **concurrent** requests · reliability · security · monitoring · **cost**.
+They will change the scenario **mid-sentence** and expect me to redraw the architecture verbally. Requirements they may inject live: more users · more portcos · larger volumes · **real-time** processing · **multiple** data sources · **concurrent** requests · reliability · security · monitoring · **cost**.
 
 **The meta-signal (most important):** they will keep asking **"why?"**. So I never just name a technology — I **compare the alternative and give the trade-off**. They care much more about *how I reason* than whether the demo is flawless. Two things they say are easy to forget, and I will not forget them:
 
@@ -40,7 +40,7 @@ These are the reasoning moves I lean on when the scenario shifts under me.
 
 | # | Rule | Said out loud as… |
 |---|---|---|
-| **1** | **Start from the simplest thing that works.** The current monolith is the baseline, not an embarrassment. | *"Today it's a monolith, and for 20 trusted PDFs that's correct."* |
+| **1** | **Start from the simplest thing that works.** The current monolith is the baseline, not an embarrassment. | *"Today it's a monolith, and for 24 trusted PDFs that's correct."* |
 | **2** | **Add a box only when a REAL pressure forces it.** No box without a named pressure. | *"What breaks first? That tells me the next box."* |
 | **3** | **Name four things per box:** the pressure, the move, the alternative, the trade-off. | *"Pressure X → I add Y instead of Z, accepting trade-off W."* |
 | **4** | **Say when I would NOT build it yet.** Restraint is a design decision. | *"I would not add Kafka until one queue is genuinely saturated."* |
@@ -119,7 +119,8 @@ This table is my map for **every scaling question** the recruiter might throw. W
 | Pressure | What BREAKS in the prototype | First CHEAP fix | The bigger fix |
 |---|---|---|---|
 | **More documents** (thousands) | One synchronous request can't finish; RAM holds all results | Batch on the CLI (already disk-backed); process folder in chunks | Object storage + queue + worker pool (§5 v1–v2) |
-| **More portcos / users** | `_LATEST_EXPORT` is one global — no isolation, last run wins | Key results by run-id in a small store | Multi-tenant DB **partitioned** by company/fund/period (§5 v5) |
+| **More portfolio companies** (a *data* pressure — more companies' numbers to store and isolate) | `_LATEST_EXPORT` is one global — no isolation, last run wins | Key results by run-id in a small store | Multi-tenant DB **partitioned** by company/fund/period (§5 v5) |
+| **More users** (a *traffic* pressure — more people *reading* the cockpit, not more data) | One API process and one DB connection path — read load has nowhere to spread | A **cache** in front of repeat dashboard reads (§12.12) | Many stateless API replicas behind a **load balancer** (§12.21) + database **read replicas**, so viewer traffic never competes with ingestion |
 | **Real-time / low latency** | Whole pipeline runs per request; slow PDF blocks the caller | Return a job-id immediately; poll for result | Async workers + cache + event-driven intake (§5 v1–v2) |
 | **Multiple data sources** | Only reads a local folder; only knows native-text PDF | Add a **read-only** cloud-storage connector (Group F, Option A) | Event-driven ingest + **per-format parsers/OCR** converging on one `ParserOutput` (§8-4) |
 | **Concurrent requests / quarter-end burst** | Werkzeug dev server serializes; one global with no lock | Real WSGI server (gunicorn), worker **processes** | Queue absorbs the burst; workers scale out horizontally |
@@ -164,7 +165,7 @@ Two pressures arrive together: **reliability** (a crash loses everything) and **
 
 - **What each box is (plain):** a **queue** is a durable to-do list of work messages; a **worker** is a background process that pulls one message and does the job; a **store** is a database so a result survives a crash. **Asynchronous** just means "reply *now* with a ticket, do the slow work later."
 - **Why here:** it removes the two worst prototype properties in one move — *work is durable* and *the request no longer waits*. Retries + a **dead-letter queue** (a shelf for messages that failed too many times) come with the queue, so one poison PDF never blocks the line.
-- **Which queue (name the pick, not just "a queue"):** **managed SQS** (zero-ops, **at-least-once** delivery, scales itself, fits an occasional batch cadence) over **RabbitMQ** (richer routing, but I have to run it) or **Redis + Celery** (fine at small scale, weaker durability guarantees). At-least-once delivery is precisely *why* idempotency below is mandatory, not optional.
+- **Which queue (name the pick, not just "a queue"):** **self-hosted RabbitMQ** (an on-prem broker — keeps the queue where the data lives, durable, rich routing, **at-least-once** delivery) over **managed SQS** (zero-ops and scales itself, but it's a cloud service — the pick *only* once we deliberately move to the cloud branch, v5) or **Redis + Celery** (fine at small scale, weaker durability guarantees). At-least-once delivery is precisely *why* idempotency below is mandatory, not optional.
 - **Alternative rejected:** threads inside the Flask process. Simpler, but a crash still loses in-flight work and it does not survive scaling to multiple machines. A queue is the smallest thing that gives durability *and* horizontal room.
 - **Trade-off accepted:** now there is state to operate (the queue and store need monitoring and backups). Also the result is eventually-ready, not instant — the UI must poll.
 - **Stop here when:** a single queue and a few workers keep up. Do **not** add object storage, service splits, or tenancy yet.
@@ -328,7 +329,9 @@ It's two problems in one sentence, so I split it. *Millions of docs* = **volume 
 ---
 
 **(2) "More users / more portfolio companies."**
-The real risk at 500 portcos is **information barriers** — keeping deal teams from seeing each other's data. That is a data-model and permissions problem, not a compute one.
+It's two problems in one sentence, so I split it — they are not the same pressure. A **portfolio company (portco)** is *data*: one more company's numbers to store and isolate. A **user** is a *person*: someone reading the cockpit. More portcos is a **data-isolation** problem; more users is a **read-traffic** problem. I answer them separately, on purpose.
+
+*Portcos — the real risk at 500 of them is* **information barriers** — keeping deal teams from seeing each other's data. That is a data-model and permissions problem, not a compute one.
 
 | Option | Pros | Cons | When to pick |
 |---|---|---|---|
@@ -338,6 +341,9 @@ The real risk at 500 portcos is **information barriers** — keeping deal teams 
 
 **Recommendation (Concord): B — partition + row-level scope.** *Why:* today's single `_LATEST_EXPORT` global is last-run-wins with no isolation; B gives per-tenant, per-run rows with isolation *and* speed, without N databases.
 **Why? / If they push "why not a database per tenant?":** physical isolation only earns its keep when a regulator or contract demands it; until then it's N× the ops for isolation that **row-level scope already gives** inside one DB.
+
+*Users — millions of people just reading dashboards is a completely different pressure, answered on the read path, not the data model.* One API process and one database connection path have nowhere for read load to spread. The fix: a **cache** in front of repeat dashboard reads (§12.12) so the same quarter's numbers aren't reassembled for every viewer; many **stateless API replicas** behind a **load balancer** (§12.21) so no single instance is a hotspot; and database **read replicas**, so viewer traffic never competes with ingestion writes (§12.23).
+**Why? / If they push "doesn't partitioning already handle this?":** partitioning controls **who can see which data** — it says nothing about **how many people can ask for it per second**. A perfectly partitioned database still falls over if two million analysts refresh their dashboard at the same moment; that's a traffic problem, solved on the read/serving side, not the data model.
 
 ---
 
@@ -703,7 +709,7 @@ The **SLO/SLI** picks (an SLO is a target, an SLI is the measured signal behind 
 
 | Box | One-line why |
 |---|---|
-| v0 monolith | simplest thing that works for 20 trusted PDFs |
+| v0 monolith | simplest thing that works for 24 trusted PDFs |
 | v1 queue + workers + store | work becomes durable and the request stops waiting |
 | v2 object storage + events | cheap file home + auto-intake from many sources/formats |
 | v3 split extraction / normalization | scale and pay for the expensive reader separately |
@@ -713,7 +719,7 @@ The **SLO/SLI** picks (an SLO is a target, an SLI is the measured signal behind 
 **Buzzwords, one line each:**
 
 - **Async** — reply with a ticket, do slow work later.
-- **Queue** — durable to-do list that absorbs bursts (managed SQS: zero-ops, at-least-once).
+- **Queue** — durable to-do list that absorbs bursts (self-hosted RabbitMQ on-prem: at-least-once; managed SQS only once we move to the cloud branch).
 - **Worker** — background process that drains the queue.
 - **Object storage** — cheap file bucket with "new file" events.
 - **Split extract/normalize** — different cost/latency → scale independently (seam already on disk).
@@ -1032,7 +1038,266 @@ This is the reference behind §8: every part of the system has more than one rea
 
 ---
 
+### 12.23 Database read-scaling for viewer traffic
+
+*Plain first: this is a different pressure from §12.10/§12.11 above. Partitioning answers "who can see which data" (isolation). This entry answers "how many people can ask for data at once" (read throughput) — more users reading the cockpit, not more portfolio companies stored in it.*
+
+| Option | How it works (plain) | Pros | Cons / trade-off | Cost | Pick when… |
+|---|---|---|---|---|---|
+| **Scale the primary vertically** | One bigger database machine handles every read and write | Simplest; nothing new to run | A hard ceiling; write traffic (ingestion) and read traffic (viewers) compete for the same machine | Med–High | Low viewer count, small data |
+| **Cache in front of reads only** (§12.12's result cache) | Repeat dashboard queries return from a fast in-memory cache instead of hitting the database | Cheap; huge win when the same quarter's numbers are viewed over and over | A cold/rare query still pays the full database cost; needs invalidation on restatement | Low | Reads repeat heavily (ours — a quarter's numbers don't change between views) |
+| **Database read replicas** | One or more read-only copies of the database, kept in sync with the primary; viewer queries go to a replica, writes still go to the primary | Read traffic and ingestion traffic stop competing for the same machine; replicas scale horizontally as viewers grow | Replicas lag the primary by a small delay (usually sub-second); one more thing to run and monitor | Med | Viewer read volume genuinely outgrows a cache alone, or ingestion writes are being slowed by report-day read spikes |
+
+**Recommendation (for Concord): cache first, read replicas once the cache alone stops being enough.** *Why:* the cache is nearly free and handles the common case (many people looking at the same, unchanged quarter); replicas are the next lever once viewer volume is large enough that even cache-miss traffic would otherwise hit the primary hard enough to slow ingestion. **Switch when:** never reach for vertical scaling of the primary as the fix for viewer traffic — it re-couples read load to the same machine that ingestion depends on, the exact coupling replicas exist to remove.
+
+---
+
 **The catalog in one line:** for a room that rewards *right-sized* engineering (Parinaz) and *auditable control* (Sharon), almost every pick above lands on the **simpler, on-prem, deterministic-first, reversible** option — and names the exact pressure that would justify the bigger one. Same discipline as §5: **name the pressure before you draw the box.**
+
+---
+
+## 13. The on-prem architecture — the fallback branch (if residency is non-negotiable)
+
+Everything above (§5, §12, Appendix A) grows the system **one pressure at a time** — that is the right way to *talk* through it live. This section answers a different, related question, the one they sometimes ask right at the end: *"Fine — now draw me the end state. Assume every one of those pressures is real at once. What does the locked-down, production-grade system look like?"*
+
+**This is the fallback branch, not my final answer.** §14 is the final architecture — fully cloud-native, fully detailed. This on-prem picture stays in the document because it's still the *correct* answer the moment residency is genuinely non-negotiable (a regulator or a client contractually blocks any data leaving the building) — but absent that constraint, §14 is what I'd actually build. Every box below is a pick already made and defended in §12's on-prem rows — this section just assembles them into **one composite diagram** and points each of the six named pressures from the brief at the exact box that answers it. Nothing here is built; v0 (§3) is the only real system today.
+
+> **One discipline carried over from §5, stated once so it governs this whole section:** I would never *build* this all at once. I would still grow into it one named pressure at a time, in the v0→v5 order from §5 and Appendix A1. This diagram exists to answer "draw the end state," not "build this Monday."
+
+### The whole system, locked down
+
+```
+            ┌──────────────────────────────────────────────────────────────────────────────────┐
+            │      MULTIPLE DATA SOURCES   ( where files live, and what shape they are )       │
+            │  SharePoint / Drive / S3 (read-only)  ·  upload portal  ·  SFTP/email fallback   │
+            │  format router: native PDF -> pypdf | scanned -> OCR | Excel/CSV | feed adapter  │
+            │               every path converges on ONE contract:  ParserOutput                │
+            └──────────────────────────────────────────────────────────────────────────────────┘
+                                                      │
+                                                      ▼
+         ┌────────────────────────────────────────────────────────────────────────────────────────┐
+         │       OBJECT STORAGE   ( on-prem, S3-compatible bucket, one prefix per tenant )        │
+         │  SHA-256 manifest: same bytes -> skip  ·  changed bytes -> re-run, flagged "restated"  │
+         │                  a new file lands -> fires an event -> enqueues a job                  │
+         └────────────────────────────────────────────────────────────────────────────────────────┘
+                                                      │
+                                                      ▼
+               ┌─────────────────────────────────────────────────────────────────────────────┐
+               │    QUEUE   ( durable to-do list, on-prem broker, at-least-once delivery )   │
+               │  absorbs a quarter-end burst and concurrent requests without dropping work  │
+               │   retry with backoff  ·  N failures -> DEAD-LETTER QUEUE -> alert a human   │
+               └─────────────────────────────────────────────────────────────────────────────┘
+                                                      │
+                                                      ▼
+                ┌───────────────────────────────────────────────────────────────────────────┐
+                │                   EXTRACTION WORKERS   ( heavy / slow )                   │
+                │  ~20 workers, autoscale on their OWN queue depth  ·  writes ParserOutput  │
+                └───────────────────────────────────────────────────────────────────────────┘
+                                                      │
+         not a fork: one document passes through both, in order; each pool scales on its own signal
+                                                      │
+                                                      ▼
+             ┌─────────────────────────────────────────────────────────────────────────────────┐
+             │                  NORMALIZATION WORKERS   ( cheap / fast rules )                 │
+             │  ~2 workers, autoscale on their OWN queue depth  ·  writes NormalizationResult  │
+             └─────────────────────────────────────────────────────────────────────────────────┘
+                                                      │
+                                                      ▼
+               ┌─────────────────────────────────────────────────────────────────────────────┐
+               │       THE TRUST LAYER   ( the ensemble vote + the comparability gate )      │
+               │  independent readers vote: agree -> auto-accept | disagree -> HUMAN REVIEW  │
+               │  the moat: refuse to rank unlike things  ( full picture: docs v- and vi- )  │
+               └─────────────────────────────────────────────────────────────────────────────┘
+                                                      │
+                                                      ▼
+         ┌─────────────────────────────────────────────────────────────────────────────────────────┐
+         │         DATABASE   ( Postgres, partitioned by tenant / company / fund / period )        │
+         │  primary + read replicas  ·  row-level scope: a deal team reads only its own companies  │
+         └─────────────────────────────────────────────────────────────────────────────────────────┘
+                                                      │
+                                                      ▼
+              ┌───────────────────────────────────────────────────────────────────────────────┐
+              │    SERVING THE VIEWERS   ( cache + load balancer + stateless API replicas )   │
+              │             repeat dashboard reads hit the cache, not the database            │
+              │  many API replicas behind the load balancer absorb concurrent viewer traffic  │
+              └───────────────────────────────────────────────────────────────────────────────┘
+                                                      │
+                                                      ▼
+           ┌────────────────────────────────────────────────────────────────────────────────────┐
+           │  THE COCKPIT   ( job-id + poll API;  add SSE only if many clients watch one run )  │
+           │           click any number -> its exact source, still true at any scale            │
+           └────────────────────────────────────────────────────────────────────────────────────┘
+
+       ┌────────────────────────────────────────────────────────────────────────────────────────────┐
+       │       OBSERVABILITY:  logs · metrics · traces · SLO = % of packs done within N hours       │
+       │   SECURITY:  auth/roles · encryption (rest & transit) · secrets · audit log · retention    │
+       │  COST:  reserved core + on-demand burst · AI only on the ambiguous tail · storage tiering  │
+       └────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+**How to read it (legend):**
+
+- **▼ and the lines** — a document, then a number, flows this way, top to bottom. There is **no fork** in this picture — every document passes through every box in order.
+- **Extraction, then normalization** — drawn as two sequential stages, not a fork: a document must be extracted before it can be normalized. What scales **independently** is the **worker pool** behind each stage (~20 heavy extraction workers vs ~2 cheap normalization workers, each autoscaling on its own queue-depth signal) — not the document's path. This is §12.8's split, drawn honestly as a pipe.
+- **Database, then serving the viewers** — two different pressures, stacked as two different boxes on purpose. The database box answers **more portfolio companies** (a data/isolation pressure — partitioning). The serving box right below it answers **more users** (a traffic/read pressure — cache, load balancer, replicas). They are not the same box because they are not the same problem.
+- **The bottom band** — three things true of the **whole column above**, not one stage: what we watch, what we lock down, and what we pay for.
+- **THE TRUST LAYER** is drawn as one box here on purpose — its own internals (three readers, an orchestrator, tiers, a human sidebar) already have a full diagram in `v-redundant-extraction-orchestrator.md`, and the comparability gate inside it already has its own diagram in `vi-concord-architecture-today.md`. This picture is the *infrastructure* around them, not a re-draw of them.
+
+### The six pressures from the brief, answered against this picture
+
+| Pressure named in the brief | Which box answers it | The one-line why | Full trade-off table |
+|---|---|---|---|
+| **More portfolio companies** (a *data* pressure) | **DATABASE** — partitioned by tenant/company/fund/period, row-level scope | Isolation and speed together, in one DB, no N-databases tax | §8(2), §12.10, §12.11 |
+| **More users** (a *traffic* pressure — different from the row above) | **SERVING THE VIEWERS** — cache + load balancer + stateless API replicas + DB read replicas | Millions of people *reading* the cockpit is a read/traffic problem, not a data-isolation one — partitioning alone never fixes it | §4, §12.12, §12.21, §12.23 |
+| **Larger document volumes** | **OBJECT STORAGE** + **EXTRACTION WORKERS** | A bucket holds millions of files for cents; workers scale out horizontally on queue depth | §8(3), §12.2, §12.5 |
+| **Real-time processing** | **THE COCKPIT** (job-id + poll; SSE only at real fan-out) | Quarterly packs are batch by nature — the honest fix is *never blocking the caller*, not literal streaming | §8(5), §12.14 |
+| **Multiple data sources** | **MULTIPLE DATA SOURCES** — one connector + format router | Every source, whatever its shape, converges on the same `ParserOutput` contract before anything downstream sees it | §8(4), §12.1 |
+| **Concurrent requests** | **QUEUE** (+ gunicorn worker *processes* in front of it, §12.21) | A burst becomes a backlog, not dropped or serialized work; processes sidestep the GIL for CPU-bound parsing | §8(6), §12.3, §12.21 |
+| **Reliability, security, monitoring, cost** | **the bottom band** + retry/DLQ inside **QUEUE** | Idempotent retries + a DLQ for reliability; auth/encryption/audit for security; SLO-based observability; tail-only AI + tiering for cost | §8(7)–§8(10), §10, §12.16, §12.18–§12.19, §12.22 |
+
+**Why a table, not just a diagram:** the interviewer's actual question is rarely "draw a box" — it is "which box, and why." Pointing at the picture and naming the box closes the loop faster than describing the whole diagram from scratch.
+
+### Draw it (whiteboard version)
+
+**Draw it:** one vertical spine, top to bottom, no branches: sources → storage → queue → extraction workers → normalization workers → trust layer → database → serving-the-viewers → cockpit. Draw extraction and normalization as two boxes **in a straight line**, not a fork — say out loud "one document still passes through both, in order" as you draw the second one. Draw the database and the serving-the-viewers box as two **separate** boxes, not one, because they answer two different pressures. Last, draw one wide box underneath the whole spine and write three words in it: *observability, security, cost* — and say out loud that it applies to every box above it, not just the last one.
+
+**Say while you draw:** *"This is the composite of every box I've already justified separately — nothing new is decided here, I'm just assembling the picks. Sources converge on one contract so a new source is a thin adapter, not a new pipeline. Storage and the queue give me durability and buffering for volume and bursts. Extraction and normalization are sequential — a document has to be parsed before it can be normalized — but their worker pools scale independently because their cost profiles diverge: twenty heavy workers here, two cheap ones there. The trust layer is one box here — its insides are their own diagram — but the headline is: agreement auto-accepts, disagreement goes to a human, and the comparability gate refuses to rank unlike things regardless. The database is partitioned so isolation and speed come for free in one engine, and it carries read replicas. Then — separately — comes the serving layer: a cache plus a load balancer in front of many stateless API copies, because millions of people *viewing* dashboards is a completely different pressure from the data itself, and partitioning alone never fixes a read-traffic spike. The cockpit stays a simple poll — a quarterly workload doesn't need to pretend to be a stock ticker. And the band underneath — observability, security, cost — is not a bolt-on, it's a property of the whole system."*
+
+**The trade-off on this picture, said out loud before anyone asks:** the alternative is building toward this end-state directly, instead of growing into it. **I reject that** — every box here is only justified once its named pressure is real (§5, §7); building the full picture on day one is the "build ahead of scale you don't have yet" mistake from §7, and it would cost this room the exact thing it's testing: **restraint**. This diagram is the answer to "what's the destination," not a build order.
+
+---
+
+## 14. The final architecture — cloud-native, fully detailed
+
+This is my final answer for how Concord runs in production: **fully cloud-native.** §13's on-prem picture stays in this document as the fallback branch — the correct answer only if residency truly becomes non-negotiable — but absent that constraint, this is what I would actually build. This section works through the same **23-row decision catalog as §12**, decision by decision, then assembles every pick into **one detailed diagram**.
+
+**One concrete choice, said up front:** everywhere below I commit to a **single reference cloud** — **AWS** — instead of hedging with "SQS / Pub-Sub / Service Bus" every time. I picked AWS because it's the most common target and lets me be genuinely specific (the exact service, not a category); every AWS service named has a direct GCP or Azure equivalent (I note the closest one the first time each service appears), so the *architecture* doesn't depend on the vendor, only the diagram's labels do.
+
+**What does NOT change from the on-prem picture:** the contracts (`ParserOutput` → `NormalizationResult` → `MetricsLongExport`), the comparability gate, the redundant-ensemble *design*, the human-review discipline, and the restraint principle from §7 — I still wouldn't build all of this on day one without the pressure to justify each box. **What DOES change, and must be said out loud:** going cloud-native means the *"zero egress, nothing leaves the building"* answer to Sharon's residency question is gone. Portfolio-company data now lives with a cloud vendor. That's a legitimate, common trade-off — but only if it's a **choice the client explicitly owns**, exactly the framing §12.18 already uses for its own "public cloud" row.
+
+### 14.1–14.23, one at a time — my pick, in plain words, and the trade-off
+
+**14.1 Intake.** Same shape as §12.1 — a **read-only** connector into cloud storage, plus a locked-down upload portal as fallback. "Multiple sources" is two dimensions, same as before: different *locations* (SharePoint, a data room, a shared drive) and different *formats* (native PDF, scanned image, Excel) — one connector per location, one format-router, everything still converges on the same `ParserOutput` contract. *Trade-off:* fully managed, but the connector now genuinely crosses a network boundary out of the client's walls, not just an on-prem folder read.
+
+**14.2 File storage.** **Object storage — confirmed.** Same pick as §12.2's own recommendation, just now a real managed bucket — **Amazon S3**, one prefix per team, versioning on, lifecycle rules for hot/cold tiering — instead of on-prem MinIO. (GCP equivalent: GCS. Azure equivalent: Blob Storage.) Since MinIO already speaks the S3 API, this is a config change, not a rewrite. *Trade-off:* none, functionally — pure upside once 14.18 has already accepted the cloud.
+
+**14.3 Async execution.** **Queue + worker pool — confirmed**, unchanged shape from §12.3: still the smallest move that buys both durability and non-blocking.
+
+**14.4 Queue technology — here's the help.** You're actually naming **two different jobs**, not one: a **queue** (a durable to-do list for background work) and a **cache** (a fast memory shelf for repeat reads). Pick: **Amazon SQS** (a standard queue) for the job queue, and a **separate** **Amazon ElastiCache for Redis** cluster for the cache. (GCP equivalent: Pub/Sub + Memorystore. Azure equivalent: Service Bus + Cache for Redis.) Don't merge them: Redis-as-a-queue skips the durability guarantees a real broker gives. This is exactly the "cloud branch" §12.4 already reserved SQS for — since 14.18 now accepts cloud, SQS is the correct call. *Trade-off:* zero ops, but per-message cost and a vendor you don't control the uptime of.
+
+**14.5 Worker compute — here's how.** A **serverless function** (**AWS Lambda**) is triggered directly by an SQS message, runs your extraction or normalization code on one document, and shuts down — you pay per invocation, nothing runs between quarters. (GCP equivalent: Cloud Functions. Azure equivalent: Azure Functions.) One nuance worth saying out loud: Lambda fits **normalization** perfectly (small, fast, stateless rules) — but the **heavy extraction stage**, especially calling a vision-LLM or a GPU-based reader, can hit Lambda's ceilings (capped around 15 minutes and ~10GB RAM, no GPU). For that stage, **AWS Fargate** (a serverless container, no server to manage) is the better fit — still scales to zero, but without the time/memory/GPU ceiling, at the cost of a slightly slower cold start. *Trade-off:* cold starts (a delay the first time a function wakes up) and per-invocation cost, against zero idle spend.
+
+**14.6 / 14.7 Extraction method + reader mix — redundant, and now hosted.** Confirmed, and actually *strengthened* by going cloud-native: the on-prem doc's own §12.7 picked "all-local" readers **specifically** to preserve zero-egress. Once 14.18 already accepts cloud, that constraint is gone — so a **hosted** ensemble becomes the natural, higher-accuracy default instead of a residency-constrained fallback: the **Firecrawl API** (structured parsing), a hosted vision-LLM via **Amazon Bedrock** (reads meaning), and **Amazon Textract** (cloud Doc-AI, precise on characters/tables and scanned pages) as the three independent readers. The design itself — three independent readers, an orchestrator, agreement auto-accepts, disagreement goes to a human — is unchanged (full picture: `v-redundant-extraction-orchestrator.md`). *Trade-off:* higher accuracy ceiling, but now **every** document leaves the building for reading, not just the ambiguous tail.
+
+**14.8 Service decomposition — here's the reasoning.** Once 14.5 puts extraction and normalization on their own serverless triggers, and 14.6/14.7 need their own orchestrator step, the natural decomposition is **one small service per contract seam**: an extraction function, a normalization function, an ensemble-orchestrator function, and a human-review API — finer-grained than §12.8's on-prem pick (just split extract/normalize, stop there). §12.8 warned against "full microservices" on-prem because of the **ops burden** of running many services; serverless removes most of that burden (there are no servers to run), so the caution weakens specifically on this branch. Keep the service boundaries at the **same** contracts already defined (`ParserOutput` → `NormalizationResult` → `MetricsLongExport`) — don't invent new seams just because serverless makes them cheap to add.
+
+**14.9 Database — MongoDB, but sharpen the reason you'd give.** "The output is JSON" is a weak defense on its own — a JSON *serialization* format doesn't decide what storage engine fits. §12.9's own analysis is still true here: the data is really a normalized tuple (metric, period, unit, basis, value) that needs cross-cutting joins for the cockpit's sector rankings and trend lines — exactly what a relational engine does natively and a document store does awkwardly. **The defensible version of your choice:** the cockpit's *read pattern* is document-shaped — one full company-quarter view per read — so you pre-aggregate at *write* time into one document per company-per-period (a "materialized view"), matching the read shape exactly and avoiding joins at query time. That's the reason to give if asked "why Mongo," not "because JSON." *Trade-off:* you give up native strong joins/transactions (the comparability gate's cross-company logic now runs in application code at write time, not as a database query at read time) in exchange for schema flexibility and a storage shape that matches the API 1:1.
+
+**14.10 Multi-tenancy — a real risk to flag, not just accept.** This is fine **only if** Concord genuinely serves one team with equal need-to-know across every portfolio company. But §5 v5, §8 Q(2), and §13 all built "tenant" as a **deal-team** boundary *inside* Sagard, not a different external customer — because most PE firms have several deal teams, each with real confidentiality walls between funds (an analyst on Fund II shouldn't casually see Fund III's numbers). If that's actually true of Sagard, dropping this is correct restraint (§7's own discipline: don't build a wall nobody needs). If it's **not** true, you still need at minimum **row-level scope** — not full SaaS multi-tenancy, just an information barrier — because that's precisely the control Sharon (compliance) tests for. Say this out loud as a conscious scoping call, not a silent omission.
+
+**14.11 Partitioning vs. sharding — the "not applicable" claim needs a correction.** Partitioning and sharding are **not relational-only concepts** — MongoDB shards too (splitting a collection across shard servers by a chosen shard key). The honest answer given the likely volume here (dozens to low hundreds of portfolio companies, one document per company-per-quarter) is: **you almost certainly don't need to shard yet** — a single MongoDB replica set handles this comfortably. If volume ever forces it, the natural shard key would be `company_id` (or `tenant_id`, if 14.10 keeps any team boundary). Say "not needed yet, and here's what the key would be" rather than "not applicable."
+
+**14.12 Caching — confirmed.** Same two-layer design as §12.12: SHA-256 content-hash dedup (a property of the bytes, not of where they live — unchanged by going cloud) plus a Redis result cache, now a **managed** service instead of self-hosted.
+
+**14.13 Change detection — combine, don't replace.** Don't swap the SHA-256 hash out for the cloud storage event — **combine them**, exactly like §12.13's own "switch when" already suggests: an **S3 Event Notification**, routed through **Amazon EventBridge**, is a great **trigger** — near-instant, no polling — but on its own it still "lies" the same way a file's modified-time lies: a copy or a restore fires the event without the content actually changing. So: **the S3/EventBridge event is the trigger** (fast), **SHA-256 is the source of truth** (correct). Keep both.
+
+**14.14 Result delivery — polling, explained.** Polling means the app keeps **asking** the server "are you done yet?" every few seconds, instead of the server **pushing** the answer the instant it's ready. It's the simplest thing that works for a job finishing in seconds-to-minutes — no held-open connection, no push infrastructure. Add SSE (a one-way live push) only if many people are watching the *same* long-running job at once.
+
+**14.15 Delivery guarantee — at-least-once + idempotent, explained.** **At-least-once** is the cloud queue's promise: your message *will* arrive, but on rare occasions (a network hiccup, an internal retry) it might arrive **twice**. **Idempotent** means your code is written so that handling the same message twice produces the exact same end result as handling it once — usually by keying the write on something unique (the file's SHA-256 hash plus which metric it is), so a duplicate delivery just **overwrites** the same row instead of creating a second, duplicate one. Together: the queue is allowed to be a little sloppy about delivery, because your code is built to never care.
+
+**14.16 Failure handling — filled in.** Use SQS's **built-in redrive policy** (its native name for automatically moving a message to a dead-letter queue after N failed attempts) pointing at a second **SQS dead-letter queue**, with a **CloudWatch alarm** on that queue's depth paging a human. Same shape as §12.16's retry+DLQ recommendation — just the managed broker's native feature instead of building it by hand.
+
+**14.17 Deployment — filled in.** This is exactly Option 2, "cloud re-platform," from §12.17's own table, fully worked out: **Lambda** for the stateless per-document work (14.5), **Fargate** for anything heavier or longer-running (the extraction ensemble, the orchestrator, the API tier), **MongoDB Atlas** (14.9), **SQS** (14.4). Nothing on-prem.
+
+**14.18 Security — one word needs fixing: not "public," *private* inside the cloud.** "Public cloud" as a **vendor category** (AWS, as opposed to on-prem hardware) is exactly what's being chosen here — but the *network posture* should never actually be public. Run inside a **private VPC** (Amazon's walled-off network inside its own infrastructure; nothing reachable from the open internet except through a controlled gateway) with **security groups** locking down exactly which service can talk to which, **KMS** (Key Management Service) for encryption at rest and in transit, **IAM** (Identity and Access Management — AWS's native roles/permissions system, instead of home-grown auth) for who can touch what, **CloudTrail** as the audit log of every access, and a **DPA** (Data Processing Agreement — a legal contract stating exactly how AWS is allowed to handle your data) if compliance requires one. Say the honest trade-off out loud, unprompted: going cloud-native **removes** the "zero egress" answer to Sharon's residency question — data now lives with a vendor. That's fine **if the client explicitly accepts it**, the same ownership framing §12.18 already uses for its own "public cloud" row.
+
+**14.19 Observability — confirmed, and now the right call.** **Amazon CloudWatch** for logs and metrics, **AWS X-Ray** for traces (answering "which file produced this number?" the SRE way) — matching §12.19's "managed" option. (A third-party option like Datadog is the same shape, just a different vendor.) That option's *original* objection on the on-prem branch ("telemetry leaves the network, contradicting the on-prem posture") no longer applies, since 14.18 already accepted the cloud. Buying instead of building is the correct pick on **this** branch, where it wasn't on the on-prem one.
+
+**14.20 Human review — confirmed, unchanged.** "Only when flagged" matches §12.20's own recommendation exactly — this is a workflow decision, not an infrastructure one, so going cloud-native doesn't move it.
+
+**14.21 Web tier — confirmed, and here's *why* it's now correct.** In the on-prem monolith, gunicorn worker **processes** were right because the web tier itself did the heavy, CPU-bound parsing. Now that 14.5 has moved all of that work **off** the web tier and onto serverless, the web tier's only job is accepting uploads, enqueuing jobs, and serving cache/database reads — all **I/O-bound** (waiting on cloud API calls), not CPU-bound. That is exactly the condition §12.21's own table names as when async ASGI wins: **FastAPI on uvicorn, running as an AWS Fargate service** behind an **Application Load Balancer**. Good instinct — the pivot to serverless workers is *why* async now makes sense, where it didn't in the monolith.
+
+**14.22 Cost model — confirmed, with one caveat.** On-demand pairs naturally with serverless (14.5): pay only when a function runs, nothing between quarters. Caveat worth naming live: if usage ever becomes near-continuous instead of genuinely quarter-end-bursty, on-demand serverless can end up **costing more** than reserved capacity at high sustained volume — worth re-checking that crossover if volume grows, but for a quarterly cadence, on-demand is the right call.
+
+**14.23 Database read-scaling — sharpen "may scale horizontally."** "Scales horizontally" is vague, and sounds like it's talking about **sharding** (14.11's topic — write/storage scaling), but this decision is specifically about **read** scaling for viewer traffic (the same "more users" pressure from §4/§13). The precise mechanism: MongoDB **replica-set secondaries** can serve read queries directly (set the driver's "read preference" to route reads to secondaries) — this is MongoDB's exact equivalent of a Postgres read replica. Still pair it with the cache from 14.12 as the first, cheaper lever, same order as the on-prem recommendation.
+
+### The final architecture, locked down
+
+```
+   ┌────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+   │                 MULTIPLE DATA SOURCES   ( cloud-native intake: locations AND formats )                 │
+   │  SharePoint / Drive connector (Lambda)  ·  upload portal (S3 pre-signed URLs)  ·  SFTP/email fallback  │
+   │    format router (Lambda): native PDF -> pypdf | scanned -> Textract OCR | Excel/CSV | feed adapter    │
+   │                          every path converges on ONE contract:  ParserOutput                           │
+   └────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                        │
+                                                        ▼
+   ┌────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+   │            OBJECT STORAGE   ( Amazon S3, one prefix per team, versioned, lifecycle-tiered )            │
+   │  an S3 Event Notification via EventBridge is only the TRIGGER; SHA-256 still decides "changed or not"  │
+   │                      a new file lands -> EventBridge rule -> enqueues an SQS job                       │
+   └────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                        │
+                                                        ▼
+         ┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+         │                QUEUE   ( Amazon SQS standard queue, at-least-once delivery )                │
+         │          absorbs a quarter-end burst and concurrent requests without dropping work          │
+         │  SQS redrive policy: N failures -> SQS DEAD-LETTER QUEUE -> CloudWatch alarm pages a human  │
+         └─────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                        │
+                                                        ▼
+      ┌───────────────────────────────────────────────────────────────────────────────────────────────────┐
+      │              EXTRACTION WORKERS   ( AWS Fargate task per document, triggered by SQS )             │
+      │  the redundant ensemble runs HERE: Amazon Bedrock (vision-LLM) + Amazon Textract + Firecrawl API  │
+      │     Fargate, not Lambda: ensemble calls run long and need more memory  ·  writes ParserOutput     │
+      └───────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                        │
+             not a fork: one document passes through both, in order; each scales on its own trigger
+                                                        │
+                                                        ▼
+            ┌───────────────────────────────────────────────────────────────────────────────────────┐
+            │  NORMALIZATION WORKERS   ( AWS Lambda, cheap rules, triggered by SQS, near-instant )  │
+            │                               writes NormalizationResult                              │
+            └───────────────────────────────────────────────────────────────────────────────────────┘
+                                                        │
+                                                        ▼
+                 ┌─────────────────────────────────────────────────────────────────────────────┐
+                 │     THE TRUST LAYER   ( a Lambda orchestrator + the comparability gate )    │
+                 │  independent readers vote: agree -> auto-accept | disagree -> HUMAN REVIEW  │
+                 │  the moat: refuse to rank unlike things  ( full picture: docs v- and vi- )  │
+                 └─────────────────────────────────────────────────────────────────────────────┘
+                                                        │
+                                                        ▼
+        ┌───────────────────────────────────────────────────────────────────────────────────────────────┐
+        │                   DATABASE   ( MongoDB Atlas, managed, 3-node replica set )                   │
+        │  one document per company-per-period  ·  secondaries serve reads  ·  sharding not needed yet  │
+        └───────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                        │
+                                                        ▼
+               ┌─────────────────────────────────────────────────────────────────────────────────┐
+               │   SERVING THE VIEWERS   ( ElastiCache for Redis + Application Load Balancer )   │
+               │              repeat dashboard reads hit the cache, not the database             │
+               │  FastAPI (async), many stateless replicas on Fargate, behind the load balancer  │
+               └─────────────────────────────────────────────────────────────────────────────────┘
+                                                        │
+                                                        ▼
+             ┌────────────────────────────────────────────────────────────────────────────────────┐
+             │  THE COCKPIT   ( job-id + poll API;  add SSE only if many clients watch one run )  │
+             │           click any number -> its exact source, still true at any scale            │
+             └────────────────────────────────────────────────────────────────────────────────────┘
+
+   ┌─────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+   │                 OBSERVABILITY:  CloudWatch logs/metrics + X-Ray traces  ·  SLO unchanged                │
+   │   SECURITY:  private VPC + security groups  ·  KMS encryption  ·  IAM  ·  CloudTrail audit log  ·  DPA  │
+   │  COST:  on-demand (Lambda/Fargate/SQS pay-per-use)  ·  S3 lifecycle tiering  ·  revisit if bursts stop  │
+   └─────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+**How to read it:** same legend as §13 — top-to-bottom flow, no fork at extraction/normalization (a document passes through both, in order; only the *worker pools* scale independently), and one bottom band that applies to the whole column above it, not just the last box. Every label here is a **named, specific AWS service**, not a category — that's the difference between this picture and a generic "cloud broker" sketch: if asked "which one, exactly," the answer is already on the diagram. The **shape** is identical to §13's nine boxes; only the *implementation* filling each one changed — which is exactly why walking it as "same 23 decisions, different answers" was the right way to build it.
+
+### Say it out loud before anyone asks
+
+> *"This is my final architecture: fully cloud-native, on AWS, top to bottom. A document lands in S3, an EventBridge rule fires off an SQS job, Fargate runs the redundant extraction ensemble — Bedrock, Textract, and Firecrawl voting on the same page — Lambda normalizes the cheap rules, the comparability gate decides what's safe to rank, MongoDB Atlas holds one document per company-per-quarter with replica-set secondaries serving reads, and an async FastAPI service behind a load balancer and a Redis cache serves the cockpit. The one trade-off I won't gloss over: this removes the zero-egress answer I'd otherwise give Sharon — data now lives with AWS, inside a private VPC, encrypted with KMS, audited with CloudTrail, under a data processing agreement. That's a fine trade if the client owns the decision to make it. It's not a trade I'd make silently. And if residency ever becomes non-negotiable, §13 is still there — the same architecture, the same nine stages, run on-prem instead."*
 
 ---
 
@@ -1153,6 +1418,6 @@ This is the reference behind §8: every part of the system has more than one rea
 
 **Draw it:** draw the three tenants stacked on the left, collapsing into one `LOAD BALANCER`. Then `QUEUE → AUTOSCALING WORKERS` across. Then drop down to the wide `DB` box and, underneath it, write the *row-level scope* line — that line is the compliance point, don't skip it.
 
-**Say while you draw:** "At 500 portcos the problem is *isolation*, not compute. A *load balancer* spreads requests so no one instance is a hotspot; workers *autoscale* on queue depth — backlog grows, add workers; backlog drains, remove them. *Partitioning* means I slice one big table by company/fund/period *inside one database* so a query for 'NovaCloud Q3' touches one slice, and row-level scope enforces the information barrier between deal teams."
+**Say while you draw:** "This picture answers two pressures at once, and I name both so I don't let one hide the other. The *isolation* half: *partitioning* means I slice one big table by company/fund/period *inside one database* so a query for 'NovaCloud Q3' touches one slice, and row-level scope enforces the information barrier between deal teams. The *quarter-end burst* half, separately: a *load balancer* spreads requests so no one instance is a hotspot, and workers *autoscale* on queue depth — backlog grows, add workers; backlog drains, remove them."
 
 **The trade-off on this picture:** the alternatives are one shared table (simplest) or full *sharding* — physically spreading data across many machines. **I reject both up front** — a shared table leaks data across teams, and I only shard when one node is *provably* full; partitioning comes first. And I gate the whole picture: this is the highest ceiling but the highest cost, and here *data leaves on-prem* — so I don't draw v5 at all until the data-residency question is answered.
